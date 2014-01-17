@@ -1,0 +1,14 @@
+name: WXCS
+version: 0.1
+author: asi1024
+synopsis: Wonderful eXciting Contest System
+cabal-version: >= 1.10
+build-type: Simple
+
+executable main
+    Hs-source-dirs: src
+    Default-Language: Haskell2010
+    main-is:  main.hs
+    build-depends: base >= 4 && < 5
+                   , scotty
+    ghc-options:   -Wall
