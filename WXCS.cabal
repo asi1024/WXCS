@@ -10,5 +10,10 @@ executable main
     Default-Language: Haskell2010
     main-is:  main.hs
     build-depends: base >= 4 && < 5
+                   , process >= 1.2
                    , scotty
+                   , hamlet
+                   , blaze-html
+                   , time
+                   , transformers
     ghc-options:   -Wall

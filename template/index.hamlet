@@ -1,0 +1,44 @@
+$doctype 5
+<html lang="ja">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=euc-jp">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <link rel="stylesheet" href="~asi1024/HTML/WXCS/css/default.css" type="text/css">
+  
+  <title>WX Contest System
+<body>
+  <div class="header">
+    <h1 id="logo">WX Contest System
+    <span class="username">You are #{user_id}. |
+    <span class="index-link">
+      <a href="~asi1024/HTML/WXCS/">Top |
+    <span class="status-link">
+      <a href="/uvcs/status">Status |
+    <span class="current-time">Current Time: 
+      <strong>#{current_time}
+  
+  <div class="main">
+    <h1>Recent Contest
+    
+    <h1>Contest
+    <table summary="contest table">
+      <thead>
+        <tr>
+          <th>Contest Name
+          <th>Contest type
+          <th>Start time
+          <th>End time
+          <th>Edit
+      
+      <tbody>
+        <tr class="even">
+        <td><a class="white" href="contest/1">ICPC Study Session part.1
+        <td>AOJ
+        <td>[[Start Time]]
+        <td>2010-05-11 21:05:00
+        <td><a href="setcontest?id=1">Edit
+    
+    <h1>Setting
+    <ul>
+      <li><a href="setcontest">Set Contest
+<address class="footer">contributed by ***,******(****)
