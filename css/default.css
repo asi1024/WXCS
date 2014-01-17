@@ -1,0 +1,39 @@
+body { color: #ffffff; background-color: #222222; font-family: verdana, arial, helvetica, sans-serif; padding: 0em; margin: 0em; }
+.header { text-align: right; margin: 0em; padding: 1.5ex; }
+.header a:link, .problem-menu a:link { color: #aaaaff; }
+.header a:visited, .problem-menu a:visited { color: #ffaaaa; }
+.header a:hover, .problem-menu a:hover { background-color: #ffffff; text-decoration: none; }
+#logo { margin: 0.1em; color: #0000ff; }
+.main { margin: 0em; color: #ffffff; background-color: #000000; border: 1em transparent solid; }
+h1, h2, h3, h4, h5, h6 { color: #7070e0; }
+table { border-collapse: border; }
+th, td { border: solid 1px #aaaaaa; padding: 1ex; font-weight: bold; }
+tr.even { background-color: #222222; }
+tr.odd { background-color: #333333; }
+th { background-color: #333333; color: #ffffff; }
+.AC { color: #002200; background-color: #88ff88; }
+.WA { color: #330000; background-color: #ff9999; }
+.RE { color: #330022; background-color: #ff88ff; }
+.OLE { color: #330022; background-color: #ff88ff; }
+.MLE { color: #330022; background-color: #ff88ff; }
+.TLE { color: #000033; background-color: #9999ff; }
+.PE { color: #330000; background-color: #ffdd99; }
+.CE { color: #333333; background-color: #cccccc; }
+.JFF { color: #333333; background-color: #bbbbbb; }
+.SF { color: #333333; background-color: #bbbbbb; }
+.RUN { color: #000000; background-color: #ffffff; }
+td.user, td.problem, td.judge, td.language { text-align: center; }
+td.id, td.time, td.memory, td.size { text-align: right; }
+pre.source { font-family: DejaVu Sans Mono, monospace; background-color: #f8f8f8; color: #000000; border: solid 1px #555555; padding: 1em; }
+.footer { font-size: smaller; text-align: right; margin: 1em; }
+a.white:link { color: #FFFFFF; }
+a.white:visited { color: #FFFF88; }
+
+#submit td { border-style: none; font-weight: normal; }
+#submit th { color: #101010; background-color: transparent; border-style: none; text-align: left; }
+.message { border: #f26800 2px solid; color: #000000; background-color: #ffffff; font-size: large; padding: 1ex; }
+
+.problem-menu { background-color: #000000; padding: 1ex 1ex 1ex 2ex; font-weight: bold; text-align: right; }
+
+.stAC { color: #000011; background-color: #02ff02; }
+.stWA { color: #ffeded; background-color: #c00000; }
