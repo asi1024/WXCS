@@ -16,4 +16,8 @@ executable main
                    , blaze-html
                    , time
                    , transformers
+                   , filepath
+                   , bytestring
+                   , wai-extra
+                   , wai-middleware-static
     ghc-options:   -Wall

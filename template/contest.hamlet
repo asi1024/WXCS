@@ -3,7 +3,7 @@ $doctype 5
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=euc-jp">
     <meta http-equiv="Content-Style-Type" content="text/css">
-    <link rel="stylesheet" href="/~asi1024/wxcs/css/default.css" type="text/css">
+    <link rel="stylesheet" href="/css/default.css" type="text/css">
     
     <title>WX Contest System
   <body>
@@ -11,7 +11,7 @@ $doctype 5
       <h1 id="logo">WX Contest System</h1>
       <span class="username">You are #{user_id}. |
       <span class="index-link">
-        <a href="/~asi1024/wxcs/">Top |
+        <a href="/">Top |
       <span class="status-link">
         <a href="/uvcs/status">Status |
       <span class="current-time">Current Time:
@@ -97,7 +97,7 @@ $doctype 5
             <td>0
                 
       <h2>Submit
-      <form id="submit" action="/~asi1024/wxcs/submit/submit.cgi" method="post" enctype="multipart/form-data">
+      <form id="submit" action="/submit" method="post" enctype="multipart/form-data">
         <tr>
           <th>Host:
           <td><select name="type">
