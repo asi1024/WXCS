@@ -1,0 +1,138 @@
+$doctype 5
+<html lang="ja">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=euc-jp">
+    <meta http-equiv="Content-Style-Type" content="text/css">
+    <link rel="stylesheet" href="/~asi1024/wxcs/css/default.css" type="text/css">
+    
+    <title>WX Contest System
+  <body>
+    <div class="header">
+      <h1 id="logo">WX Contest System</h1>
+      <span class="username">You are #{user_id}. |
+      <span class="index-link">
+        <a href="/~asi1024/wxcs/">Top |
+      <span class="status-link">
+        <a href="/uvcs/status">Status |
+      <span class="current-time">Current Time:
+        <strong>#{current_time}
+        
+    <div class="main">
+    
+      <h1>Contest - ICPC Study Session part.#{contest_id}
+      
+      <ul>
+        <li>Contest Host : Aizu
+        <li>Contest Start : 2013-12-27 18:30:00
+        <li>Contest Finish : 2013-12-27 21:00:00
+      
+      <h2>Problem Set
+      <table summary="problem set">
+        <thead>
+          <tr>
+            <th>Code
+            <th>Title
+            <th>State
+            
+        <tbody>
+          <tr class="odd">
+            <td class='stAC'>2272
+            <td><a class="white" href="#{probA}">B
+            <td>Accepted
+            
+          <tr class="even">
+            <td class='stAC'>2274
+            <td><a class="white" href="http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=2274">D
+            <td>Accepted
+      
+          <tr class="odd">
+            <td class='stAC'>2276
+            <td><a class="white" href="http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=2276">F
+            <td>Accepted
+    
+          <tr class="even">
+            <td class='stAC'>2278
+            <td><a class="white" href="http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=2278">H
+            <td>Accepted
+    
+          <tr class="odd">
+            <td class='stAC'>2280
+            <td><a class="white" href="http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=2280">J
+            <td>Accepted
+      
+      <h2>Standings
+      <table summary="standings">
+        <thead>
+          <tr>
+            <th>Rank
+            <th>User
+            <th><a class="white" href="/uvcs/statistics?type=Aizu&problem=2272">2272
+            <th><a class="white" href="/uvcs/statistics?type=Aizu&problem=2274">2274
+            <th><a class="white" href="/uvcs/statistics?type=Aizu&problem=2276">2276
+            <th><a class="white" href="/uvcs/statistics?type=Aizu&problem=2278">2278
+            <th><a class="white" href="/uvcs/statistics?type=Aizu&problem=2280">2280
+            <th>Accepted
+            <th>Penalty
+      
+          <tr class="odd">
+            <td>1
+            <td><a href="/uvcs/user?name=A-san" style="color:#ffffff">A-san
+            <td class='stAC'>   @10
+            <td class='stAC'>   @20
+            <td class='stAC'>   @30
+            <td class='stAC'>+1 @50
+            <td class='stAC'>   @90
+            <td>5
+            <td>220
+      
+          <tr class="odd">
+            <td>2
+            <td><a href="/uvcs/user?name=B-san" style="color:#ffffff">B-san
+            <td class='stWA'>+1
+            <td class='stWA'>+2
+            <td class='stWA'>+3
+            <td class='stWA'>+99
+            <td >
+            <td>0
+            <td>0
+                
+      <h2>Submit
+      <form id="submit" action="/~asi1024/wxcs/submit/submit.cgi" method="post" enctype="multipart/form-data">
+        <tr>
+          <th>Host:
+          <td><select name="type">
+              <option value="Original" >Original
+              <option value="ZOJ" >ZOJ
+              <option value="UVa" >UVa
+              <option value="Aizu" selected>Aizu
+        <br>
+  
+        <tr>
+          <th>Problem ID:
+          <td><input type="text" name="name">
+        <br>
+  
+        <tr>
+          <th>Language:
+          <td>
+            <input type="radio" name="language" value="C" >C 
+            <input type="radio" name="language" value="C++" >C++ 
+            <input type="radio" name="language" value="Ruby" >Ruby 
+            <input type="radio" name="language" value="Perl" >Perl 
+            <input type="radio" name="language" value="Python" >Python 
+            <input type="radio" name="language" value="C#" >C# 
+            <input type="radio" name="language" value="Haskell" >Haskell 
+            <input type="radio" name="language" value="JAVA" >JAVA 
+            <input type="radio" name="language" value="C++11" checked>C++11 
+            <input type="radio" name="language" value="JavaScript" >JavaScript 
+        <br>
+  
+        <tr><th colspan="2">Source Code:
+        <br>
+        <tr>
+          <td colspan="2">
+            <textarea rows="10" cols="90" name="code">
+          <br>
+            .. or upload from file:<input type="file" name="codefile">
+          <tr><td colspan="2" style="text-align: right"><input type="submit" name="submit" value="Submit">
+    <address class="footer">contributed by ***,******(****)
