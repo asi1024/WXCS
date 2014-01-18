@@ -1,22 +1,24 @@
 {-# LANGUAGE QuasiQuotes, TemplateHaskell, OverloadedStrings #-}
-import Web.Scotty
-import Text.Hamlet
+
+import Control.Monad.IO.Class
 
 import Data.Monoid (mconcat)
 import Data.Time
-import Control.Monad.IO.Class
+import qualified Data.ByteString.Lazy as B
+import qualified Data.ByteString.Char8 as BS
 
 import Network.Wai.Middleware.RequestLogger
 import Network.Wai.Middleware.Static
 import Network.Wai.Parse
 
+import System.FilePath ((</>))
+
 import qualified Text.Blaze.Html5 as H
 import Text.Blaze.Html5.Attributes
 import Text.Blaze.Html.Renderer.Text (renderHtml)
+import Text.Hamlet
 
-import qualified Data.ByteString.Lazy as B
-import qualified Data.ByteString.Char8 as BS
-import System.FilePath ((</>))
+import Web.Scotty
 
 aojurl :: Int -> String
 aojurl n = "http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=" ++ show n
