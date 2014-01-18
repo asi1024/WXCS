@@ -4,7 +4,7 @@ $doctype 5
   <meta http-equiv="Content-Type" content="text/html; charset=euc-jp">
   <meta http-equiv="Content-Style-Type" content="text/css">
   <link rel="stylesheet" href="/css/default.css" type="text/css">
-  
+
   <title>WX Contest System
 <body>
   <div class="header">
@@ -14,12 +14,12 @@ $doctype 5
       <a href="/">Top |
     <span class="status-link">
       <a href="/uvcs/status">Status |
-    <span class="current-time">Current Time: 
+    <span class="current-time">Current Time:
       <strong>#{current_time}
-  
+
   <div class="main">
     <h1>Recent Contest
-    
+
     <h1>Contest
     <table summary="contest table">
       <thead>
@@ -29,7 +29,7 @@ $doctype 5
           <th>Start time
           <th>End time
           <th>Edit
-      
+
       <tbody>
         <tr class="even">
         <td><a class="white" href="contest/1">ICPC Study Session part.1
@@ -37,7 +37,7 @@ $doctype 5
         <td>[[Start Time]]
         <td>2010-05-11 21:05:00
         <td><a href="setcontest?id=1">Edit
-    
+
     <h1>Setting
     <ul>
       <li><a href="setcontest">Set Contest

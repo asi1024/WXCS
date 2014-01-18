@@ -1,7 +1,6 @@
 {-# LANGUAGE QuasiQuotes, TemplateHaskell, OverloadedStrings #-}
 import Web.Scotty
 import Text.Hamlet
-import Text.Blaze.Html.Renderer.Text (renderHtml)
 
 import Data.Monoid (mconcat)
 import Data.Time
@@ -24,22 +23,23 @@ aojurl n = "http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=" ++ show n
 
 main :: IO ()
 main = scotty 16384 $ do
-  middleware logStdoutDev  
+  middleware logStdoutDev
+  middleware $ staticPolicy $ addBase "static" >-> (contains "/js/" <|> contains "/css/")
   middleware $ staticPolicy (noDots >-> addBase "submit")
-  
+
   let user_id = "sss" :: String
   current_time_ <- liftIO getCurrentTime
   let current_time = show current_time_
-  
+
   get "/" $ do
     html $ renderHtml $ $(hamletFile "./template/index.hamlet") undefined
-  
+
   get "/contest/:word" $ do
     contest_id <- param "word" :: ActionM String
     let probA = aojurl 2272
     html $ renderHtml $ $(hamletFile "./template/contest.hamlet") undefined
-  
-  post "/submit" $ do  
+
+  post "/submit" $ do
     fs <- files
     let fs' = [ (fieldName, BS.unpack (fileName fi), fileContent fi) | (fieldName,fi) <- fs ]
     liftIO $ sequence_ [ B.writeFile ("uploads" </> fn) fc | (_,fn,fc) <- fs' ]
@@ -48,7 +48,7 @@ main = scotty 16384 $ do
                              ,renderHtml $ H.a (H.toHtml fn) H.! (href $ H.toValue fn) >> H.br
                              ]
                    | (fName,fn,_) <- fs' ]
-  
+
   get "/:word" $ do
     beam <- param "word"
     html $ mconcat ["<h1>Scotty, ", beam, " me up!</h1>"]
