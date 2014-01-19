@@ -36,27 +36,27 @@ $doctype 5
             
         <tbody>
           <tr class="odd">
-            <td class='stAC'>2272
+            <td class="stAC">2272
             <td><a class="white" href="#{probA}">B
             <td>Accepted
             
           <tr class="even">
-            <td class='stAC'>2274
+            <td class="stAC">2274
             <td><a class="white" href="http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=2274">D
             <td>Accepted
       
           <tr class="odd">
-            <td class='stAC'>2276
+            <td class="stAC">2276
             <td><a class="white" href="http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=2276">F
             <td>Accepted
     
           <tr class="even">
-            <td class='stAC'>2278
+            <td class="stAC">2278
             <td><a class="white" href="http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=2278">H
             <td>Accepted
     
           <tr class="odd">
-            <td class='stAC'>2280
+            <td class="stAC">2280
             <td><a class="white" href="http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=2280">J
             <td>Accepted
       
@@ -77,21 +77,21 @@ $doctype 5
           <tr class="odd">
             <td>1
             <td><a href="/uvcs/user?name=A-san" style="color:#ffffff">A-san
-            <td class='stAC'>   @10
-            <td class='stAC'>   @20
-            <td class='stAC'>   @30
-            <td class='stAC'>+1 @50
-            <td class='stAC'>   @90
+            <td class="stAC">   @10
+            <td class="stAC">   @20
+            <td class="stAC">   @30
+            <td class="stAC">+1 @50
+            <td class="stAC">   @90
             <td>5
             <td>220
       
           <tr class="odd">
             <td>2
             <td><a href="/uvcs/user?name=B-san" style="color:#ffffff">B-san
-            <td class='stWA'>+1
-            <td class='stWA'>+2
-            <td class='stWA'>+3
-            <td class='stWA'>+99
+            <td class="stWA">+1
+            <td class="stWA">+2
+            <td class="stWA">+3
+            <td class="stWA">+99
             <td >
             <td>0
             <td>0
