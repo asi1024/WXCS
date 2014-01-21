@@ -30,15 +30,16 @@ $doctype 5
           <th>End time
           <th>Edit
 
-      <tbody>
-        <tr class="even">
-        <td><a class="white" href="contest/1">ICPC Study Session part.1
-        <td>AOJ
-        <td>[[Start Time]]
-        <td>2010-05-11 21:05:00
-        <td><a href="setcontest?id=1">Edit
+      $forall (id, name, type, start_time, end_time) <- contest_list
+        <tbody>
+          <tr>
+          <td><a class="white" href="contest/#{id}">#{name}
+          <td>#{type}
+          <td>#{start_time}
+          <td>#{end_time}
+          <td><a href="setcontest?id=1">Edit
 
     <h1>Setting
     <ul>
       <li><a href="setcontest">Set Contest
-<address class="footer">contributed by ***,******(****)
+<address class="footer">contributed by ****,******(2014)

@@ -23,6 +23,9 @@ import Web.Scotty
 aojurl :: Int -> String
 aojurl n = "http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=" ++ show n
 
+contest_list :: [(String, String, String, String, String)]
+contest_list = [("1", "ICPC Study Session Part. 1", "AOJ", "2014-01-01 00:00:00", "2014-01-01 00:01:00"), ("2", "ICPC Study Session Part. 2", "AOJ", "2014-01-02 00:00:00", "2014-01-02 00:01:00")]
+
 main :: IO ()
 main = scotty 16384 $ do
   middleware logStdoutDev
@@ -30,13 +33,17 @@ main = scotty 16384 $ do
   middleware $ staticPolicy (noDots >-> addBase "submit")
 
   let user_id = "sss" :: String
-  current_time_ <- liftIO getCurrentTime
-  let current_time = show current_time_
 
   get "/" $ do
+    timezone <- liftIO getCurrentTimeZone
+    current_time_ <- liftIO getCurrentTime
+    let current_time = show $ utcToLocalTime timezone current_time_
     html $ renderHtml $ $(hamletFile "./template/index.hamlet") undefined
 
   get "/contest/:word" $ do
+    timezone <- liftIO getCurrentTimeZone
+    current_time_ <- liftIO getCurrentTime
+    let current_time = show $ utcToLocalTime timezone current_time_
     contest_id <- param "word" :: ActionM String
     let probA = aojurl 2272
     html $ renderHtml $ $(hamletFile "./template/contest.hamlet") undefined
