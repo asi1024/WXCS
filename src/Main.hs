@@ -59,3 +59,14 @@ main = do
     get "/setcontest" $ do
       current_time <- liftIO getCurrentTime
       html $ renderHtml $ $(hamletFile "./template/setcontest.hamlet") undefined
+
+    post "/setcontest" $ do
+      current_time <- liftIO Ti.getCurrentTime
+      contest_name <- param "name" :: ActionM String
+      contest_type <- param "type" :: ActionM String
+      problem <- param "problem" :: ActionM String
+      start_time <- param "starttime" :: ActionM String
+      end_time <- param "endtime" :: ActionM String
+      liftIO $ Sq.runSqlite "db.sqlite" $ do
+        Sq.insert $ Contest contest_name contest_type current_time current_time []
+      redirect "/"
