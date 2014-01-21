@@ -2,21 +2,13 @@
 
 import Control.Monad.IO.Class
 
-import Data.Monoid (mconcat)
 import qualified Data.Time as Ti
-import qualified Data.ByteString.Lazy as B
-import qualified Data.ByteString.Char8 as BS
 
 import qualified Database.Persist.Sqlite as Sq
 
 import Network.Wai.Middleware.RequestLogger
 import Network.Wai.Middleware.Static
-import Network.Wai.Parse
 
-import System.FilePath ((</>))
-
-import qualified Text.Blaze.Html5 as H
-import Text.Blaze.Html5.Attributes
 import Text.Blaze.Html.Renderer.Text (renderHtml)
 import Text.Hamlet
 
