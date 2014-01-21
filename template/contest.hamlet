@@ -78,10 +78,8 @@ $doctype 5
       <form id="submit" action="/submit" method="post" enctype="multipart/form-data">
         <tr>
           <th>Host:
-          <td><select name="type">
-              <option value="Original" >Original
-              <option value="ZOJ" >ZOJ
-              <option value="UVa" >UVa
+          <td>
+            <select name="type">
               <option value="Aizu" selected>Aizu
         <br>
 
