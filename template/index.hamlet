@@ -11,9 +11,11 @@ $doctype 5
     <h1 id="logo">WX Contest System
     <span class="username">You are #{user_id}. |
     <span class="index-link">
-      <a href="/">Top |
+      <a href="/">Top
+      |
     <span class="status-link">
-      <a href="/uvcs/status">Status |
+      <a href="/uvcs/status">Status
+      |
     <span class="current-time">Current Time:
       <strong>#{current_time}
 
