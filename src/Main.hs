@@ -43,7 +43,6 @@ main = do
   scotty 16384 $ do
     middleware logStdoutDev
     middleware $ staticPolicy $ addBase "static" >-> (contains "/js/" <|> contains "/css/")
-    middleware $ staticPolicy (noDots >-> addBase "submit")
 
     let user_id = "sss" :: String
 
@@ -53,7 +52,7 @@ main = do
       let current_time = show $ utcToLocalTime timezone current_time_
       html $ renderHtml $ $(hamletFile "./template/index.hamlet") undefined
 
-    get "/contest/:word" $ do
+    get "/contest/:contest_id" $ do
       timezone <- liftIO getCurrentTimeZone
       current_time_ <- liftIO getCurrentTime
       let current_time = show $ utcToLocalTime timezone current_time_
@@ -68,17 +67,3 @@ main = do
       current_time_ <- liftIO getCurrentTime
       let current_time = show $ utcToLocalTime timezone current_time_
       html $ renderHtml $ $(hamletFile "./template/setcontest.hamlet") undefined
-
-    post "/submit" $ do
-      fs <- files
-      let fs' = [ (fieldName, BS.unpack (fileName fi), fileContent fi) | (fieldName,fi) <- fs ]
-      liftIO $ sequence_ [ B.writeFile ("uploads" </> fn) fc | (_,fn,fc) <- fs' ]
-      html $ mconcat [ mconcat [ fName
-                               , ": "
-                               ,renderHtml $ H.a (H.toHtml fn) H.! (href $ H.toValue fn) >> H.br
-                               ]
-                     | (fName,fn,_) <- fs' ]
-
-    get "/:word" $ do
-      beam <- param "word"
-      html $ mconcat ["<h1>Scotty, ", beam, " me up!</h1>"]

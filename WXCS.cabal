@@ -10,7 +10,6 @@ executable main
     Default-Language: Haskell2010
     main-is:  Main.hs
     build-depends: base >= 4 && < 5
-                   , process >= 1.2
                    , scotty >= 0.6.2
                    , hamlet
                    , blaze-html
@@ -24,4 +23,6 @@ executable main
                    , persistent-sqlite
                    , persistent-template
                    , text
+
     ghc-options:   -Wall
+    extra-libraries: pthread
