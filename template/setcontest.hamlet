@@ -1,0 +1,40 @@
+$doctype 5
+<html lang="ja">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=euc-jp">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <link rel="stylesheet" href="/css/default.css" type="text/css">
+
+  <title>WX Contest System
+<body>
+  <div class="header">
+    <h1 id="logo">WX Contest System
+    <span class="username">You are #{user_id}. |
+    <span class="index-link">
+      <a href="/">Top
+      |
+    <span class="status-link">
+      <a href="/status">Status
+      |
+    <span class="current-time">Current Time:
+      <strong>#{current_time}
+
+  <div class="main">
+    <h1>Set Contest
+
+    <form action="setcontest" method="post">
+      <input type="hidden" name="id" value="">
+      Setter User: #{user_id}<br>
+      Contest Name:<input type="text" name="name" value=""><br>
+      <select name="type">
+        <option value="Aizu" >Aizu
+
+      Problem Sets:<br>
+      <textarea rows="10" cols="90" name="problem">
+      <br>
+      Start Datetime:<input type="text" name="starttime" value=""><br>
+      End Datetime:<input type="text" name="endtime" value=""><br>
+
+      <p><input type="submit" name="submit" value="Submit">
+
+  <address class="footer">contributed by ***,******(2014)

@@ -63,6 +63,12 @@ main = do
       let end_time = "end" :: String
       html $ renderHtml $ $(hamletFile "./template/contest.hamlet") undefined
 
+    get "/setcontest" $ do
+      timezone <- liftIO getCurrentTimeZone
+      current_time_ <- liftIO getCurrentTime
+      let current_time = show $ utcToLocalTime timezone current_time_
+      html $ renderHtml $ $(hamletFile "./template/setcontest.hamlet") undefined
+
     post "/submit" $ do
       fs <- files
       let fs' = [ (fieldName, BS.unpack (fileName fi), fileContent fi) | (fieldName,fi) <- fs ]
