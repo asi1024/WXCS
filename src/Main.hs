@@ -3,7 +3,7 @@
 import Control.Monad.IO.Class
 
 import Data.Monoid (mconcat)
-import Data.Time
+import qualified Data.Time as Ti
 import qualified Data.ByteString.Lazy as B
 import qualified Data.ByteString.Char8 as BS
 
@@ -37,6 +37,12 @@ problem_set = [("stAC", "2272", aojurl "2272", "B", "Accepted"),
                ("odd",  "2278", aojurl "2278", "H", ""),
                ("even", "2280", aojurl "2280", "J", "")]
 
+getCurrentTime :: IO String
+getCurrentTime = do
+  timezone <- Ti.getCurrentTimeZone
+  current_time_ <- Ti.getCurrentTime
+  return . show $ Ti.utcToLocalTime timezone current_time_
+
 main :: IO ()
 main = do
   Sq.runSqlite "db.sqlite" $ Sq.runMigration migrateAll
@@ -47,15 +53,11 @@ main = do
     let user_id = "sss" :: String
 
     get "/" $ do
-      timezone <- liftIO getCurrentTimeZone
-      current_time_ <- liftIO getCurrentTime
-      let current_time = show $ utcToLocalTime timezone current_time_
+      current_time <- liftIO getCurrentTime
       html $ renderHtml $ $(hamletFile "./template/index.hamlet") undefined
 
     get "/contest/:contest_id" $ do
-      timezone <- liftIO getCurrentTimeZone
-      current_time_ <- liftIO getCurrentTime
-      let current_time = show $ utcToLocalTime timezone current_time_
+      current_time <- liftIO getCurrentTime
       let contest_name = "ICPC Study Session Part. 1" :: String
       let contest_type = "AOJ" :: String
       let start_time = "start" :: String
@@ -63,7 +65,5 @@ main = do
       html $ renderHtml $ $(hamletFile "./template/contest.hamlet") undefined
 
     get "/setcontest" $ do
-      timezone <- liftIO getCurrentTimeZone
-      current_time_ <- liftIO getCurrentTime
-      let current_time = show $ utcToLocalTime timezone current_time_
+      current_time <- liftIO getCurrentTime
       html $ renderHtml $ $(hamletFile "./template/setcontest.hamlet") undefined
