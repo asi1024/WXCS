@@ -4,28 +4,28 @@ $doctype 5
     <meta http-equiv="Content-Type" content="text/html; charset=euc-jp">
     <meta http-equiv="Content-Style-Type" content="text/css">
     <link rel="stylesheet" href="/css/default.css" type="text/css">
-    
+
     <title>WX Contest System
   <body>
     <div class="header">
       <h1 id="logo">WX Contest System</h1>
       <span class="username">You are #{user_id}. |
       <span class="index-link">
-        <a href="/">Top |
+        <a href="/">Top
+        |
       <span class="status-link">
-        <a href="/uvcs/status">Status |
+        <a href="/uvcs/status">Status
+        |
       <span class="current-time">Current Time:
         <strong>#{current_time}
-        
+
     <div class="main">
-    
       <h1>Contest - #{contest_name}
-      
       <ul>
         <li>Contest Host : #{contest_type}
         <li>Contest Start : #{start_time}
         <li>Contest Finish : #{end_time}
-      
+
       <h2>Problem Set
       <table summary="problem set">
         <thead>
@@ -33,14 +33,14 @@ $doctype 5
             <th>Code
             <th>Title
             <th>State
-            
+
         <tbody>
           $forall (st, problem_id, problem_url, problem, status) <- problem_set
             <tr>
               <td class="#{st}">#{problem_id}
               <td><a class="white" href="#{problem_url}">#{problem}
               <td>#{status}
-      
+
       <h2>Standings
       <table summary="standings">
         <thead>
@@ -51,7 +51,7 @@ $doctype 5
               <th>#{problem}
             <th>Accepted
             <th>Penalty
-      
+
           <tr class="odd">
             <td>1
             <td><a href="/uvcs/user?name=A-san" style="color:#ffffff">A-san
@@ -62,7 +62,7 @@ $doctype 5
             <td class="stAC">   @90
             <td>5
             <td>220
-      
+
           <tr class="odd">
             <td>2
             <td><a href="/uvcs/user?name=B-san" style="color:#ffffff">B-san
@@ -73,7 +73,7 @@ $doctype 5
             <td >
             <td>0
             <td>0
-                
+
       <h2>Submit
       <form id="submit" action="/submit" method="post" enctype="multipart/form-data">
         <tr>
@@ -84,12 +84,12 @@ $doctype 5
               <option value="UVa" >UVa
               <option value="Aizu" selected>Aizu
         <br>
-  
+
         <tr>
           <th>Problem ID:
           <td><input type="text" name="name">
         <br>
-  
+
         <tr>
           <th>Language:
           <td>
@@ -104,7 +104,7 @@ $doctype 5
             <input type="radio" name="language" value="C++11" checked>C++11 
             <input type="radio" name="language" value="JavaScript" >JavaScript 
         <br>
-  
+
         <tr><th colspan="2">Source Code:
         <br>
         <tr>
