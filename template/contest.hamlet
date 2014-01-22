@@ -28,18 +28,24 @@ $doctype 5
 
       <h2>Problem Set
       <table summary="problem set">
-        <thead>
-          <tr>
-            <th>Code
-            <th>Title
-            <th>State
 
         <tbody>
-          $forall (st, problem_id, problem_url, problem, status) <- problem_set
-            <tr>
+          <tr>
+            $forall (st, problem_id, _, _, _) <- problem_set
               <td class="#{st}">#{problem_id}
+          <tr>
+            $forall (_, _, problem_url, problem, _) <- problem_set
               <td><a class="white" href="#{problem_url}">#{problem}
-              <td>#{status}
+          <tr>
+            $forall (st, id, problem_url, _, _) <- problem_set
+              <td>
+                <a href="#{problem_url}" target="blank">
+                  $if st == "stAC"
+                    <img src="https://www.kmc.gr.jp/~asi1024/WXCS/static/image/Accepted.png">
+                  $elseif st == "stWA"
+                    <img src="https://www.kmc.gr.jp/~asi1024/WXCS/static/image/WrongAnswer.png">
+                  $else
+                    <img src="https://www.kmc.gr.jp/~asi1024/WXCS/static/image/Unsolved.png">
 
       <h2>Standings
       <table summary="standings">
