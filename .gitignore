@@ -1,3 +1,4 @@
 cabal-dev
 dist
 db.sqlite
+static/image

@@ -28,6 +28,10 @@ problem_set = [("stAC", "2272", aojurl "2272", "B", "Accepted"),
                ("odd",  "2278", aojurl "2278", "H", ""),
                ("even", "2280", aojurl "2280", "J", "")]
 
+contest_status :: [(Int, String, [(Int, Int)], Int, Int)]
+contest_status = [(1, "A-san", [(0,10),(0,20),(0,30),(1,50),(0,90)], 5, 220),
+                  (2, "B-san", [(1,0),(2,0),(3,0),(99,0),(0,0)], 0, 0) ]
+
 getCurrentTime :: IO String
 getCurrentTime = do
   timezone <- Ti.getCurrentTimeZone

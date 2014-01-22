@@ -52,27 +52,23 @@ $doctype 5
             <th>Accepted
             <th>Penalty
 
-          <tr class="odd">
-            <td>1
-            <td><a href="/uvcs/user?name=A-san" style="color:#ffffff">A-san
-            <td class="stAC">   @10
-            <td class="stAC">   @20
-            <td class="stAC">   @30
-            <td class="stAC">+1 @50
-            <td class="stAC">   @90
-            <td>5
-            <td>220
-
-          <tr class="odd">
-            <td>2
-            <td><a href="/uvcs/user?name=B-san" style="color:#ffffff">B-san
-            <td class="stWA">+1
-            <td class="stWA">+2
-            <td class="stWA">+3
-            <td class="stWA">+99
-            <td >
-            <td>0
-            <td>0
+          $forall (rank, user_name, user_status, ac, penalty) <- contest_status
+            <tr>
+              <td>#{rank}
+              <td><style="color:#ffffff">#{user_name}
+              $forall (wa, t) <- user_status
+                $if wa > 0
+                  $if penalty > 0
+                    <td class="stAC"> +#{wa} @#{t}
+                  $else
+                    <td class="stWA"> +#{wa}
+                $else
+                  $if penalty > 0
+                    <td class="stAC"> @#{t}
+                  $else
+                    <td>
+              <td>#{ac}
+              <td>#{penalty}
 
       <h2>Submit
       <form id="submit" action="/submit" method="post" enctype="multipart/form-data">
