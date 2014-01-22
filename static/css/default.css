@@ -7,10 +7,10 @@ body { color: #ffffff; background-color: #222222; font-family: verdana, arial, h
 .main { margin: 0em; color: #ffffff; background-color: #000000; border: 1em transparent solid; }
 h1, h2, h3, h4, h5, h6 { color: #7070e0; }
 table { border-collapse: border; }
-th, td { border: solid 1px #aaaaaa; padding: 1ex; font-weight: bold; }
+th, td { border: solid 1px #222222; padding: 1ex; font-weight: bold; }
 tr.even { background-color: #222222; }
 tr.odd { background-color: #333333; }
-th { background-color: #333333; color: #ffffff; }
+th { background-color: #222222; color: #ffffff; }
 .AC { color: #002200; background-color: #88ff88; }
 .WA { color: #330000; background-color: #ff9999; }
 .RE { color: #330022; background-color: #ff88ff; }
@@ -35,5 +35,5 @@ a.white:visited { color: #FFFF88; }
 
 .problem-menu { background-color: #000000; padding: 1ex 1ex 1ex 2ex; font-weight: bold; text-align: right; }
 
-.stAC { color: #000011; background-color: #02ff02; }
-.stWA { color: #ffeded; background-color: #c00000; }
+.stAC { color: #02ff02; background-color: #000000; }
+.stWA { color: #c00000; background-color: #000000; }
