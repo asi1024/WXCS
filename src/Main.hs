@@ -55,7 +55,7 @@ main = do
       let contest_list =
             map (\entity -> let contest = Sq.entityVal entity in
                   (getId entity, contestName contest, contestJudgeType contest,
-                   show $ contestStart contest, show $ contestEnd contest)) contests
+                   show $ contestStart contest, show $ contestEnd contest, contestSetter contest)) contests
       html $ renderHtml $ $(hamletFile "./template/index.hamlet") undefined
 
     get "/contest/:contest_id" $ do
@@ -75,9 +75,10 @@ main = do
       current_time <- liftIO Ti.getCurrentTime
       contest_name <- param "name" :: ActionM String
       contest_type <- param "type" :: ActionM String
-      problem <- param "problem" :: ActionM String
       start_time <- param "starttime" :: ActionM String
       end_time <- param "endtime" :: ActionM String
-      liftIO $ Sq.runSqlite "db.sqlite" $ do
-        Sq.insert $ Contest contest_name contest_type current_time current_time []
+      setter <- param "setter" :: ActionM String
+      problem <- param "problem" :: ActionM String
+      _ <- liftIO $ Sq.runSqlite "db.sqlite" $ do
+        Sq.insert $ Contest contest_name contest_type current_time current_time setter []
       redirect "/"

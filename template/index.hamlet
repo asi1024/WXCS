@@ -30,15 +30,17 @@ $doctype 5
           <th>Contest type
           <th>Start time
           <th>End time
+          <th>Problem Setter
           <th>Edit
 
-      $forall (id, name, type, start_time, end_time) <- contest_list
+      $forall (id, name, type, start_time, end_time, setter) <- contest_list
         <tbody>
           <tr>
           <td><a class="white" href="contest/#{id}">#{name}
           <td>#{type}
           <td>#{start_time}
           <td>#{end_time}
+          <td>#{setter}
           <td><a href="setcontest?id=1">Edit
 
     <h1>Setting

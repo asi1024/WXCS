@@ -13,6 +13,7 @@ Contest
   judgeType String
   start UTCTime
   end UTCTime
+  setter String
   problems [ProblemId]
   UniqueContestName name
   deriving Show

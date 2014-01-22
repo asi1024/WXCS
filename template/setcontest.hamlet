@@ -24,6 +24,7 @@ $doctype 5
 
     <form action="setcontest" method="post">
       <input type="hidden" name="id" value="">
+      <input type="hidden" name="setter" value="sss">
       Setter User: #{user_id}<br>
       Contest Name:<input type="text" name="name" value=""><br>
       <select name="type">
