@@ -1,7 +1,9 @@
 {-# LANGUAGE QuasiQuotes, TemplateHaskell, OverloadedStrings #-}
 
+import Control.Monad (liftM)
 import Control.Monad.IO.Class
 
+import Data.Text (Text())
 import qualified Data.Time as Ti
 
 import qualified Database.Persist.Sqlite as Sq
@@ -19,9 +21,6 @@ import Model
 aojurl :: String -> String
 aojurl n = "http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=" ++ n
 
-contest_list :: [(String, String, String, String, String)]
-contest_list = [("1", "ICPC Study Session Part. 1", "AOJ", "2014-01-01 00:00:00", "2014-01-01 00:01:00"), ("2", "ICPC Study Session Part. 2", "AOJ", "2014-01-02 00:00:00", "2014-01-02 00:01:00")]
-
 problem_set :: [(String, String, String, String, String)]
 problem_set = [("stAC", "2272", aojurl "2272", "B", "Accepted"),
                ("stAC", "2274", aojurl "2274", "D", "Accepted"),
@@ -35,6 +34,11 @@ getCurrentTime = do
   current_time_ <- Ti.getCurrentTime
   return . show $ Ti.utcToLocalTime timezone current_time_
 
+getId :: Sq.Entity Contest -> Text
+getId entity =
+  let Right key = Sq.fromPersistValue . Sq.unKey $ Sq.entityKey entity in
+  key
+
 main :: IO ()
 main = do
   Sq.runSqlite "db.sqlite" $ Sq.runMigration migrateAll
@@ -46,9 +50,16 @@ main = do
 
     get "/" $ do
       current_time <- liftIO getCurrentTime
+      contests <- liftIO (Sq.runSqlite "db.sqlite" (Sq.selectList [] []))
+                  :: ActionM [Sq.Entity Contest]
+      let contest_list =
+            map (\entity -> let contest = Sq.entityVal entity in
+                  (getId entity, contestName contest, contestJudgeType contest,
+                   show $ contestStart contest, show $ contestEnd contest)) contests
       html $ renderHtml $ $(hamletFile "./template/index.hamlet") undefined
 
     get "/contest/:contest_id" $ do
+      contest_id <- liftM read $ param "contest_id" :: ActionM Int
       current_time <- liftIO getCurrentTime
       let contest_name = "ICPC Study Session Part. 1" :: String
       let contest_type = "AOJ" :: String
