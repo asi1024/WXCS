@@ -48,7 +48,7 @@ main = do
   Sq.runSqlite "db.sqlite" $ Sq.runMigration migrateAll
   scotty 16384 $ do
     middleware logStdoutDev
-    middleware $ staticPolicy $ addBase "static" >-> (contains "/js/" <|> contains "/css/")
+    middleware $ staticPolicy $ addBase "static" >-> (contains "/js/" <|> contains "/css/" <|> contains "/image/")
 
     let user_id = "sss" :: String
 

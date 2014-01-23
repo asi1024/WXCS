@@ -41,11 +41,11 @@ $doctype 5
               <td>
                 <a href="#{problem_url}" target="blank">
                   $if st == "stAC"
-                    <img src="https://www.kmc.gr.jp/~asi1024/WXCS/static/image/Accepted.png">
+                    <img src="/image/Accepted.png">
                   $elseif st == "stWA"
-                    <img src="https://www.kmc.gr.jp/~asi1024/WXCS/static/image/WrongAnswer.png">
+                    <img src="/image/WrongAnswer.png">
                   $else
-                    <img src="https://www.kmc.gr.jp/~asi1024/WXCS/static/image/Unsolved.png">
+                    <img src="/image/Unsolved.png">
 
       <h2>Standings
       <table summary="standings">
