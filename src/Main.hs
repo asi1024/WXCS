@@ -1,4 +1,5 @@
 {-# LANGUAGE QuasiQuotes, TemplateHaskell, OverloadedStrings #-}
+{-# LANGUAGE GADTs #-}
 
 import Control.Monad (liftM)
 import Control.Monad.IO.Class
@@ -31,6 +32,11 @@ problem_set = [("stAC", "2272", aojurl "2272", "B", "Accepted"),
 contest_status :: [(Int, String, [(Int, Int)], Int, Int)]
 contest_status = [(1, "A-san", [(0,10),(0,20),(0,30),(1,50),(0,90)], 5, 220),
                   (2, "B-san", [(1,0),(2,0),(3,0),(99,0),(0,0)], 0, 0) ]
+
+getByIntId :: (Integral i, Sq.PersistEntity val, Sq.PersistStore m,
+               Sq.PersistEntityBackend val ~ Sq.PersistMonadBackend m)
+              => i -> m (Maybe val)
+getByIntId i = Sq.get $ Sq.Key $ Sq.PersistInt64 (fromIntegral i)
 
 getCurrentTime :: IO String
 getCurrentTime = do
@@ -65,11 +71,15 @@ main = do
     get "/contest/:contest_id" $ do
       contest_id <- liftM read $ param "contest_id" :: ActionM Int
       current_time <- liftIO getCurrentTime
-      let contest_name = "ICPC Study Session Part. 1" :: String
-      let contest_type = "AOJ" :: String
-      let start_time = "start" :: String
-      let end_time = "end" :: String
-      html $ renderHtml $ $(hamletFile "./template/contest.hamlet") undefined
+      contest' <- liftIO (Sq.runSqlite "db.sqlite" (getByIntId contest_id)) :: ActionM (Maybe Contest)
+      case contest' of
+        Nothing -> redirect "/" -- contest not found!
+        Just contest -> do
+          let contest_name = contestName contest
+          let contest_type = contestJudgeType contest
+          let start_time = show $ contestStart contest
+          let end_time = show $ contestEnd contest
+          html $ renderHtml $ $(hamletFile "./template/contest.hamlet") undefined
 
     get "/setcontest" $ do
       current_time <- liftIO getCurrentTime
