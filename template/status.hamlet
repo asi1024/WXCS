@@ -26,6 +26,7 @@ $doctype 5
       <thead>
         <tr>
           <th>ID
+          <th>Contest
           <th>Datetime
           <th>User
           <th>Type
@@ -37,10 +38,11 @@ $doctype 5
           <th>Lang
           <th>Source
 
-      $forall (id, st, submit_time, user, judge_type, problem_num, judge, time, memory, size, lang) <- status_list
+      $forall (id, cid, st, submit_time, user, judge_type, problem_num, judge, time, memory, size, lang) <- status_list
         <tbody>
           <tr class="#{st}">
             <td class="id">#{id}
+            <td class="id">#{cid}
             <td class="datetime">#{submit_time}
             <td class="user"><a href="/user?name=#{user}">#{user}
             <td class="problem">#{judge_type}

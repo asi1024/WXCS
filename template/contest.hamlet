@@ -81,6 +81,7 @@ $doctype 5
         <tr>
           <th>Host:
           <td>
+            <input type="hidden" name="contest" value="#{contest_id_}">
             <select name="type">
               <option value="Aizu" selected>Aizu
         <br>

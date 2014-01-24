@@ -20,11 +20,13 @@ Submit
   submitTime UTCTime
   userId String
   judgeType String
+  contestnumber Int
   problemId Int
   judge String
   time String
   memory String
   size String
   lang String
+  code String
   deriving Show
 |]

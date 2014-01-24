@@ -74,7 +74,8 @@ main = do
       html $ renderHtml $ $(hamletFile "./template/index.hamlet") undefined
 
     get "/contest/:contest_id" $ do
-      contest_id <- liftM read $ param "contest_id" :: ActionM Int
+      contest_id_ <- param "contest_id" :: ActionM String
+      let contest_id = read contest_id_
       current_time <- liftIO getCurrentTime
       contest' <- liftIO (Sq.runSqlite "db.sqlite" (getByIntId contest_id)) :: ActionM (Maybe Contest)
       case contest' of
@@ -91,9 +92,11 @@ main = do
       judgeType <- param "type" :: ActionM String
       problemId <- param "name" :: ActionM String
       lang <- param "language" :: ActionM String
+      contestId <- param "contest" :: ActionM String
+      code <- param "code" :: ActionM String
       _ <- liftIO $ Sq.runSqlite "db.sqlite" $ do
-        Sq.insert $ Submit current_time user_id judgeType
-          (read problemId) "Pending" "" "" "" lang
+        Sq.insert $ Submit current_time user_id judgeType (read contestId)
+          (read problemId) "Pending" "" "" "" lang code
       redirect "/status"
 
     get "/setcontest" $ do
@@ -118,7 +121,8 @@ main = do
                   :: ActionM [Sq.Entity Submit]
       let status_list =
             map (\entity -> let status_ = Sq.entityVal entity in
-                  (getSubmitId entity, submitJudge status_,
+                  (getSubmitId entity, show (submitContestnumber status_) , 
+                   submitJudge status_,
                    show (submitSubmitTime status_), submitUserId status_,
                    submitJudgeType status_, show (submitProblemId status_),
                    submitJudge status_, submitTime status_, submitMemory status_,
