@@ -33,9 +33,6 @@ contest_status :: [(Int, String, [(Int, Int)], Int, Int)]
 contest_status = [(1, "A-san", [(0,10),(0,20),(0,30),(1,50),(0,90)], 5, 220),
                   (2, "B-san", [(1,0),(2,0),(3,0),(99,0),(0,0)], 0, 0) ]
 
-status_list :: [(String, String, String, String, String, String, String, String, String, String, String)]
-status_list = [("1", "AC", "2014-01-17 20:52:05", "sss", "AOJ", "1000", "Accepted", "0.00", "1000KB", "9999", "Haskell")]
-
 getByIntId :: (Integral i, Sq.PersistEntity val, Sq.PersistStore m,
                Sq.PersistEntityBackend val ~ Sq.PersistMonadBackend m)
               => i -> m (Maybe val)
@@ -47,8 +44,13 @@ getCurrentTime = do
   current_time_ <- Ti.getCurrentTime
   return . show $ Ti.utcToLocalTime timezone current_time_
 
-getId :: Sq.Entity Contest -> Text
-getId entity =
+getContestId :: Sq.Entity Contest -> Text
+getContestId entity =
+  let Right key = Sq.fromPersistValue . Sq.unKey $ Sq.entityKey entity in
+  key
+
+getSubmitId :: Sq.Entity Submit -> Text
+getSubmitId entity =
   let Right key = Sq.fromPersistValue . Sq.unKey $ Sq.entityKey entity in
   key
 
@@ -67,7 +69,7 @@ main = do
                   :: ActionM [Sq.Entity Contest]
       let contest_list =
             map (\entity -> let contest = Sq.entityVal entity in
-                  (getId entity, contestName contest, contestJudgeType contest,
+                  (getContestId entity, contestName contest, contestJudgeType contest,
                    show $ contestStart contest, show $ contestEnd contest, contestSetter contest)) contests
       html $ renderHtml $ $(hamletFile "./template/index.hamlet") undefined
 
@@ -92,7 +94,7 @@ main = do
       _ <- liftIO $ Sq.runSqlite "db.sqlite" $ do
         Sq.insert $ Submit current_time user_id judgeType
           (read problemId) "Pending" "" "" "" lang
-      redirect "/"
+      redirect "/status"
 
     get "/setcontest" $ do
       current_time <- liftIO getCurrentTime
@@ -112,4 +114,13 @@ main = do
 
     get "/status" $ do
       current_time <- liftIO getCurrentTime
+      status_db <- liftIO (Sq.runSqlite "db.sqlite" (Sq.selectList [] []))
+                  :: ActionM [Sq.Entity Submit]
+      let status_list =
+            map (\entity -> let status_ = Sq.entityVal entity in
+                  (getSubmitId entity, submitJudge status_,
+                   show (submitSubmitTime status_), submitUserId status_,
+                   submitJudgeType status_, show (submitProblemId status_),
+                   submitJudge status_, submitTime status_, submitMemory status_,
+                   submitSize status_, submitLang status_)) status_db
       html $ renderHtml $ $(hamletFile "./template/status.hamlet") undefined
