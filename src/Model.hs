@@ -3,7 +3,6 @@
 module Model where
 
 import Data.Time
-import qualified Data.Text as T
 
 import Database.Persist.TH
 
@@ -17,13 +16,9 @@ Contest
   problems [Int]
   UniqueContestName name
   deriving Show
-User
-  name T.Text
-  color String
-  deriving Show
 Submit
   submitTime UTCTime
-  userId UserId
+  userId String
   judgeType String
   problemId Int
   judge String

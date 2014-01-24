@@ -84,6 +84,16 @@ main = do
           let end_time = show $ contestEnd contest
           html $ renderHtml $ $(hamletFile "./template/contest.hamlet") undefined
 
+    post "/submit" $ do
+      current_time <- liftIO Ti.getCurrentTime
+      judgeType <- param "type" :: ActionM String
+      problemId <- param "name" :: ActionM String
+      lang <- param "language" :: ActionM String
+      _ <- liftIO $ Sq.runSqlite "db.sqlite" $ do
+        Sq.insert $ Submit current_time user_id judgeType
+          (read problemId) "Pending" "" "" "" lang
+      redirect "/"
+
     get "/setcontest" $ do
       current_time <- liftIO getCurrentTime
       html $ renderHtml $ $(hamletFile "./template/setcontest.hamlet") undefined
