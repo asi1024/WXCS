@@ -3,7 +3,7 @@ body { color: #ffffff; background-color: #222222; font-family: verdana, arial, h
 .header a:link, .problem-menu a:link { color: #aaaaff; }
 .header a:visited, .problem-menu a:visited { color: #ffaaaa; }
 .header a:hover, .problem-menu a:hover { background-color: #ffffff; text-decoration: none; }
-#logo { margin: 0.1em; color: #0000ff; }
+#logo { margin: 0.1em; color: #00ffff; }
 .main { margin: 0em; color: #ffffff; background-color: #000000; border: 1em transparent solid; }
 h1, h2, h3, h4, h5, h6 { color: #7070e0; }
 table { border-collapse: border; }

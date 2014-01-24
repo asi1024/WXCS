@@ -14,24 +14,22 @@ Contest
   start UTCTime
   end UTCTime
   setter String
-  problems [ProblemId]
+  problems [Int]
   UniqueContestName name
   deriving Show
 User
   name T.Text
   color String
   deriving Show
-Problem
-  title T.Text
-  url T.Text
-  contestId ContestId
-  deriving Show
 Submit
-  filePath T.Text
+  submitTime UTCTime
   userId UserId
-  problemId ProblemId
-  status String
+  judgeType String
+  problemId Int
+  judge String
   time String
   memory String
+  size String
+  lang String
   deriving Show
 |]
