@@ -28,6 +28,7 @@ $doctype 5
           <th>ID
           <th>Datetime
           <th>User
+          <th>Type
           <th>Problem
           <th>Judge
           <th>Time
@@ -36,17 +37,19 @@ $doctype 5
           <th>Lang
           <th>Source
 
-      <tbody>
-        <tr class="AC">
-          <td class="id">2929
-          <td class="datetime">2014-01-17 20:52:05
-          <td class="user"><a href="/user?name=asi1024">asi1024
-          <td class="problem"><a href="/statistics?type=Aizu&amp;problem=2407">2407
-          <td class="judge">Accepted
-          <td class="time">0.00
-          <td class="memory">1180KB
-          <td class="size">151
-          <td class="language">C++11
-          <td class="source"><a href="source?id=2929">source
+      $forall (id, st, submit_time, user, judge_type, problem_num, judge, time, memory, size, lang) <- status_list
+        <tbody>
+          <tr class="#{st}">
+            <td class="id">#{id}
+            <td class="datetime">#{submit_time}
+            <td class="user"><a href="/user?name=#{user}">#{user}
+            <td class="problem">#{judge_type}
+            <td class="problem"><a href="/statistics?type=#{judge_type}&amp;problem=#{problem_num}">#{problem_num}
+            <td class="judge">#{judge}
+            <td class="time">#{time}
+            <td class="memory">#{memory}
+            <td class="size">#{size}
+            <td class="language">#{lang}
+            <td class="source"><a href="source?id=#{id}">source
 
-  <address class="footer">contributed by ir5,nojima(2010)</address>
+  <address class="footer">contributed by ****,******(2014)</address>

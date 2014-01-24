@@ -33,6 +33,9 @@ contest_status :: [(Int, String, [(Int, Int)], Int, Int)]
 contest_status = [(1, "A-san", [(0,10),(0,20),(0,30),(1,50),(0,90)], 5, 220),
                   (2, "B-san", [(1,0),(2,0),(3,0),(99,0),(0,0)], 0, 0) ]
 
+status_list :: [(String, String, String, String, String, String, String, String, String, String, String)]
+status_list = [("1", "AC", "2014-01-17 20:52:05", "sss", "AOJ", "1000", "Accepted", "0.00", "1000KB", "9999", "Haskell")]
+
 getByIntId :: (Integral i, Sq.PersistEntity val, Sq.PersistStore m,
                Sq.PersistEntityBackend val ~ Sq.PersistMonadBackend m)
               => i -> m (Maybe val)
