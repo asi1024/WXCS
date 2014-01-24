@@ -14,14 +14,12 @@ $doctype 5
       <a href="/">Top
       |
     <span class="status-link">
-      <a href="/uvcs/status">Status
+      <a href="/status">Status
       |
     <span class="current-time">Current Time:
       <strong>#{current_time}
 
   <div class="main">
-    <h1>Recent Contest
-
     <h1>Contest
     <table summary="contest table">
       <thead>

@@ -96,3 +96,7 @@ main = do
       _ <- liftIO $ Sq.runSqlite "db.sqlite" $ do
         Sq.insert $ Contest contest_name contest_type current_time current_time setter []
       redirect "/"
+
+    get "/status" $ do
+      current_time <- liftIO getCurrentTime
+      html $ renderHtml $ $(hamletFile "./template/status.hamlet") undefined
