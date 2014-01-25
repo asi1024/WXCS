@@ -130,14 +130,19 @@ main = do
       html $ renderHtml $ $(hamletFile "./template/status.hamlet") undefined
 
     get "/source/:source_id" $ do
+      source_id_ <- param "source_id" :: ActionM String
+      let source_id = read source_id_
       current_time <- liftIO getCurrentTime
-      let id = "1" :: String
-      let problem = "1000" :: String
-      let userId = "pat" :: String
-      let judge = "Accepted" :: String
-      let time = "10.00" :: String
-      let memory = "128KB" :: String
-      let size = "9999" :: String
-      let source = "sssssss\naaaaaaa;" :: String
-      html $ renderHtml $ $(hamletFile "./template/source.hamlet") undefined
-
+      source' <- liftIO (Sq.runSqlite "db.sqlite" (getByIntId source_id)) :: ActionM (Maybe Submit)
+      case source' of
+        Nothing -> redirect "/status" -- source code not found!
+        Just source -> do
+          let id = source_id_
+          let problem = show (submitProblemId source) :: String
+          let userId = submitUserId source :: String
+          let judge = submitJudge source :: String
+          let time = submitTime source :: String
+          let memory = submitMemory source :: String
+          let size = submitSize source :: String
+          let code = submitCode source :: String
+          html $ renderHtml $ $(hamletFile "./template/source.hamlet") undefined
