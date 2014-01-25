@@ -131,5 +131,13 @@ main = do
 
     get "/source/:source_id" $ do
       current_time <- liftIO getCurrentTime
+      let id = "1" :: String
+      let problem = "1000" :: String
+      let userId = "pat" :: String
+      let judge = "Accepted" :: String
+      let time = "10.00" :: String
+      let memory = "128KB" :: String
+      let size = "9999" :: String
       let source = "sssssss\naaaaaaa;" :: String
       html $ renderHtml $ $(hamletFile "./template/source.hamlet") undefined
+
