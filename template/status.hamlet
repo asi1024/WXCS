@@ -52,6 +52,6 @@ $doctype 5
             <td class="memory">#{memory}
             <td class="size">#{size}
             <td class="language">#{lang}
-            <td class="source"><a href="source?id=#{id}">source
+            <td class="source"><a href="source/#{id}">source
 
   <address class="footer">contributed by ****,******(2014)</address>

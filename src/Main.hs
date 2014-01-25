@@ -128,3 +128,8 @@ main = do
                    submitJudge status_, submitTime status_, submitMemory status_,
                    submitSize status_, submitLang status_)) status_db
       html $ renderHtml $ $(hamletFile "./template/status.hamlet") undefined
+
+    get "/source/:source_id" $ do
+      current_time <- liftIO getCurrentTime
+      let source = "sssssss\naaaaaaa;" :: String
+      html $ renderHtml $ $(hamletFile "./template/source.hamlet") undefined

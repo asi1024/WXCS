@@ -1,0 +1,36 @@
+$doctype 5
+<html lang="ja">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=euc-jp">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <link rel="stylesheet" href="/css/default.css" type="text/css">
+
+  <title>WX Contest System
+<body>
+  <div class="header">
+    <h1 id="logo">WX Contest System
+    <span class="username">You are #{user_id}. |
+    <span class="index-link">
+      <a href="/">Top
+      |
+    <span class="status-link">
+      <a href="/status">Status
+      |
+    <span class="current-time">Current Time:
+      <strong>#{current_time}
+
+  <div class="main">
+    <h1>Source Code
+    <ul>
+      <li>Submission ID: 2929
+      <li>Problem:
+        <a href="/statistics?type=Aizu&amp;problem=2407">2407
+      <li>User:
+        <a href="/user?name=sss">sss
+      <li>
+        <strong>Judge: AC
+        (Time: 0.00, Memory: 1180KB)
+      <li>Code length: 151
+    <pre class="source">
+      #{source}
+  <address class="footer">contributed by ****,******(****)</address>
