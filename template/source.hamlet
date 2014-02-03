@@ -1,36 +1,36 @@
 $doctype 5
 <html lang="ja">
-<head>
-  <meta http-equiv="Content-Type" content="text/html; charset=euc-jp">
-  <meta http-equiv="Content-Style-Type" content="text/css">
-  <link rel="stylesheet" href="/css/default.css" type="text/css">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=euc-jp">
+    <meta http-equiv="Content-Style-Type" content="text/css">
+    <link rel="stylesheet" href="/css/default.css" type="text/css">
 
-  <title>WX Contest System
-<body>
-  <div class="header">
-    <h1 id="logo">WX Contest System
-    <span class="username">You are #{user_id}. |
-    <span class="index-link">
-      <a href="/">Top
-      |
-    <span class="status-link">
-      <a href="/status">Status
-      |
-    <span class="current-time">Current Time:
-      <strong>#{current_time}
+    <title>WX Contest System
+  <body>
+    <div class="header">
+      <h1 id="logo">WX Contest System
+      <span class="username">You are #{user_id}. |
+      <span class="index-link">
+        <a href="/">Top
+        |
+      <span class="status-link">
+        <a href="/status">Status
+        |
+      <span class="current-time">Current Time:
+        <strong>#{current_time}
 
-  <div class="main">
-    <h1>Source Code
-    <ul>
-      <li>Submission ID: #{id}
-      <li>Problem:
-        <a href="/statistics?type=Aizu&amp;problem=2407">#{problem}
-      <li>User:
-        <a href="/user?name=sss">#{userId}
-      <li>
-        <strong>Judge: #{judge}
-        (Time: #{time}, Memory: #{memory})
-      <li>Code length: #{size}
-    <pre class="source">
-      #{code}
-  <address class="footer">contributed by ****,******(****)</address>
+    <div class="main">
+      <h1>Source Code
+      <ul>
+        <li>Submission ID: #{id}
+        <li>Problem:
+          <a href="/statistics?type=Aizu&amp;problem=2407">#{problem}
+        <li>User:
+          <a href="/user?name=sss">#{userId}
+        <li>
+          <strong>Judge: #{judge}
+          (Time: #{time}, Memory: #{memory})
+        <li>Code length: #{size}
+      <pre class="source">
+        #{code}
+    <address class="footer">contributed by ****,******(****)</address>

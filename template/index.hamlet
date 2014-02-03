@@ -1,48 +1,48 @@
 $doctype 5
-<html lang="ja">
-<head>
-  <meta http-equiv="Content-Type" content="text/html; charset=euc-jp">
-  <meta http-equiv="Content-Style-Type" content="text/css">
-  <link rel="stylesheet" href="/css/default.css" type="text/css">
+  <html lang="ja">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=euc-jp">
+    <meta http-equiv="Content-Style-Type" content="text/css">
+    <link rel="stylesheet" href="/css/default.css" type="text/css">
 
-  <title>WX Contest System
-<body>
-  <div class="header">
-    <h1 id="logo">WX Contest System
-    <span class="username">You are #{user_id}. |
-    <span class="index-link">
-      <a href="/">Top
-      |
-    <span class="status-link">
-      <a href="/status">Status
-      |
-    <span class="current-time">Current Time:
-      <strong>#{current_time}
+    <title>WX Contest System
+  <body>
+    <div class="header">
+      <h1 id="logo">WX Contest System
+      <span class="username">You are #{user_id}. |
+      <span class="index-link">
+        <a href="/">Top
+        |
+      <span class="status-link">
+        <a href="/status">Status
+        |
+      <span class="current-time">Current Time:
+        <strong>#{current_time}
 
-  <div class="main">
-    <h1>Contest
-    <table summary="contest table">
-      <thead>
-        <tr>
-          <th>Contest Name
-          <th>Contest type
-          <th>Start time
-          <th>End time
-          <th>Problem Setter
-          <th>Edit
-
-      $forall (id, name, type, start_time, end_time, setter) <- contest_list
-        <tbody>
+    <div class="main">
+      <h1>Contest
+      <table summary="contest table">
+        <thead>
           <tr>
-          <td><a class="white" href="contest/#{id}">#{name}
-          <td>#{type}
-          <td>#{start_time}
-          <td>#{end_time}
-          <td>#{setter}
-          <td><a href="setcontest?id=1">Edit
+            <th>Contest Name
+            <th>Contest type
+            <th>Start time
+            <th>End time
+            <th>Problem Setter
+            <th>Edit
 
-    <h1>Setting
-    <ul>
-      <li>
-        <a href="setcontest">Set Contest
-<address class="footer">contributed by ****,******(2014)
+        $forall (id, name, type, start_time, end_time, setter) <- contest_list
+          <tbody>
+            <tr>
+            <td><a class="white" href="contest/#{id}">#{name}
+            <td>#{type}
+            <td>#{start_time}
+            <td>#{end_time}
+            <td>#{setter}
+            <td><a href="setcontest?id=1">Edit
+
+      <h1>Setting
+      <ul>
+        <li>
+          <a href="setcontest">Set Contest
+    <address class="footer">contributed by ****,******(2014)

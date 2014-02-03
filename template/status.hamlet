@@ -1,57 +1,57 @@
 $doctype 5
 <html lang="ja">
-<head>
-  <meta http-equiv="Content-Type" content="text/html; charset=euc-jp">
-  <meta http-equiv="Content-Style-Type" content="text/css">
-  <link rel="stylesheet" href="/css/default.css" type="text/css">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=euc-jp">
+    <meta http-equiv="Content-Style-Type" content="text/css">
+    <link rel="stylesheet" href="/css/default.css" type="text/css">
 
-  <title>WX Contest System
-<body>
-  <div class="header">
-    <h1 id="logo">WX Contest System
-    <span class="username">You are #{user_id}. |
-    <span class="index-link">
-      <a href="/">Top
-      |
-    <span class="status-link">
-      <a href="/status">Status
-      |
-    <span class="current-time">Current Time:
-      <strong>#{current_time}
+    <title>WX Contest System
+  <body>
+    <div class="header">
+      <h1 id="logo">WX Contest System
+      <span class="username">You are #{user_id}. |
+      <span class="index-link">
+        <a href="/">Top
+        |
+      <span class="status-link">
+        <a href="/status">Status
+        |
+      <span class="current-time">Current Time:
+        <strong>#{current_time}
 
-  <div class="main">
-    <h1>Judge Status
+    <div class="main">
+      <h1>Judge Status
 
-    <table summary="status table">
-      <thead>
-        <tr>
-          <th>ID
-          <th>Contest
-          <th>Datetime
-          <th>User
-          <th>Type
-          <th>Problem
-          <th>Judge
-          <th>Time
-          <th>Memory
-          <th>Size
-          <th>Lang
-          <th>Source
+      <table summary="status table">
+        <thead>
+          <tr>
+            <th>ID
+            <th>Contest
+            <th>Datetime
+            <th>User
+            <th>Type
+            <th>Problem
+            <th>Judge
+            <th>Time
+            <th>Memory
+            <th>Size
+            <th>Lang
+            <th>Source
 
-      $forall (id, cid, st, submit_time, user, judge_type, problem_num, judge, time, memory, size, lang) <- status_list
-        <tbody>
-          <tr class="#{st}">
-            <td class="id">#{id}
-            <td class="id">#{cid}
-            <td class="datetime">#{submit_time}
-            <td class="user"><a href="/user?name=#{user}">#{user}
-            <td class="problem">#{judge_type}
-            <td class="problem"><a href="/statistics?type=#{judge_type}&amp;problem=#{problem_num}">#{problem_num}
-            <td class="judge">#{judge}
-            <td class="time">#{time}
-            <td class="memory">#{memory}
-            <td class="size">#{size}
-            <td class="language">#{lang}
-            <td class="source"><a href="source/#{id}">source
+        $forall (id, cid, st, submit_time, user, judge_type, problem_num, judge, time, memory, size, lang) <- status_list
+          <tbody>
+            <tr class="#{st}">
+              <td class="id">#{id}
+              <td class="id">#{cid}
+              <td class="datetime">#{submit_time}
+              <td class="user"><a href="/user?name=#{user}">#{user}
+              <td class="problem">#{judge_type}
+              <td class="problem"><a href="/statistics?type=#{judge_type}&amp;problem=#{problem_num}">#{problem_num}
+              <td class="judge">#{judge}
+              <td class="time">#{time}
+              <td class="memory">#{memory}
+              <td class="size">#{size}
+              <td class="language">#{lang}
+              <td class="source"><a href="source/#{id}">source
 
-  <address class="footer">contributed by ****,******(2014)</address>
+    <address class="footer">contributed by ****,******(2014)</address>
