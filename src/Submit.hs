@@ -20,13 +20,25 @@ findPendingSubmit = do
     then return Nothing
     else return . Just . Sq.entityVal $ head submits
 
--- TODO: Impl.
-getResultAndUpdate :: Submit -> IO ()
-getResultAndUpdate = updateSubmit . mkSubmissionFailed
+mkSubmission :: Submit
+                -> String -- judge
+                -> String -- time
+                -> String -- memory
+                -> Submit
+mkSubmission (Submit time user judge contest pid _ _ _ s l c) j t m =
+  Submit time user judge contest pid j t m s l c
 
 mkSubmissionFailed :: Submit -> Submit
-mkSubmissionFailed (Submit time user judge contest pid _ t m s l c)
-  = Submit time user judge contest pid "Submission Failed" t m s l c
+mkSubmissionFailed s@(Submit _ _ _ _ _ _ t m _ _ _) =
+  mkSubmission s "Submission Failed" t m
+
+getResultAndUpdate :: Submit -> IO ()
+getResultAndUpdate submit = do
+  res <- OJ.fetchResult (submitJudgeType submit) (submitProblemId submit)
+  case res of
+    Nothing -> updateSubmit $ mkSubmissionFailed submit
+    Just (judge, time, mem) -> do
+      updateSubmit $ mkSubmission submit judge time mem
 
 updateSubmit :: Submit -> IO ()
 updateSubmit submit = do

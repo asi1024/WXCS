@@ -30,7 +30,8 @@ problem_set = [("stAC", "2272", aojurl "2272", "B", "Accepted"),
                ("stAC", "2274", aojurl "2274", "D", "Accepted"),
                ("stWA", "2276", aojurl "2276", "F", "Wrong Answer"),
                ("odd",  "2278", aojurl "2278", "H", ""),
-               ("even", "2280", aojurl "2280", "J", "")]
+               ("even", "2280", aojurl "2280", "J", ""),
+               ("odd", "2200", aojurl "2200", "K", "")]
 
 contest_status :: [(Int, String, [(Int, Int)], Int, Int)]
 contest_status = [(1, "A-san", [(0,10),(0,20),(0,30),(1,50),(0,90)], 5, 220),

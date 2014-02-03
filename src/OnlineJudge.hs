@@ -9,9 +9,16 @@ submit :: String -- Judge type
           -> String -- language
           -> String -- code
           -> IO Bool
-submit judge_type = do
-  if judge_type == "Aoj"
-    then Aoj.submit
-    else false
-  false
-  where false _ _ _ = return False
+submit judgeType pid lang code = do
+  putStrLn ("judge type = " ++ judgeType)
+  if judgeType == "Aizu"
+    then Aoj.submit pid lang code
+    else return False
+
+fetchResult :: String -- Judge type
+               -> Int -- problem id
+               -> IO (Maybe (String, String, String))
+fetchResult judge pid =
+  if judge == "Aizu"
+  then Aoj.fetch pid
+  else return $ Just ("Accept", "0.01", "10")
