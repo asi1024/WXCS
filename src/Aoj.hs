@@ -36,7 +36,7 @@ mkQuery user pass pid lang src =
    ("language"  , lang),
    ("problemNO" , pid),
    ("sourceCode", src)]
-  
+
 api :: (C.MonadBaseControl IO m, C.MonadResource m)
        => HT.Method
        -> String
@@ -75,9 +75,3 @@ status userId problemId =
 showAll :: C.Sink ByteString (C.ResourceT IO) ()
 showAll = CL.mapM_ (\s -> lift . putStrLn $ BC.unpack s)
 
-main :: IO ()
-main = H.withManager $ \mgr -> do
-  res <- submit "0000" "C" "int main(){return 0;}" mgr
-  res <- status "wxcs" Nothing mgr
-  liftIO $ putStrLn $ show (H.responseStatus res)
-  H.responseBody res C.$$+- showAll

@@ -17,6 +17,7 @@ import Text.Hamlet
 
 import Web.Scotty
 
+import qualified Aoj as Aoj
 import Model
 
 aojurl :: String -> String
