@@ -1,6 +1,7 @@
 {-# LANGUAGE QuasiQuotes, TemplateHaskell, OverloadedStrings #-}
 {-# LANGUAGE GADTs #-}
 
+import Control.Concurrent (forkIO)
 import Control.Monad (liftM)
 import Control.Monad.IO.Class
 
@@ -18,6 +19,7 @@ import Text.Hamlet
 import Web.Scotty
 
 import qualified OnlineJudge as OJ
+import Submit
 import Model
 
 aojurl :: String -> String
@@ -58,6 +60,8 @@ getSubmitId entity =
 main :: IO ()
 main = do
   Sq.runSqlite "db.sqlite" $ Sq.runMigration migrateAll
+  -- TODO: error handling?
+  childThreadId <- forkIO loop
   scotty 16384 $ do
     middleware logStdoutDev
     middleware $ staticPolicy $ addBase "static" >-> (contains "/js/" <|> contains "/css/" <|> contains "/image/")

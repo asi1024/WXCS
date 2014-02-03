@@ -13,6 +13,7 @@ import Data.Time (UTCTime)
 
 import qualified Network.HTTP.Conduit as H
 import qualified Network.HTTP.Types as HT
+import Network.HTTP.Types.Status (ok200)
 
 endpoint :: String
 endpoint = "http://judge.u-aizu.ac.jp/onlinejudge/servlet/Submit"
@@ -77,12 +78,7 @@ status userId problemId =
 showAll :: C.Sink ByteString (C.ResourceT IO) ()
 showAll = CL.mapM_ (\s -> lift . putStrLn $ BC.unpack s)
 
-submit' :: UTCTime -> String -> Int -> String -> String -> IO ()
-submit' time user pid lang code = do
-  return ()
-
-submit :: UTCTime -> String -> Int -> String -> String -> IO ()
-submit submitTime userName problemId lang code = do
-  childThreadId <- forkIO $ do
-    submit' submitTime userName problemId lang code
-  return ()
+submit :: Int -> String -> String -> IO Bool
+submit pid lang code = H.withManager $ \mgr -> do
+  res <- submitAux (BC.pack $ show pid) (BC.pack lang) (BC.pack code) mgr
+  return (ok200 == (H.responseStatus res))
