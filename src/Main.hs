@@ -17,7 +17,7 @@ import Text.Hamlet
 
 import Web.Scotty
 
-import qualified Aoj as Aoj
+import qualified OnlineJudge as OJ
 import Model
 
 aojurl :: String -> String
@@ -89,15 +89,15 @@ main = do
           html $ renderHtml $ $(hamletFile "./template/contest.hamlet") undefined
 
     post "/submit" $ do
-      current_time <- liftIO Ti.getCurrentTime
+      currentTime <- liftIO Ti.getCurrentTime
       judgeType <- param "type" :: ActionM String
-      problemId <- param "name" :: ActionM String
+      problemId <- param "name" :: ActionM Int
       lang <- param "language" :: ActionM String
-      contestId <- param "contest" :: ActionM String
+      contestId <- param "contest" :: ActionM Int
       code <- param "code" :: ActionM String
       _ <- liftIO $ Sq.runSqlite "db.sqlite" $ do
-        Sq.insert $ Submit current_time user_id judgeType (read contestId)
-          (read problemId) "Pending" "" "" "" lang code
+        Sq.insert $ Submit currentTime user_id judgeType contestId
+          problemId "Pending" "" "" "" lang code
       redirect "/status"
 
     get "/setcontest" $ do

@@ -1,6 +1,7 @@
 {-# LANGUAGE FlexibleContexts, OverloadedStrings #-}
-module Aoj where
+module OnlineJudge.Aoj where
 
+import Control.Concurrent
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.Class (lift)
 
@@ -8,6 +9,7 @@ import Data.ByteString (ByteString)
 import qualified Data.ByteString.Char8 as BC
 import qualified Data.Conduit as C
 import qualified Data.Conduit.List as CL
+import Data.Time (UTCTime)
 
 import qualified Network.HTTP.Conduit as H
 import qualified Network.HTTP.Types as HT
@@ -49,13 +51,13 @@ api m url query mgr = do
                       H.queryString = HT.renderSimpleQuery False query }
   H.http request mgr
 
-submit :: (C.MonadBaseControl IO m, C.MonadResource m)
+submitAux :: (C.MonadBaseControl IO m, C.MonadResource m)
           => ByteString -- problem id
           -> ByteString -- language
           -> ByteString -- code
           -> H.Manager
           -> m (H.Response (C.ResumableSource m ByteString))
-submit pid lang src =
+submitAux pid lang src =
   api "POST" endpoint (mkQuery userId password pid lang src)
 
 mkStatusQuery :: String -> Maybe Int -> HT.SimpleQuery
@@ -75,3 +77,12 @@ status userId problemId =
 showAll :: C.Sink ByteString (C.ResourceT IO) ()
 showAll = CL.mapM_ (\s -> lift . putStrLn $ BC.unpack s)
 
+submit' :: UTCTime -> String -> Int -> String -> String -> IO ()
+submit' time user pid lang code = do
+  return ()
+
+submit :: UTCTime -> String -> Int -> String -> String -> IO ()
+submit submitTime userName problemId lang code = do
+  childThreadId <- forkIO $ do
+    submit' submitTime userName problemId lang code
+  return ()
