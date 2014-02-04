@@ -13,7 +13,7 @@ Contest
   start UTCTime
   end UTCTime
   setter String
-  problems [Int]
+  problems [String]
   UniqueContestName name
   deriving Show
 Submit
@@ -21,7 +21,7 @@ Submit
   userId String
   judgeType String
   contestnumber Int
-  problemId Int
+  problemId String
   judge String
   time String
   memory String

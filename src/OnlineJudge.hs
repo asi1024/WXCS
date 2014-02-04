@@ -5,7 +5,7 @@ import Data.Time (UTCTime)
 import qualified OnlineJudge.Aoj as Aoj
 
 submit :: String -- Judge type
-          -> Int -- problem id
+          -> String -- problem id
           -> String -- language
           -> String -- code
           -> IO Bool
@@ -16,7 +16,7 @@ submit judgeType pid lang code = do
     else return False
 
 fetchResult :: String -- Judge type
-               -> Int -- problem id
+               -> String -- problem id
                -> IO (Maybe (String, String, String))
 fetchResult judge pid =
   if judge == "Aizu"

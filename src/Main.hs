@@ -96,7 +96,7 @@ main = do
     post "/submit" $ do
       currentTime <- liftIO Ti.getCurrentTime
       judgeType <- param "type" :: ActionM String
-      problemId <- param "name" :: ActionM Int
+      problemId <- param "name" :: ActionM String
       lang <- param "language" :: ActionM String
       contestId <- param "contest" :: ActionM Int
       code <- param "code" :: ActionM String
@@ -130,7 +130,7 @@ main = do
                   (getSubmitId entity, show (submitContestnumber status_) , 
                    submitJudge status_,
                    show (submitSubmitTime status_), submitUserId status_,
-                   submitJudgeType status_, show (submitProblemId status_),
+                   submitJudgeType status_, submitProblemId status_,
                    submitJudge status_, submitTime status_, submitMemory status_,
                    submitSize status_, submitLang status_)) status_db
       html $ renderHtml $ $(hamletFile "./template/status.hamlet") undefined
@@ -144,7 +144,7 @@ main = do
         Nothing -> redirect "/status" -- source code not found!
         Just source -> do
           let id = source_id_
-          let problem = show (submitProblemId source) :: String
+          let problem = submitProblemId source :: String
           let userId = submitUserId source :: String
           let judge = submitJudge source :: String
           let time = submitTime source :: String

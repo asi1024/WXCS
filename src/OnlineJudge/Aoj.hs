@@ -62,18 +62,18 @@ submitAux :: (C.MonadBaseControl IO m, C.MonadResource m)
 submitAux pid lang src =
   api "POST" endpoint (mkQuery userId password pid lang src)
 
-mkStatusQuery :: String -> Maybe Int -> HT.SimpleQuery
+mkStatusQuery :: String -> Maybe String -> HT.SimpleQuery
 mkStatusQuery userId problemId' =
   case problemId' of
     Just problemId ->
       [("user_id", BC.pack userId),
-       ("problem_id", BC.pack $ show problemId),
+       ("problem_id", BC.pack $ problemId),
        ("limit", "1")]
     Nothing -> [("user_id", BC.pack userId), ("limit", "1")]
 
 status :: (C.MonadBaseControl IO m, C.MonadResource m)
           => String -- User ID
-          -> Maybe Int -- Problem ID
+          -> Maybe String -- Problem ID
           -> H.Manager
           -> m (H.Response (C.ResumableSource m ByteString))
 status userId problemId =
@@ -82,14 +82,14 @@ status userId problemId =
 showAll :: C.Sink ByteString (C.ResourceT IO) ()
 showAll = CL.mapM_ (\s -> lift . putStrLn $ BC.unpack s)
 
-submit :: Int -> String -> String -> IO Bool
+submit :: String -> String -> String -> IO Bool
 submit pid lang code = H.withManager $ \mgr -> do
   liftIO $ putStrLn "submit to AOJ!"
-  res <- submitAux (BC.pack $ show pid) (BC.pack lang) (BC.pack code) mgr
+  res <- submitAux (BC.pack pid) (BC.pack lang) (BC.pack code) mgr
   liftIO $ putStrLn (show (H.responseStatus res))
   return (ok200 == (H.responseStatus res))
 
-fetchStatusXml :: Int -> IO ByteString
+fetchStatusXml :: String -> IO ByteString
 fetchStatusXml problemId = H.withManager $ \mgr -> do
   res <- status (BC.unpack userId) (Just problemId) mgr
   xmls <- H.responseBody res C.$$+- CL.consume
@@ -119,7 +119,7 @@ getMemory xml =
   let st = XML.findChildren (XML.unqual "status") xml in
   getText (head st) "memory"
 
-fetch :: Int -> IO (Maybe (String, String, String))
+fetch :: String -> IO (Maybe (String, String, String))
 fetch pid = do
   aux 0
   where
