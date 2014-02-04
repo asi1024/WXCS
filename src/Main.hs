@@ -1,6 +1,7 @@
 {-# LANGUAGE QuasiQuotes, TemplateHaskell, OverloadedStrings #-}
 {-# LANGUAGE GADTs #-}
 
+import Control.Concurrent (forkIO)
 import Control.Monad (liftM)
 import Control.Monad.IO.Class
 
@@ -17,6 +18,8 @@ import Text.Hamlet
 
 import Web.Scotty
 
+import qualified OnlineJudge as OJ
+import Submit
 import Model
 
 aojurl :: String -> String
@@ -27,7 +30,8 @@ problem_set = [("stAC", "2272", aojurl "2272", "B", "Accepted"),
                ("stAC", "2274", aojurl "2274", "D", "Accepted"),
                ("stWA", "2276", aojurl "2276", "F", "Wrong Answer"),
                ("odd",  "2278", aojurl "2278", "H", ""),
-               ("even", "2280", aojurl "2280", "J", "")]
+               ("even", "2280", aojurl "2280", "J", ""),
+               ("odd", "2200", aojurl "2200", "K", "")]
 
 contest_status :: [(Int, String, [(Int, Int)], Int, Int)]
 contest_status = [(1, "A-san", [(0,10),(0,20),(0,30),(1,50),(0,90)], 5, 220),
@@ -57,6 +61,8 @@ getSubmitId entity =
 main :: IO ()
 main = do
   Sq.runSqlite "db.sqlite" $ Sq.runMigration migrateAll
+  -- TODO: error handling?
+  childThreadId <- forkIO loop
   scotty 16384 $ do
     middleware logStdoutDev
     middleware $ staticPolicy $ addBase "static" >-> (contains "/js/" <|> contains "/css/" <|> contains "/image/")
@@ -88,15 +94,15 @@ main = do
           html $ renderHtml $ $(hamletFile "./template/contest.hamlet") undefined
 
     post "/submit" $ do
-      current_time <- liftIO Ti.getCurrentTime
+      currentTime <- liftIO Ti.getCurrentTime
       judgeType <- param "type" :: ActionM String
-      problemId <- param "name" :: ActionM String
+      problemId <- param "name" :: ActionM Int
       lang <- param "language" :: ActionM String
-      contestId <- param "contest" :: ActionM String
+      contestId <- param "contest" :: ActionM Int
       code <- param "code" :: ActionM String
       _ <- liftIO $ Sq.runSqlite "db.sqlite" $ do
-        Sq.insert $ Submit current_time user_id judgeType (read contestId)
-          (read problemId) "Pending" "" "" "" lang code
+        Sq.insert $ Submit currentTime user_id judgeType contestId
+          problemId "Pending" "" "" "" lang code
       redirect "/status"
 
     get "/setcontest" $ do
