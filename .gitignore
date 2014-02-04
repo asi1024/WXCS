@@ -2,3 +2,5 @@ cabal-dev
 dist
 db.sqlite
 static/image
+cabal.sandbox.config
+.cabal-sandbox/
