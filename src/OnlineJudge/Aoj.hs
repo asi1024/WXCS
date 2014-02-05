@@ -19,12 +19,6 @@ import qualified Text.XML.Light as XML
 endpoint :: String
 endpoint = "http://judge.u-aizu.ac.jp/onlinejudge/servlet/Submit"
 
-userId :: ByteString
-userId = "wxcs"
-
-password :: ByteString
-password = "wxcswxcs"
-
 mkRequest :: HT.Method
              -> String
              -> HT.SimpleQuery
@@ -54,13 +48,15 @@ api m url query mgr = do
   H.http request mgr
 
 submitAux :: (C.MonadBaseControl IO m, C.MonadResource m)
-          => ByteString -- problem id
+          => ByteString -- user id
+          -> ByteString -- password
+          -> ByteString -- problem id
           -> ByteString -- language
           -> ByteString -- code
           -> H.Manager
           -> m (H.Response (C.ResumableSource m ByteString))
-submitAux pid lang src =
-  api "POST" endpoint (mkQuery userId password pid lang src)
+submitAux user pass pid lang src =
+  api "POST" endpoint (mkQuery user pass pid lang src)
 
 mkStatusQuery :: String -> Maybe String -> HT.SimpleQuery
 mkStatusQuery userId problemId' =
@@ -82,16 +78,16 @@ status userId problemId =
 showAll :: C.Sink ByteString (C.ResourceT IO) ()
 showAll = CL.mapM_ (\s -> lift . putStrLn $ BC.unpack s)
 
-submit :: String -> String -> String -> IO Bool
-submit pid lang code = H.withManager $ \mgr -> do
+submit :: String -> String -> String -> String -> String -> IO Bool
+submit user pass pid lang code = H.withManager $ \mgr -> do
   liftIO $ putStrLn "submit to AOJ!"
-  res <- submitAux (BC.pack pid) (BC.pack lang) (BC.pack code) mgr
+  res <- submitAux (BC.pack user) (BC.pack pass) (BC.pack pid) (BC.pack lang) (BC.pack code) mgr
   liftIO $ putStrLn (show (H.responseStatus res))
   return (ok200 == (H.responseStatus res))
 
-fetchStatusXml :: String -> IO ByteString
-fetchStatusXml problemId = H.withManager $ \mgr -> do
-  res <- status (BC.unpack userId) (Just problemId) mgr
+fetchStatusXml :: String -> String -> IO ByteString
+fetchStatusXml userId problemId = H.withManager $ \mgr -> do
+  res <- status userId (Just problemId) mgr
   xmls <- H.responseBody res C.$$+- CL.consume
   return $ BC.concat xmls
 
@@ -119,8 +115,8 @@ getMemory xml =
   let st = XML.findChildren (XML.unqual "status") xml in
   getText (head st) "memory"
 
-fetch :: String -> IO (Maybe (String, String, String))
-fetch pid = do
+fetch :: String -> String -> IO (Maybe (String, String, String))
+fetch user pid = do
   aux 0
   where
     aux cnt =
@@ -128,7 +124,7 @@ fetch pid = do
       then return Nothing
       else do
         threadDelay (1000 * 1000)
-        xml' <- fetchStatusXml pid
+        xml' <- fetchStatusXml user pid
         let xml_ = XML.parseXMLDoc $ filter (\c -> c /= '\n') (BC.unpack xml')
         case xml_ of
           Nothing -> aux (cnt+1)

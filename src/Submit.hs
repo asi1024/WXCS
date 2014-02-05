@@ -9,6 +9,7 @@ import Control.Concurrent
 import Database.Persist ((==.), SelectOpt(..))
 import qualified Database.Persist.Sqlite as Sq
 
+import Config
 import Model
 import qualified OnlineJudge as OJ
 
@@ -32,9 +33,9 @@ mkSubmissionFailed :: Submit -> Submit
 mkSubmissionFailed s@(Submit _ _ _ _ _ _ t m _ _ _) =
   mkSubmission s "Submission Failed" t m
 
-getResultAndUpdate :: Submit -> IO ()
-getResultAndUpdate submit = do
-  res <- OJ.fetchResult (submitJudgeType submit) (submitProblemId submit)
+getResultAndUpdate :: Configuration -> Submit -> IO ()
+getResultAndUpdate conf submit = do
+  res <- OJ.fetchResult conf (submitJudgeType submit) (submitProblemId submit)
   case res of
     Nothing -> updateSubmit $ mkSubmissionFailed submit
     Just (judge, time, mem) -> do
@@ -49,16 +50,16 @@ updateSubmit submit = do
             Sq.selectList [SubmitSubmitTime ==. time, SubmitUserId ==. user] [LimitTo 1]
           return $ Sq.entityKey $ head submits
 
-loop :: IO ()
-loop = do
+loop :: Configuration -> IO ()
+loop config = do
   threadDelay (1000 * 1000) -- sleep 1sec
   submit' <- findPendingSubmit
   case submit' of
-    Nothing -> loop
+    Nothing -> loop config
     Just submit -> do
-      success <- OJ.submit (submitJudgeType submit) (submitProblemId submit)
+      success <- OJ.submit config (submitJudgeType submit) (submitProblemId submit)
                  (submitLang submit) (submitCode submit)
       if success
-        then getResultAndUpdate submit
+        then getResultAndUpdate config submit
         else updateSubmit $ mkSubmissionFailed submit
-      loop
+      loop config
