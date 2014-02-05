@@ -24,11 +24,11 @@ instance Default Configuration where
     }
 
 instance AE.ToJSON Configuration where
-  toJSON (Configuration port aojUser aojPass) =
+  toJSON (Configuration port' user pass) =
     AE.object [
-      "port" AE..= port,
-      "aojUser" AE..= aojUser,
-      "aojPass" AE..= aojPass
+      "port" AE..= port',
+      "aojUser" AE..= user,
+      "aojPass" AE..= pass
       ]
 
 instance AE.FromJSON Configuration where
@@ -39,9 +39,9 @@ instance AE.FromJSON Configuration where
   parseJSON _ = empty
 
 loadConfig :: FilePath -> IO (Maybe Configuration)
-loadConfig fp = do
-  existp <- doesFileExist fp
-  if existp then loadConfig' fp else return Nothing
+loadConfig filepath = do
+  existp <- doesFileExist filepath
+  if existp then loadConfig' filepath else return Nothing
   where loadConfig' fp = do
           content <- BL.readFile fp
           return $ AE.decode content

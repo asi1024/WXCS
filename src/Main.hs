@@ -2,7 +2,7 @@
 {-# LANGUAGE GADTs #-}
 
 import Control.Concurrent (forkIO)
-import Control.Monad (liftM, when)
+import Control.Monad (when)
 import Control.Monad.IO.Class
 
 import Data.Maybe (fromJust, isNothing)
@@ -20,7 +20,6 @@ import Text.Hamlet
 import Web.Scotty
 
 import Config
-import qualified OnlineJudge as OJ
 import Submit
 import Model
 
@@ -67,7 +66,7 @@ main = do
   when (isNothing config') $ error "Config file not found"
   let config = fromJust config'
   -- TODO: error handling?
-  childThreadId <- forkIO loop
+  childThreadId <- forkIO $ loop config
   scotty (port config) $ do
     middleware logStdoutDev
     middleware $ staticPolicy $ addBase "static" >-> (contains "/js/" <|> contains "/css/" <|> contains "/image/")

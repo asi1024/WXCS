@@ -1,24 +1,26 @@
 module OnlineJudge where
 
-import Data.Time (UTCTime)
-
 import qualified OnlineJudge.Aoj as Aoj
 
-submit :: String -- Judge type
+import Config
+
+submit :: Configuration
+          -> String -- Judge type
           -> String -- problem id
           -> String -- language
           -> String -- code
           -> IO Bool
-submit judgeType pid lang code = do
+submit conf judgeType pid lang code = do
   putStrLn ("judge type = " ++ judgeType)
   if judgeType == "Aizu"
-    then Aoj.submit pid lang code
+    then Aoj.submit (aojUser conf) (aojPass conf) pid lang code
     else return False
 
-fetchResult :: String -- Judge type
+fetchResult :: Configuration
+               -> String -- Judge type
                -> String -- problem id
                -> IO (Maybe (String, String, String))
-fetchResult judge pid =
+fetchResult conf judge pid =
   if judge == "Aizu"
-  then Aoj.fetch pid
+  then Aoj.fetch (aojUser conf) pid
   else return $ Just ("Accept", "0.01", "10")
