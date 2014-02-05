@@ -25,13 +25,8 @@ import Model
 aojurl :: String -> String
 aojurl n = "http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=" ++ n
 
-problem_set :: [(String, String, String, String, String)]
-problem_set = [("stAC", "2272", aojurl "2272", "B", "Accepted"),
-               ("stAC", "2274", aojurl "2274", "D", "Accepted"),
-               ("stWA", "2276", aojurl "2276", "F", "Wrong Answer"),
-               ("odd",  "2278", aojurl "2278", "H", ""),
-               ("even", "2280", aojurl "2280", "J", ""),
-               ("odd", "2200", aojurl "2200", "K", "")]
+status_l :: [String]
+status_l = ["Accepted", "Accepted", "Wrong Answer", "", ""]
 
 contest_status :: [(Int, String, [(Int, Int)], Int, Int)]
 contest_status = [(1, "A-san", [(0,10),(0,20),(0,30),(1,50),(0,90)], 5, 220),
@@ -91,6 +86,8 @@ main = do
           let contest_type = contestJudgeType contest
           let start_time = show $ contestStart contest
           let end_time = show $ contestEnd contest
+          let problem_list = contestProblems contest
+          let problems = zip3 problem_list (map aojurl problem_list) status_l
           html $ renderHtml $ $(hamletFile "./template/contest.hamlet") undefined
 
     post "/submit" $ do

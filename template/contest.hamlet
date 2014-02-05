@@ -31,21 +31,23 @@ $doctype 5
 
         <tbody>
           <tr>
-            $forall (st, problem_id, _, _, _) <- problem_set
-              <td class="#{st}">#{problem_id}
+            $forall (pid, _, st) <- problems
+              $if st == "Accepted"
+                <td class="stAC">#{pid}
+              $elseif st == ""
+                <td class="">#{pid}
+              $else
+                <td class="stWA">#{pid}
           <tr>
-            $forall (_, _, problem_url, problem, _) <- problem_set
-              <td><a class="white" href="#{problem_url}">#{problem}
-          <tr>
-            $forall (st, id, problem_url, _, _) <- problem_set
+            $forall (_, purl, st) <- problems
               <td>
-                <a href="#{problem_url}" target="blank">
-                  $if st == "stAC"
+                <a href="#{purl}" target="blank">
+                  $if st == "Accepted"
                     <img src="/image/Accepted.png">
-                  $elseif st == "stWA"
-                    <img src="/image/WrongAnswer.png">
-                  $else
+                  $elseif st == ""
                     <img src="/image/Unsolved.png">
+                  $else
+                    <img src="/image/WrongAnswer.png">
 
       <h2>Standings
       <table summary="standings">
@@ -53,8 +55,8 @@ $doctype 5
           <tr>
             <th>Rank
             <th>User
-            $forall (_, _, _, problem, _) <- problem_set
-              <th>#{problem}
+            $forall (pid, _, _) <- problems
+              <th>#{pid}
             <th>Accepted
             <th>Penalty
 
