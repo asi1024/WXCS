@@ -118,7 +118,7 @@ main = do
       setter <- param "setter" :: ActionM String
       problem <- param "problem" :: ActionM String
       _ <- liftIO $ Sq.runSqlite "db.sqlite" $ do
-        Sq.insert $ Contest contest_name contest_type current_time current_time setter []
+        Sq.insert $ Contest contest_name contest_type current_time current_time setter (lines problem)
       redirect "/"
 
     get "/status" $ do
