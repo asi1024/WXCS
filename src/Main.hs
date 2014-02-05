@@ -2,9 +2,10 @@
 {-# LANGUAGE GADTs #-}
 
 import Control.Concurrent (forkIO)
-import Control.Monad (liftM)
+import Control.Monad (liftM, when)
 import Control.Monad.IO.Class
 
+import Data.Maybe (fromJust, isNothing)
 import Data.Text (Text())
 import qualified Data.Time as Ti
 
@@ -18,6 +19,7 @@ import Text.Hamlet
 
 import Web.Scotty
 
+import Config
 import qualified OnlineJudge as OJ
 import Submit
 import Model
@@ -61,9 +63,12 @@ getSubmitId entity =
 main :: IO ()
 main = do
   Sq.runSqlite "db.sqlite" $ Sq.runMigration migrateAll
+  config' <- loadConfig "wxcs.conf"
+  when (isNothing config') $ error "Config file not found"
+  let config = fromJust config'
   -- TODO: error handling?
   childThreadId <- forkIO loop
-  scotty 16384 $ do
+  scotty (port config) $ do
     middleware logStdoutDev
     middleware $ staticPolicy $ addBase "static" >-> (contains "/js/" <|> contains "/css/" <|> contains "/image/")
 
