@@ -7,7 +7,11 @@ import Control.Monad.IO.Class
 
 import Data.Maybe (fromJust, isNothing)
 import Data.Text (Text())
-import qualified Data.Time as Ti
+import Data.Time
+import Data.Time.Clock
+import Data.Time.LocalTime
+import Foreign.Marshal
+import qualified System.Locale as SysL
 
 import qualified Database.Persist.Sqlite as Sq
 
@@ -26,6 +30,12 @@ import Model
 aojurl :: String -> String
 aojurl n = "http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=" ++ n
 
+showTime :: UTCTime -> IO String
+showTime t = do
+  timezone <- getCurrentTimeZone
+  let lt = utcToLocalTime timezone t
+  return $ formatTime SysL.defaultTimeLocale "%Y-%m-%d %H:%M:%S" lt
+
 status_l :: [String]
 status_l = ["Accepted", "Accepted", "Wrong Answer", "", ""]
 
@@ -37,12 +47,6 @@ getByIntId :: (Integral i, Sq.PersistEntity val, Sq.PersistStore m,
                Sq.PersistEntityBackend val ~ Sq.PersistMonadBackend m)
               => i -> m (Maybe val)
 getByIntId i = Sq.get $ Sq.Key $ Sq.PersistInt64 (fromIntegral i)
-
-getCurrentTime :: IO String
-getCurrentTime = do
-  timezone <- Ti.getCurrentTimeZone
-  current_time_ <- Ti.getCurrentTime
-  return . show $ Ti.utcToLocalTime timezone current_time_
 
 getContestId :: Sq.Entity Contest -> Text
 getContestId entity =
@@ -69,33 +73,38 @@ main = do
     let user_id = "sss" :: String
 
     get "/" $ do
-      current_time <- liftIO getCurrentTime
+      current_time_ <- liftIO getCurrentTime
+      current_time <- liftIO $ showTime current_time_
       contests <- liftIO (Sq.runSqlite "db.sqlite" (Sq.selectList [] []))
                   :: ActionM [Sq.Entity Contest]
       let contest_list =
             map (\entity -> let contest = Sq.entityVal entity in
-                  (getContestId entity, contestName contest, contestJudgeType contest,
-                   show $ contestStart contest, show $ contestEnd contest, contestSetter contest)) contests
+                  (getContestId entity, contestName contest,
+                   contestJudgeType contest,
+                   unsafeLocalState $ showTime $ contestStart contest,
+                   unsafeLocalState $ showTime $ contestEnd contest,
+                   contestSetter contest)) contests
       html $ renderHtml $ $(hamletFile "./template/index.hamlet") undefined
 
     get "/contest/:contest_id" $ do
       contest_id_ <- param "contest_id" :: ActionM String
       let contest_id = read contest_id_
-      current_time <- liftIO getCurrentTime
+      current_time_ <- liftIO getCurrentTime
+      current_time <- liftIO $ showTime current_time_
       contest' <- liftIO (Sq.runSqlite "db.sqlite" (getByIntId contest_id)) :: ActionM (Maybe Contest)
       case contest' of
         Nothing -> redirect "/" -- contest not found!
         Just contest -> do
           let contest_name = contestName contest
           let contest_type = contestJudgeType contest
-          let start_time = show $ contestStart contest
-          let end_time = show $ contestEnd contest
+          start_time <- liftIO $ showTime $ contestStart contest
+          end_time <- liftIO $ showTime $ contestEnd contest
           let problem_list = contestProblems contest
           let problems = zip3 problem_list (map aojurl problem_list) status_l
           html $ renderHtml $ $(hamletFile "./template/contest.hamlet") undefined
 
     post "/submit" $ do
-      currentTime <- liftIO Ti.getCurrentTime
+      currentTime <- liftIO getCurrentTime
       judgeType <- param "type" :: ActionM String
       problemId <- param "name" :: ActionM String
       lang <- param "language" :: ActionM String
@@ -107,11 +116,12 @@ main = do
       redirect "status"
 
     get "/setcontest" $ do
-      current_time <- liftIO getCurrentTime
+      current_time_ <- liftIO getCurrentTime
+      current_time <- liftIO $ showTime current_time_
       html $ renderHtml $ $(hamletFile "./template/setcontest.hamlet") undefined
 
     post "/setcontest" $ do
-      current_time <- liftIO Ti.getCurrentTime
+      current_time <- liftIO getCurrentTime
       contest_name <- param "name" :: ActionM String
       contest_type <- param "type" :: ActionM String
       start_time <- param "starttime" :: ActionM String
@@ -123,14 +133,16 @@ main = do
       redirect "./"
 
     get "/status" $ do
-      current_time <- liftIO getCurrentTime
+      current_time_ <- liftIO getCurrentTime
+      current_time <- liftIO $ showTime current_time_
       status_db <- liftIO (Sq.runSqlite "db.sqlite" (Sq.selectList [] []))
                   :: ActionM [Sq.Entity Submit]
       let status_list =
             map (\entity -> let status_ = Sq.entityVal entity in
                   (getSubmitId entity, show (submitContestnumber status_) , 
                    submitJudge status_,
-                   show (submitSubmitTime status_), submitUserId status_,
+                   unsafeLocalState $ showTime (submitSubmitTime status_),
+                   submitUserId status_,
                    submitJudgeType status_, submitProblemId status_,
                    submitJudge status_, submitTime status_, submitMemory status_,
                    submitSize status_, submitLang status_)) status_db
@@ -139,7 +151,8 @@ main = do
     get "/source/:source_id" $ do
       source_id_ <- param "source_id" :: ActionM String
       let source_id = read source_id_
-      current_time <- liftIO getCurrentTime
+      current_time_ <- liftIO getCurrentTime
+      current_time <- liftIO $ showTime current_time_
       source' <- liftIO (Sq.runSqlite "db.sqlite" (getByIntId source_id)) :: ActionM (Maybe Submit)
       case source' of
         Nothing -> redirect "/status" -- source code not found!
