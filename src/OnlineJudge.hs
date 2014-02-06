@@ -13,7 +13,7 @@ submit :: Configuration
 submit conf judgeType pid lang code = do
   putStrLn ("judge type = " ++ judgeType)
   if judgeType == "Aizu"
-    then Aoj.submit (aojUser conf) (aojPass conf) pid lang code
+    then Aoj.submit (aoj conf) pid lang code
     else return False
 
 fetchResult :: Configuration
@@ -22,5 +22,5 @@ fetchResult :: Configuration
                -> IO (Maybe (String, String, String))
 fetchResult conf judge pid =
   if judge == "Aizu"
-  then Aoj.fetch (aojUser conf) pid
+  then Aoj.fetch (aoj conf) pid
   else return $ Just ("Accept", "0.01", "10")

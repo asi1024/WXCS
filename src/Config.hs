@@ -10,32 +10,40 @@ import Data.Default
 
 import System.Directory (doesFileExist)
 
+data AojConf = AojConf {
+  user :: String,
+  pass :: String
+  } deriving (Eq, Show)
+
 data Configuration = Configuration {
   port :: Int,
-  aojUser :: String,
-  aojPass :: String
+  aoj :: AojConf
   } deriving (Eq, Show)
 
 instance Default Configuration where
   def = Configuration {
     port = 16384,
-    aojUser = "",
-    aojPass = ""
+    aoj = AojConf "" ""
     }
 
+instance AE.ToJSON AojConf where
+  toJSON (AojConf user pass) =
+    AE.object ["user" AE..= user, "pass" AE..= pass]
+
 instance AE.ToJSON Configuration where
-  toJSON (Configuration port' user pass) =
-    AE.object [
-      "port" AE..= port',
-      "aojUser" AE..= user,
-      "aojPass" AE..= pass
-      ]
+  toJSON (Configuration port' aoj) =
+    AE.object ["port" AE..= port', "aoj" AE..= aoj]
+
+instance AE.FromJSON AojConf where
+  parseJSON (AE.Object v) = AojConf <$>
+                            v AE..: "user" <*>
+                            v AE..: "pass"
+  parseJSON _ = empty
 
 instance AE.FromJSON Configuration where
   parseJSON (AE.Object v) = Configuration <$>
                             v AE..: "port" <*>
-                            v AE..: "aojUser" <*>
-                            v AE..: "aojPass"
+                            v AE..: "aoj"
   parseJSON _ = empty
 
 loadConfig :: FilePath -> IO (Maybe Configuration)

@@ -16,6 +16,9 @@ import Network.HTTP.Types.Status (ok200)
 
 import qualified Text.XML.Light as XML
 
+import Config hiding (user, pass)
+import qualified Config as C
+
 endpoint :: String
 endpoint = "http://judge.u-aizu.ac.jp/onlinejudge/servlet/Submit"
 
@@ -78,10 +81,11 @@ status userId problemId =
 showAll :: C.Sink ByteString (C.ResourceT IO) ()
 showAll = CL.mapM_ (\s -> lift . putStrLn $ BC.unpack s)
 
-submit :: String -> String -> String -> String -> String -> IO Bool
-submit user pass pid lang code = H.withManager $ \mgr -> do
+submit :: AojConf -> String -> String -> String -> IO Bool
+submit conf pid lang code = H.withManager $ \mgr -> do
   liftIO $ putStrLn "submit to AOJ!"
-  res <- submitAux (BC.pack user) (BC.pack pass) (BC.pack pid) (BC.pack lang) (BC.pack code) mgr
+  res <- submitAux (BC.pack (C.user conf)) (BC.pack (C.pass conf)) (BC.pack pid)
+         (BC.pack lang) (BC.pack code) mgr
   liftIO $ putStrLn (show (H.responseStatus res))
   return (ok200 == (H.responseStatus res))
 
@@ -115,8 +119,8 @@ getMemory xml =
   let st = XML.findChildren (XML.unqual "status") xml in
   getText (head st) "memory"
 
-fetch :: String -> String -> IO (Maybe (String, String, String))
-fetch user pid = do
+fetch :: AojConf -> String -> IO (Maybe (String, String, String))
+fetch conf pid = do
   aux 0
   where
     aux cnt =
@@ -124,7 +128,7 @@ fetch user pid = do
       then return Nothing
       else do
         threadDelay (1000 * 1000)
-        xml' <- fetchStatusXml user pid
+        xml' <- fetchStatusXml (C.user conf) pid
         let xml_ = XML.parseXMLDoc $ filter (\c -> c /= '\n') (BC.unpack xml')
         case xml_ of
           Nothing -> aux (cnt+1)
