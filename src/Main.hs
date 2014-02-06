@@ -12,6 +12,7 @@ import Data.Time.Clock
 import Data.Time.LocalTime
 import Foreign.Marshal
 import qualified System.Locale as SysL
+import qualified Data.Text.Lazy as TL
 
 import qualified Database.Persist.Sqlite as Sq
 
@@ -76,6 +77,9 @@ getSubmitId entity =
   let Right key = Sq.fromPersistValue . Sq.unKey $ Sq.entityKey entity in
   key
 
+forwardedUserKey :: TL.Text
+forwardedUserKey = "X-Forwarded-User"
+
 main :: IO ()
 main = do
   Sq.runSqlite "db.sqlite" $ Sq.runMigration migrateAll
@@ -88,9 +92,13 @@ main = do
     middleware logStdoutDev
     middleware $ staticPolicy $ addBase "static" >-> (contains "/js/" <|> contains "/css/" <|> contains "/image/")
 
-    let user_id = "sss" :: String
 
     get "/" $ do
+      -- TODO: Consolidate duplicate code getting remote user.
+      -- TODO: Do better error handling when user is Nothing.
+      user' <- reqHeader forwardedUserKey
+      let user_id = TL.unpack $ fromJust user'
+
       current_time_ <- liftIO getCurrentTime
       current_time <- liftIO $ showTime current_time_
       contests <- liftIO (Sq.runSqlite "db.sqlite" (Sq.selectList [] []))
@@ -105,6 +113,10 @@ main = do
       html $ renderHtml $ $(hamletFile "./template/index.hamlet") undefined
 
     get "/contest/:contest_id" $ do
+      -- !!!
+      user' <- reqHeader forwardedUserKey
+      let user_id = TL.unpack $ fromJust user'
+
       contest_id_ <- param "contest_id" :: ActionM String
       let contest_id = read contest_id_
       current_time_ <- liftIO getCurrentTime
@@ -122,7 +134,11 @@ main = do
           html $ renderHtml $ $(hamletFile "./template/contest.hamlet") undefined
 
     post "/submit" $ do
-      currentTime <- liftIO getCurrentTime
+      -- !!!
+      user' <- reqHeader forwardedUserKey
+      let user_id = TL.unpack $ fromJust user'
+
+      currentTime <- liftIO getCurrentTiem
       judgeType <- param "type" :: ActionM String
       problemId <- param "name" :: ActionM String
       lang <- param "language" :: ActionM String
@@ -134,11 +150,19 @@ main = do
       redirect "status"
 
     get "/setcontest" $ do
+      -- !!!
+      user' <- reqHeader forwardedUserKey
+      let user_id = TL.unpack $ fromJust user'
+
       current_time_ <- liftIO getCurrentTime
       current_time <- liftIO $ showTime current_time_
       html $ renderHtml $ $(hamletFile "./template/setcontest.hamlet") undefined
 
     post "/setcontest" $ do
+      -- !!!
+      user' <- reqHeader forwardedUserKey
+      let user_id = TL.unpack $ fromJust user'
+
       current_time <- liftIO getCurrentTime
       contest_name <- param "name" :: ActionM String
       contest_type <- param "type" :: ActionM String
@@ -153,6 +177,10 @@ main = do
       redirect "./"
 
     get "/status" $ do
+      -- !!!
+      user' <- reqHeader forwardedUserKey
+      let user_id = TL.unpack $ fromJust user'
+
       current_time_ <- liftIO getCurrentTime
       current_time <- liftIO $ showTime current_time_
       status_db <- liftIO (Sq.runSqlite "db.sqlite" (Sq.selectList [] []))
@@ -177,6 +205,10 @@ main = do
       html $ renderHtml $ $(hamletFile "./template/status.hamlet") undefined
 
     get "/source/:source_id" $ do
+      -- !!!
+      user' <- reqHeader forwardedUserKey
+      let user_id = TL.unpack $ fromJust user'
+
       source_id_ <- param "source_id" :: ActionM String
       let source_id = read source_id_
       current_time_ <- liftIO getCurrentTime
