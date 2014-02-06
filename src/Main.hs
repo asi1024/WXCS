@@ -36,6 +36,24 @@ showTime t = do
   let lt = utcToLocalTime timezone t
   return $ formatTime SysL.defaultTimeLocale "%Y-%m-%d %H:%M:%S" lt
 
+substr :: String -> Int -> Int -> String
+substr _ _ 0 = ""
+substr (x:xs) 0 b = [x] ++ substr xs 0 (b-1)
+substr (x:xs) a b = substr xs (a-1) b
+substr _ _ _ = "Error"
+
+toUTCTime :: String -> IO UTCTime
+toUTCTime s = do
+  timezone <- getCurrentTimeZone
+  let year = read $ substr s 0 4
+  let month = read $ substr s 4 2
+  let day = read $ substr s 6 2
+  let hour = read $ substr s 8 2
+  let min = read $ substr s 10 2
+  let sec = read $ substr s 12 2
+  let t = LocalTime (fromGregorian year month day) (TimeOfDay hour min sec)
+  return $ localTimeToUTC timezone t
+
 status_l :: [String]
 status_l = ["Accepted", "Accepted", "Wrong Answer", "", ""]
 
@@ -124,12 +142,14 @@ main = do
       current_time <- liftIO getCurrentTime
       contest_name <- param "name" :: ActionM String
       contest_type <- param "type" :: ActionM String
-      start_time <- param "starttime" :: ActionM String
-      end_time <- param "endtime" :: ActionM String
+      start_time_ <- param "starttime" :: ActionM String
+      start_time <- liftIO $ toUTCTime start_time_
+      end_time_ <- param "endtime" :: ActionM String
+      end_time <- liftIO $ toUTCTime end_time_
       setter <- param "setter" :: ActionM String
       problem <- param "problem" :: ActionM String
       _ <- liftIO $ Sq.runSqlite "db.sqlite" $ do
-        Sq.insert $ Contest contest_name contest_type current_time current_time setter (lines problem)
+        Sq.insert $ Contest contest_name contest_type start_time end_time setter (lines problem)
       redirect "./"
 
     get "/status" $ do
