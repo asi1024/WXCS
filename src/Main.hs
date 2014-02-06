@@ -104,7 +104,7 @@ main = do
       _ <- liftIO $ Sq.runSqlite "db.sqlite" $ do
         Sq.insert $ Submit currentTime user_id judgeType contestId
           problemId "Pending" "" "" "" lang code
-      redirect "/status"
+      redirect "status"
 
     get "/setcontest" $ do
       current_time <- liftIO getCurrentTime
@@ -120,7 +120,7 @@ main = do
       problem <- param "problem" :: ActionM String
       _ <- liftIO $ Sq.runSqlite "db.sqlite" $ do
         Sq.insert $ Contest contest_name contest_type current_time current_time setter (lines problem)
-      redirect "/"
+      redirect "./"
 
     get "/status" $ do
       current_time <- liftIO getCurrentTime

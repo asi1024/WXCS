@@ -3,18 +3,16 @@ $doctype 5
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=euc-jp">
     <meta http-equiv="Content-Style-Type" content="text/css">
-    <link rel="stylesheet" href="/css/default.css" type="text/css">
+    <link rel="stylesheet" href="./css/default.css" type="text/css">
 
     <title>WX Contest System
   <body>
     <div class="header">
       <h1 id="logo">WX Contest System
       <span class="username">You are #{user_id}. |
-      <span class="index-link">
-        <a href="/">Top
-        |
+      Top |
       <span class="status-link">
-        <a href="/status">Status
+        <a href="status">Status
         |
       <span class="current-time">Current Time:
         <strong>#{current_time}

@@ -3,7 +3,7 @@ $doctype 5
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=euc-jp">
     <meta http-equiv="Content-Style-Type" content="text/css">
-    <link rel="stylesheet" href="/css/default.css" type="text/css">
+    <link rel="stylesheet" href="../css/default.css" type="text/css">
 
     <title>WX Contest System
   <body>
@@ -11,10 +11,10 @@ $doctype 5
       <h1 id="logo">WX Contest System</h1>
       <span class="username">You are #{user_id}. |
       <span class="index-link">
-        <a href="/">Top
+        <a href="../">Top
         |
       <span class="status-link">
-        <a href="/status">Status
+        <a href="../status">Status
         |
       <span class="current-time">Current Time:
         <strong>#{current_time}
@@ -43,11 +43,11 @@ $doctype 5
               <td>
                 <a href="#{purl}" target="blank">
                   $if st == "Accepted"
-                    <img src="/image/Accepted.png">
+                    <img src="../image/Accepted.png">
                   $elseif st == ""
-                    <img src="/image/Unsolved.png">
+                    <img src="../image/Unsolved.png">
                   $else
-                    <img src="/image/WrongAnswer.png">
+                    <img src="../image/WrongAnswer.png">
 
       <h2>Standings
       <table summary="standings">
@@ -79,7 +79,7 @@ $doctype 5
               <td>#{penalty}
 
       <h2>Submit
-      <form id="submit" action="/submit" method="post" enctype="multipart/form-data">
+      <form id="submit" action="../submit" method="post" enctype="multipart/form-data">
         <tr>
           <th>Host:
           <td>
@@ -115,5 +115,5 @@ $doctype 5
             <textarea rows="10" cols="90" name="code">
           <br>
             .. or upload from file:<input type="file" name="codefile">
-          <tr><td colspan="2" style="text-align: right"><input type="submit" name="submit" value="Submit">
+          <tr><td colspan="2" style="text-align: right"><input type="submit" name="../submit" value="Submit">
     <address class="footer">contributed by ***,******(****)
