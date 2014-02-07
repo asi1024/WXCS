@@ -67,15 +67,8 @@ getByIntId :: (Integral i, Sq.PersistEntity val, Sq.PersistStore m,
               => i -> m (Maybe val)
 getByIntId i = Sq.get $ Sq.Key $ Sq.PersistInt64 (fromIntegral i)
 
-getContestId :: Sq.Entity Contest -> Text
-getContestId entity =
-  let Right key = Sq.fromPersistValue . Sq.unKey $ Sq.entityKey entity in
-  key
-
-getSubmitId :: Sq.Entity Submit -> Text
-getSubmitId entity =
-  let Right key = Sq.fromPersistValue . Sq.unKey $ Sq.entityKey entity in
-  key
+getId :: Sq.Entity a -> Text
+getId ent = let Right key = Sq.fromPersistValue . Sq.unKey $ Sq.entityKey ent in key
 
 forwardedUserKey :: TL.Text
 forwardedUserKey = "X-Forwarded-User"
@@ -92,7 +85,6 @@ main = do
     middleware logStdoutDev
     middleware $ staticPolicy $ addBase "static" >-> (contains "/js/" <|> contains "/css/" <|> contains "/image/")
 
-
     get "/" $ do
       -- TODO: Consolidate duplicate code getting remote user.
       -- TODO: Do better error handling when user is Nothing.
@@ -107,7 +99,7 @@ main = do
         let contest = Sq.entityVal entity
         start_time <- showTime $ contestStart contest
         end_time <- showTime $ contestEnd contest
-        return $ (getContestId entity, contestName contest,
+        return $ (getId entity, contestName contest,
                   contestJudgeType contest, start_time, end_time,
                   contestSetter contest)) contests
       html $ renderHtml $ $(hamletFile "./template/index.hamlet") undefined
@@ -138,7 +130,7 @@ main = do
       user' <- reqHeader forwardedUserKey
       let user_id = TL.unpack $ fromJust user'
 
-      currentTime <- liftIO getCurrentTiem
+      currentTime <- liftIO getCurrentTime
       judgeType <- param "type" :: ActionM String
       problemId <- param "name" :: ActionM String
       lang <- param "language" :: ActionM String
@@ -188,14 +180,14 @@ main = do
       status_list <- liftIO $ mapM (\entity -> do
         let status_ = Sq.entityVal entity 
         submit_time <- showTime (submitSubmitTime status_)
-        return $ (getSubmitId entity, show (submitContestnumber status_) , 
+        return $ (getId entity, show (submitContestnumber status_) , 
           submitJudge status_, submit_time, submitUserId status_,
           submitJudgeType status_, submitProblemId status_, submitJudge status_,
           submitTime status_, submitMemory status_, submitSize status_,
           submitLang status_)) status_db
       let status_list =
             map (\entity -> let status_ = Sq.entityVal entity in
-                  (getSubmitId entity, show (submitContestnumber status_) , 
+                  (getId entity, show (submitContestnumber status_) , 
                    submitJudge status_,
                    unsafeLocalState $ showTime (submitSubmitTime status_),
                    submitUserId status_,
