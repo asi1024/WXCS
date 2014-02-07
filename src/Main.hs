@@ -165,15 +165,6 @@ main = do
           submitJudgeType status_, submitProblemId status_, submitJudge status_,
           submitTime status_, submitMemory status_, submitSize status_,
           submitLang status_)) status_db
-      let status_list =
-            map (\entity -> let status_ = Sq.entityVal entity in
-                  (getSubmitId entity, show (submitContestnumber status_) , 
-                   submitJudge status_,
-                   unsafeLocalState $ showTime (submitSubmitTime status_),
-                   submitUserId status_,
-                   submitJudgeType status_, submitProblemId status_,
-                   submitJudge status_, submitTime status_, submitMemory status_,
-                   submitSize status_, submitLang status_)) status_db
       html $ renderHtml $ $(hamletFile "./template/status.hamlet") undefined
 
     get "/source/:source_id" $ do
