@@ -70,6 +70,9 @@ getByIntId i = Sq.get $ Sq.Key $ Sq.PersistInt64 (fromIntegral i)
 getId :: Sq.Entity a -> Text
 getId ent = let Right key = Sq.fromPersistValue . Sq.unKey $ Sq.entityKey ent in key
 
+getLocalTime :: IO String
+getLocalTime = getCurrentTime >>= showTime
+
 forwardedUserKey :: TL.Text
 forwardedUserKey = "X-Forwarded-User"
 
@@ -91,8 +94,7 @@ main = do
       user' <- reqHeader forwardedUserKey
       let user_id = TL.unpack $ fromJust user'
 
-      current_time_ <- liftIO getCurrentTime
-      current_time <- liftIO $ showTime current_time_
+      current_time <- liftIO getLocalTime
       contests <- liftIO (Sq.runSqlite "db.sqlite" (Sq.selectList [] []))
                   :: ActionM [Sq.Entity Contest]
       contest_list <- liftIO $ mapM (\entity -> do
@@ -111,16 +113,15 @@ main = do
 
       contest_id_ <- param "contest_id" :: ActionM String
       let contest_id = read contest_id_
-      current_time_ <- liftIO getCurrentTime
-      current_time <- liftIO $ showTime current_time_
+      current_time <- liftIO getLocalTime
       contest' <- liftIO (Sq.runSqlite "db.sqlite" (getByIntId contest_id)) :: ActionM (Maybe Contest)
       case contest' of
         Nothing -> redirect "/" -- contest not found!
         Just contest -> do
           let contest_name = contestName contest
           let contest_type = contestJudgeType contest
-          start_time <- liftIO $ showTime $ contestStart contest
-          end_time <- liftIO $ showTime $ contestEnd contest
+          start_time <- liftIO . showTime $ contestStart contest
+          end_time <- liftIO . showTime $ contestEnd contest
           let problem_list = contestProblems contest
           let problems = zip3 problem_list (map aojurl problem_list) status_l
           html $ renderHtml $ $(hamletFile "./template/contest.hamlet") undefined
@@ -146,8 +147,7 @@ main = do
       user' <- reqHeader forwardedUserKey
       let user_id = TL.unpack $ fromJust user'
 
-      current_time_ <- liftIO getCurrentTime
-      current_time <- liftIO $ showTime current_time_
+      current_time <- liftIO getLocalTime
       html $ renderHtml $ $(hamletFile "./template/setcontest.hamlet") undefined
 
     post "/setcontest" $ do
@@ -155,7 +155,7 @@ main = do
       user' <- reqHeader forwardedUserKey
       let user_id = TL.unpack $ fromJust user'
 
-      current_time <- liftIO getCurrentTime
+      current_time <- liftIO getLocalTime
       contest_name <- param "name" :: ActionM String
       contest_type <- param "type" :: ActionM String
       start_time_ <- param "starttime" :: ActionM String
@@ -173,27 +173,17 @@ main = do
       user' <- reqHeader forwardedUserKey
       let user_id = TL.unpack $ fromJust user'
 
-      current_time_ <- liftIO getCurrentTime
-      current_time <- liftIO $ showTime current_time_
+      current_time <- liftIO getLocalTime
       status_db <- liftIO (Sq.runSqlite "db.sqlite" (Sq.selectList [] []))
                   :: ActionM [Sq.Entity Submit]
       status_list <- liftIO $ mapM (\entity -> do
-        let status_ = Sq.entityVal entity 
+        let status_ = Sq.entityVal entity
         submit_time <- showTime (submitSubmitTime status_)
-        return $ (getId entity, show (submitContestnumber status_) , 
+        return $ (getId entity, show (submitContestnumber status_),
           submitJudge status_, submit_time, submitUserId status_,
           submitJudgeType status_, submitProblemId status_, submitJudge status_,
           submitTime status_, submitMemory status_, submitSize status_,
           submitLang status_)) status_db
-      let status_list =
-            map (\entity -> let status_ = Sq.entityVal entity in
-                  (getId entity, show (submitContestnumber status_) , 
-                   submitJudge status_,
-                   unsafeLocalState $ showTime (submitSubmitTime status_),
-                   submitUserId status_,
-                   submitJudgeType status_, submitProblemId status_,
-                   submitJudge status_, submitTime status_, submitMemory status_,
-                   submitSize status_, submitLang status_)) status_db
       html $ renderHtml $ $(hamletFile "./template/status.hamlet") undefined
 
     get "/source/:source_id" $ do
@@ -203,8 +193,7 @@ main = do
 
       source_id_ <- param "source_id" :: ActionM String
       let source_id = read source_id_
-      current_time_ <- liftIO getCurrentTime
-      current_time <- liftIO $ showTime current_time_
+      current_time <- liftIO getLocalTime
       source' <- liftIO (Sq.runSqlite "db.sqlite" (getByIntId source_id)) :: ActionM (Maybe Submit)
       case source' of
         Nothing -> redirect "/status" -- source code not found!
