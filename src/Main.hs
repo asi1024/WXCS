@@ -95,13 +95,13 @@ main = do
       current_time <- liftIO $ showTime current_time_
       contests <- liftIO (Sq.runSqlite "db.sqlite" (Sq.selectList [] []))
                   :: ActionM [Sq.Entity Contest]
-      let contest_list =
-            map (\entity -> let contest = Sq.entityVal entity in
-                  (getContestId entity, contestName contest,
-                   contestJudgeType contest,
-                   unsafeLocalState $ showTime $ contestStart contest,
-                   unsafeLocalState $ showTime $ contestEnd contest,
-                   contestSetter contest)) contests
+      contest_list <- liftIO $ mapM (\entity -> do
+        let contest = Sq.entityVal entity
+        start_time <- showTime $ contestStart contest
+        end_time <- showTime $ contestEnd contest
+        return $ (getContestId entity, contestName contest,
+                  contestJudgeType contest, start_time, end_time,
+                  contestSetter contest)) contests
       html $ renderHtml $ $(hamletFile "./template/index.hamlet") undefined
 
     get "/contest/:contest_id" $ do
@@ -157,6 +157,14 @@ main = do
       current_time <- liftIO $ showTime current_time_
       status_db <- liftIO (Sq.runSqlite "db.sqlite" (Sq.selectList [] []))
                   :: ActionM [Sq.Entity Submit]
+      status_list <- liftIO $ mapM (\entity -> do
+        let status_ = Sq.entityVal entity 
+        submit_time <- showTime (submitSubmitTime status_)
+        return $ (getSubmitId entity, show (submitContestnumber status_) , 
+          submitJudge status_, submit_time, submitUserId status_,
+          submitJudgeType status_, submitProblemId status_, submitJudge status_,
+          submitTime status_, submitMemory status_, submitSize status_,
+          submitLang status_)) status_db
       let status_list =
             map (\entity -> let status_ = Sq.entityVal entity in
                   (getSubmitId entity, show (submitContestnumber status_) , 
