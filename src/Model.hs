@@ -10,14 +10,14 @@ share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 Contest
   name String
   judgeType String
-  start UTCTime
-  end UTCTime
+  start ZonedTime
+  end ZonedTime
   setter String
   problems [String]
   UniqueContestName name
   deriving Show
 Submit
-  submitTime UTCTime
+  submitTime ZonedTime
   userId String
   judgeType String
   contestnumber Int
