@@ -7,18 +7,16 @@ import Control.Monad.IO.Class
 
 import Data.Maybe (fromJust, isNothing)
 import Data.Text (Text())
-import Data.Time
-import Data.Time.Clock
-import Data.Time.LocalTime
-import Foreign.Marshal
-import qualified System.Locale as SysL
 import qualified Data.Text.Lazy as TL
+import Data.Time
 
 import qualified Database.Persist.Sqlite as Sq
 
 import Network.HTTP.Types.Status (status401, status500)
 import Network.Wai.Middleware.RequestLogger
 import Network.Wai.Middleware.Static
+
+import System.Locale (defaultTimeLocale)
 
 import Text.Blaze.Html.Renderer.Text (renderHtml)
 import Text.Hamlet
@@ -32,29 +30,17 @@ import Model
 aojurl :: String -> String
 aojurl n = "http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=" ++ n
 
-showTime :: UTCTime -> IO String
-showTime t = do
+toZonedTime :: String -> IO ZonedTime
+toZonedTime s = do
   timezone <- getCurrentTimeZone
-  let lt = utcToLocalTime timezone t
-  return $ formatTime SysL.defaultTimeLocale "%Y-%m-%d %H:%M:%S" lt
+  return $ readTime defaultTimeLocale "%Y%m%d%H%M%S%z"
+    (s ++ (timeZoneOffsetString timezone))
 
-substr :: String -> Int -> Int -> String
-substr _ _ 0 = ""
-substr (x:xs) 0 b = [x] ++ substr xs 0 (b-1)
-substr (x:xs) a b = substr xs (a-1) b
-substr _ _ _ = "Error"
+showTime :: ZonedTime -> String
+showTime t = formatTime defaultTimeLocale "%Y-%m-%d %H:%M:%S" t
 
-toUTCTime :: String -> IO UTCTime
-toUTCTime s = do
-  timezone <- getCurrentTimeZone
-  let year = read $ substr s 0 4
-  let month = read $ substr s 4 2
-  let day = read $ substr s 6 2
-  let hour = read $ substr s 8 2
-  let min = read $ substr s 10 2
-  let sec = read $ substr s 12 2
-  let t = LocalTime (fromGregorian year month day) (TimeOfDay hour min sec)
-  return $ localTimeToUTC timezone t
+getLocalTime :: IO String
+getLocalTime = getZonedTime >>= (return . showTime)
 
 status_l :: [String]
 status_l = ["Accepted", "Accepted", "Wrong Answer", "", ""]
@@ -70,9 +56,6 @@ getByIntId i = Sq.get $ Sq.Key $ Sq.PersistInt64 (fromIntegral i)
 
 getId :: Sq.Entity a -> Text
 getId ent = let Right key = Sq.fromPersistValue . Sq.unKey $ Sq.entityKey ent in key
-
-getLocalTime :: IO String
-getLocalTime = getCurrentTime >>= showTime
 
 forwardedUserKey :: TL.Text
 forwardedUserKey = "X-Forwarded-User"
@@ -111,19 +94,17 @@ main = do
       current_time <- liftIO getLocalTime
       contests <- liftIO (Sq.runSqlite "db.sqlite" (Sq.selectList [] []))
                   :: ActionM [Sq.Entity Contest]
-      contest_list <- liftIO $ mapM (\entity -> do
-        let contest = Sq.entityVal entity
-        start_time <- showTime $ contestStart contest
-        end_time <- showTime $ contestEnd contest
-        return $ (getId entity, contestName contest,
-                  contestJudgeType contest, start_time, end_time,
-                  contestSetter contest)) contests
+      let contest_list = map
+                         (\entity -> let contest = Sq.entityVal entity in
+                           (getId entity, contestName contest, contestJudgeType contest,
+                            showTime $ contestStart contest, showTime $ contestEnd contest,
+                            contestSetter contest)) contests
       html $ renderHtml $ $(hamletFile "./template/index.hamlet") undefined
 
     get "/contest/:contest_id" $ do
       user_id <- getUser
       contest_id_ <- param "contest_id" :: ActionM String
-      let contest_id = read contest_id_
+      let contest_id = read contest_id_ :: Int
       current_time <- liftIO getLocalTime
       contest' <- liftIO (Sq.runSqlite "db.sqlite" (getByIntId contest_id)) :: ActionM (Maybe Contest)
       case contest' of
@@ -131,15 +112,15 @@ main = do
         Just contest -> do
           let contest_name = contestName contest
           let contest_type = contestJudgeType contest
-          start_time <- liftIO . showTime $ contestStart contest
-          end_time <- liftIO . showTime $ contestEnd contest
+          let start_time = showTime $ contestStart contest
+          let end_time = showTime $ contestEnd contest
           let problem_list = contestProblems contest
           let problems = zip3 problem_list (map aojurl problem_list) status_l
           html $ renderHtml $ $(hamletFile "./template/contest.hamlet") undefined
 
     post "/submit" $ do
       user_id <- getUser
-      currentTime <- liftIO getCurrentTime
+      currentTime <- liftIO getZonedTime
       judgeType <- param "type" :: ActionM String
       problemId <- param "name" :: ActionM String
       lang <- param "language" :: ActionM String
@@ -161,9 +142,9 @@ main = do
       contest_name <- param "name" :: ActionM String
       contest_type <- param "type" :: ActionM String
       start_time_ <- param "starttime" :: ActionM String
-      start_time <- liftIO $ toUTCTime start_time_
+      start_time <- liftIO $ toZonedTime start_time_
       end_time_ <- param "endtime" :: ActionM String
-      end_time <- liftIO $ toUTCTime end_time_
+      end_time <- liftIO $ toZonedTime end_time_
       setter <- param "setter" :: ActionM String
       problem <- param "problem" :: ActionM String
       _ <- liftIO $ Sq.runSqlite "db.sqlite" $ do
@@ -175,20 +156,19 @@ main = do
       current_time <- liftIO getLocalTime
       status_db <- liftIO (Sq.runSqlite "db.sqlite" (Sq.selectList [] []))
                   :: ActionM [Sq.Entity Submit]
-      status_list <- liftIO $ mapM (\entity -> do
-        let status_ = Sq.entityVal entity
-        submit_time <- showTime (submitSubmitTime status_)
-        return $ (getId entity, show (submitContestnumber status_),
-          submitJudge status_, submit_time, submitUserId status_,
-          submitJudgeType status_, submitProblemId status_, submitJudge status_,
-          submitTime status_, submitMemory status_, submitSize status_,
-          submitLang status_)) status_db
+      let status_list = map
+                        (\entity -> let status_ = Sq.entityVal entity in
+                          (getId entity, show $ submitContestnumber status_,
+                           submitJudge status_, showTime $ submitSubmitTime status_,
+                           submitUserId status_, submitJudgeType status_, submitProblemId status_,
+                           submitJudge status_, submitTime status_, submitMemory status_,
+                           submitSize status_, submitLang status_)) status_db
       html $ renderHtml $ $(hamletFile "./template/status.hamlet") undefined
 
     get "/source/:source_id" $ do
       user_id <- getUser
       source_id_ <- param "source_id" :: ActionM String
-      let source_id = read source_id_
+      let source_id = read source_id_ :: Int
       current_time <- liftIO getLocalTime
       source' <- liftIO (Sq.runSqlite "db.sqlite" (getByIntId source_id)) :: ActionM (Maybe Submit)
       case source' of
