@@ -57,6 +57,21 @@ getByIntId i = Sq.get $ Sq.Key $ Sq.PersistInt64 (fromIntegral i)
 getId :: Sq.Entity a -> Text
 getId ent = let Right key = Sq.fromPersistValue . Sq.unKey $ Sq.entityKey ent in key
 
+mkContestTuple :: Sq.Entity Contest -> (Text, String, String, String, String, String)
+mkContestTuple entity =
+  let contest = Sq.entityVal entity in
+  (getId entity, contestName contest, contestJudgeType contest,
+   showTime $ contestStart contest, showTime $ contestEnd contest,
+   contestSetter contest)
+
+mkStatusTuple entity =
+  let status_ = Sq.entityVal entity in
+  (getId entity, show $ submitContestnumber status_,
+   submitJudge status_, showTime $ submitSubmitTime status_,
+   submitUserId status_, submitJudgeType status_, submitProblemId status_,
+   submitJudge status_, submitTime status_, submitMemory status_,
+   submitSize status_, submitLang status_)
+
 forwardedUserKey :: TL.Text
 forwardedUserKey = "X-Forwarded-User"
 
@@ -94,11 +109,7 @@ main = do
       current_time <- liftIO getLocalTime
       contests <- liftIO (Sq.runSqlite "db.sqlite" (Sq.selectList [] []))
                   :: ActionM [Sq.Entity Contest]
-      let contest_list = map
-                         (\entity -> let contest = Sq.entityVal entity in
-                           (getId entity, contestName contest, contestJudgeType contest,
-                            showTime $ contestStart contest, showTime $ contestEnd contest,
-                            contestSetter contest)) contests
+      let contest_list = map mkContestTuple contests
       html $ renderHtml $ $(hamletFile "./template/index.hamlet") undefined
 
     get "/contest/:contest_id" $ do
@@ -156,13 +167,7 @@ main = do
       current_time <- liftIO getLocalTime
       status_db <- liftIO (Sq.runSqlite "db.sqlite" (Sq.selectList [] []))
                   :: ActionM [Sq.Entity Submit]
-      let status_list = map
-                        (\entity -> let status_ = Sq.entityVal entity in
-                          (getId entity, show $ submitContestnumber status_,
-                           submitJudge status_, showTime $ submitSubmitTime status_,
-                           submitUserId status_, submitJudgeType status_, submitProblemId status_,
-                           submitJudge status_, submitTime status_, submitMemory status_,
-                           submitSize status_, submitLang status_)) status_db
+      let status_list = map mkStatusTuple status_db
       html $ renderHtml $ $(hamletFile "./template/status.hamlet") undefined
 
     get "/source/:source_id" $ do
