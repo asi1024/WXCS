@@ -13,7 +13,8 @@ $doctype 5
       <span class="index-link">
         <a href="./">Top
         |
-      Status |
+        <a href="status">Status
+        |
       <span class="current-time">Current Time:
         <strong>#{current_time}
 
@@ -36,15 +37,15 @@ $doctype 5
             <th>Lang
             <th>Source
 
-        $forall (id, cid, st, submit_time, user, judge_type, problem_num, judge, time, memory, size, lang) <- status_list
+        $forall (id, cid, st, submit_time, user, judge_type, pid, judge, time, memory, size, lang) <- status_list
           <tbody>
             <tr class="#{st}">
               <td class="id">#{id}
-              <td class="id">#{cid}
+              <td class="id"><a href="findcontest?contest=#{cid}">#{cid}
               <td class="datetime">#{submit_time}
               <td class="user"><a href="user?name=#{user}">#{user}
               <td class="problem">#{judge_type}
-              <td class="problem"><a href="statistics?type=#{judge_type}&amp;problem=#{problem_num}">#{problem_num}
+              <td class="problem"><a href="statistics?type=#{judge_type}&pid=#{pid}">#{pid}
               <td class="judge">#{judge}
               <td class="time">#{time}
               <td class="memory">#{memory}

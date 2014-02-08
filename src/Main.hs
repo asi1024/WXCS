@@ -49,6 +49,15 @@ contest_status :: [(Int, String, [(Int, Int)], Int, Int)]
 contest_status = [(1, "A-san", [(0,10),(0,20),(0,30),(1,50),(0,90)], 5, 220),
                   (2, "B-san", [(1,0),(2,0),(3,0),(99,0),(0,0)], 0, 0) ]
 
+cssClass :: String -> String
+cssClass "Accepted" = "AC"
+cssClass "Wrong Answer" = "WA"
+cssClass "Runtime Error" = "RE"
+cssClass "Time Limit Exceeded" = "TLE"
+cssClass "Memory Limit Exceeded" = "MLE"
+cssClass "Ouput Limit Exceeded" = "OLE"
+cssClass _ = "CE"
+
 getByIntId :: (Integral i, Sq.PersistEntity val, Sq.PersistStore m,
                Sq.PersistEntityBackend val ~ Sq.PersistMonadBackend m)
               => i -> m (Maybe val)
@@ -67,7 +76,7 @@ mkContestTuple entity =
 mkStatusTuple entity =
   let status_ = Sq.entityVal entity in
   (getId entity, show $ submitContestnumber status_,
-   submitJudge status_, showTime $ submitSubmitTime status_,
+   cssClass $ submitJudge status_, showTime $ submitSubmitTime status_,
    submitUserId status_, submitJudgeType status_, submitProblemId status_,
    submitJudge status_, submitTime status_, submitMemory status_,
    submitSize status_, submitLang status_)
@@ -121,6 +130,10 @@ main = do
       case contest' of
         Nothing -> redirect "/" -- contest not found!
         Just contest -> do
+          status_db <- liftIO (Sq.runSqlite "db.sqlite" (Sq.selectList [] []))
+                      :: ActionM [Sq.Entity Submit]
+          --let status_l = map mkStatusTuple status_db
+          --let status_list = filter (\(_,x,_,_,_,_,_,_,_,_,_,_) -> x==contest_id_) status_l
           let contest_name = contestName contest
           let contest_type = contestJudgeType contest
           let start_time = showTime $ contestStart contest
@@ -137,9 +150,10 @@ main = do
       lang <- param "language" :: ActionM String
       contestId <- param "contest" :: ActionM Int
       code <- param "code" :: ActionM String
+      let size = show $ length code
       _ <- liftIO $ Sq.runSqlite "db.sqlite" $ do
         Sq.insert $ Submit currentTime user_id judgeType contestId
-          problemId "Pending" "" "" "" lang code
+          problemId "Pending" "" "" size lang code
       redirect "status"
 
     get "/setcontest" $ do
@@ -168,6 +182,38 @@ main = do
       status_db <- liftIO (Sq.runSqlite "db.sqlite" (Sq.selectList [] []))
                   :: ActionM [Sq.Entity Submit]
       let status_list = map mkStatusTuple status_db
+      html $ renderHtml $ $(hamletFile "./template/status.hamlet") undefined
+
+    get "/findcontest" $ do
+      user_id <- getUser
+      current_time <- liftIO getLocalTime
+      status_db <- liftIO (Sq.runSqlite "db.sqlite" (Sq.selectList [] []))
+                  :: ActionM [Sq.Entity Submit]
+      let status_l = map mkStatusTuple status_db
+      contest_id <- param "contest" :: ActionM String
+      let status_list = filter (\(_,x,_,_,_,_,_,_,_,_,_,_) -> x==contest_id) status_l
+      --let status_list = status_l
+      html $ renderHtml $ $(hamletFile "./template/status.hamlet") undefined
+
+    get "/user" $ do
+      user_id <- getUser
+      current_time <- liftIO getLocalTime
+      status_db <- liftIO (Sq.runSqlite "db.sqlite" (Sq.selectList [] []))
+                  :: ActionM [Sq.Entity Submit]
+      let status_l = map mkStatusTuple status_db
+      name <- param "name" :: ActionM String
+      let status_list = filter (\(_,_,_,_,x,_,_,_,_,_,_,_) -> x==name) status_l
+      html $ renderHtml $ $(hamletFile "./template/status.hamlet") undefined
+
+    get "/statistics" $ do
+      user_id <- getUser
+      current_time <- liftIO getLocalTime
+      status_db <- liftIO (Sq.runSqlite "db.sqlite" (Sq.selectList [] []))
+                  :: ActionM [Sq.Entity Submit]
+      let status_l = map mkStatusTuple status_db
+      jtype <- param "type" :: ActionM String
+      pid <- param "pid" :: ActionM String
+      let status_list = filter (\(_,_,_,_,_,t,p,_,_,_,_,_) -> t==jtype && p==pid) status_l
       html $ renderHtml $ $(hamletFile "./template/status.hamlet") undefined
 
     get "/source/:source_id" $ do
