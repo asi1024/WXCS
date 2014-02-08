@@ -102,10 +102,12 @@ getUser = do
 
 main :: IO ()
 main = do
-  Sq.runSqlite "db.sqlite" $ Sq.runMigration migrateAll
   config' <- loadConfig "wxcs.conf"
-  when (isNothing config') $ error "Config file not found"
+  when (isNothing config') $ error "Config file (wxcs.conf) not found"
   let config = fromJust config'
+  let db_file = db config
+
+  Sq.runSqlite db_file $ Sq.runMigration migrateAll
   -- TODO: error handling?
   childThreadId <- forkIO $ loop config
   scotty (port config) $ do
@@ -116,7 +118,7 @@ main = do
     get "/" $ do
       user_id <- getUser
       current_time <- liftIO getLocalTime
-      contests <- liftIO (Sq.runSqlite "db.sqlite" (Sq.selectList [] []))
+      contests <- liftIO (Sq.runSqlite db_file (Sq.selectList [] []))
                   :: ActionM [Sq.Entity Contest]
       let contest_list = map mkContestTuple contests
       html $ renderHtml $ $(hamletFile "./template/index.hamlet") undefined
@@ -126,7 +128,7 @@ main = do
       contest_id_ <- param "contest_id" :: ActionM String
       let contest_id = read contest_id_ :: Int
       current_time <- liftIO getLocalTime
-      contest' <- liftIO (Sq.runSqlite "db.sqlite" (getByIntId contest_id)) :: ActionM (Maybe Contest)
+      contest' <- liftIO (Sq.runSqlite db_file (getByIntId contest_id)) :: ActionM (Maybe Contest)
       case contest' of
         Nothing -> redirect "/" -- contest not found!
         Just contest -> do
@@ -151,7 +153,7 @@ main = do
       contestId <- param "contest" :: ActionM Int
       code <- param "code" :: ActionM String
       let size = show $ length code
-      _ <- liftIO $ Sq.runSqlite "db.sqlite" $ do
+      _ <- liftIO $ Sq.runSqlite db_file $ do
         Sq.insert $ Submit currentTime user_id judgeType contestId
           problemId "Pending" "" "" size lang code
       redirect "status"
@@ -172,14 +174,14 @@ main = do
       end_time <- liftIO $ toZonedTime end_time_
       setter <- param "setter" :: ActionM String
       problem <- param "problem" :: ActionM String
-      _ <- liftIO $ Sq.runSqlite "db.sqlite" $ do
+      _ <- liftIO $ Sq.runSqlite db_file $ do
         Sq.insert $ Contest contest_name contest_type start_time end_time setter (lines problem)
       redirect "./"
 
     get "/status" $ do
       user_id <- getUser
       current_time <- liftIO getLocalTime
-      status_db <- liftIO (Sq.runSqlite "db.sqlite" (Sq.selectList [] []))
+      status_db <- liftIO (Sq.runSqlite db_file (Sq.selectList [] []))
                   :: ActionM [Sq.Entity Submit]
       let status_list = map mkStatusTuple status_db
       html $ renderHtml $ $(hamletFile "./template/status.hamlet") undefined
@@ -221,7 +223,7 @@ main = do
       source_id_ <- param "source_id" :: ActionM String
       let source_id = read source_id_ :: Int
       current_time <- liftIO getLocalTime
-      source' <- liftIO (Sq.runSqlite "db.sqlite" (getByIntId source_id)) :: ActionM (Maybe Submit)
+      source' <- liftIO (Sq.runSqlite db_file (getByIntId source_id)) :: ActionM (Maybe Submit)
       case source' of
         Nothing -> redirect "/status" -- source code not found!
         Just source -> do
