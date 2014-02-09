@@ -31,20 +31,20 @@ $doctype 5
 
         <tbody>
           <tr>
-            $forall (pid, _, st) <- problems
-              $if st == "Accepted"
+            $forall (pid, _, ac, wa) <- problems
+              $if ac > 0
                 <td class="stAC">#{pid}
-              $elseif st == ""
+              $elseif wa == 0
                 <td class="">#{pid}
               $else
                 <td class="stWA">#{pid}
           <tr>
-            $forall (_, purl, st) <- problems
+            $forall (_, purl, ac, wa) <- problems
               <td>
                 <a href="#{purl}" target="blank">
-                  $if st == "Accepted"
+                  $if ac > 0
                     <img src="../image/Accepted.png">
-                  $elseif st == ""
+                  $elseif wa == 0
                     <img src="../image/Unsolved.png">
                   $else
                     <img src="../image/WrongAnswer.png">
@@ -55,7 +55,7 @@ $doctype 5
           <tr>
             <th>Rank
             <th>User
-            $forall (pid, _, _) <- problems
+            $forall (pid, _, _, _) <- problems
               <th>#{pid}
             <th>Accepted
             <th>Penalty
@@ -66,12 +66,12 @@ $doctype 5
               <td><style="color:#ffffff">#{user_name}
               $forall (wa, t) <- user_status
                 $if wa > 0
-                  $if penalty > 0
+                  $if t > 0
                     <td class="stAC"> +#{wa} @#{t}
                   $else
                     <td class="stWA"> +#{wa}
                 $else
-                  $if penalty > 0
+                  $if t > 0
                     <td class="stAC"> @#{t}
                   $else
                     <td>

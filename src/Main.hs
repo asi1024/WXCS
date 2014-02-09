@@ -9,6 +9,7 @@ import Data.Maybe (fromJust, isNothing)
 import Data.Text (Text())
 import qualified Data.Text.Lazy as TL
 import Data.Time
+import Data.List
 
 import qualified Database.Persist.Sqlite as Sq
 
@@ -42,13 +43,6 @@ showTime t = formatTime defaultTimeLocale "%Y-%m-%d %H:%M:%S" t
 getLocalTime :: IO String
 getLocalTime = getZonedTime >>= (return . showTime)
 
-status_l :: [String]
-status_l = ["Accepted", "Accepted", "Wrong Answer", "", ""]
-
-contest_status :: [(Int, String, [(Int, Int)], Int, Int)]
-contest_status = [(1, "A-san", [(0,10),(0,20),(0,30),(1,50),(0,90)], 5, 220),
-                  (2, "B-san", [(1,0),(2,0),(3,0),(99,0),(0,0)], 0, 0) ]
-
 cssClass :: String -> String
 cssClass "Accepted" = "AC"
 cssClass "Wrong Answer" = "WA"
@@ -57,6 +51,33 @@ cssClass "Time Limit Exceeded" = "TLE"
 cssClass "Memory Limit Exceeded" = "MLE"
 cssClass "Ouput Limit Exceeded" = "OLE"
 cssClass _ = "CE"
+
+getUsers [] = []
+getUsers ((_,_,_,_,x,_,_,_,_,_,_,_):xs) =
+  if (elem x l) then l else (x:l)
+  where l = getUsers xs
+
+getACTime status user pid =
+  if length st == 0 then 0 else 1
+  where st = filter (\(_,_,_,_,u,_,p,j,_,_,_,_) -> u==user && p == filter ('\r'/=) pid && j=="Accepted") status
+
+getWA status user pid =
+  length st
+  where st = filter (\(_,_,_,_,u,_,p,j,_,_,_,_) -> u==user && p == filter ('\r'/=) pid && j/="Accepted") status
+
+user_status status problem_list user =
+  (user, zip wa ac, length $ filter (>0) ac, sum ac)
+  where ac = map (getACTime status user) problem_list
+        wa = map (getWA status user) problem_list
+
+rank_standings_ a (b,c,d,e) = (a,b,c,d,e)
+rank_standings l =
+  zip5 [1..] name state ac wa
+  where (name, state, ac, wa) = unzip4 l
+
+--contest_status_ :: [(Int, String, [(Int, Int)], Int, Int)]
+--contest_status_ = [(1, "A-san", [(0,10),(0,20),(0,30),(1,50),(0,90)], 5, 220),
+--                  (2, "B-san", [(1,0),(2,0),(3,0),(99,0),(0,0)], 0, 0) ]
 
 getByIntId :: (Integral i, Sq.PersistEntity val, Sq.PersistStore m,
                Sq.PersistEntityBackend val ~ Sq.PersistMonadBackend m)
@@ -134,14 +155,22 @@ main = do
         Just contest -> do
           status_db <- liftIO (Sq.runSqlite "db.sqlite" (Sq.selectList [] []))
                       :: ActionM [Sq.Entity Submit]
-          --let status_l = map mkStatusTuple status_db
-          --let status_list = filter (\(_,x,_,_,_,_,_,_,_,_,_,_) -> x==contest_id_) status_l
           let contest_name = contestName contest
           let contest_type = contestJudgeType contest
           let start_time = showTime $ contestStart contest
           let end_time = showTime $ contestEnd contest
           let problem_list = contestProblems contest
-          let problems = zip3 problem_list (map aojurl problem_list) status_l
+          
+          let status_list_ = map mkStatusTuple status_db
+          let status_list = filter (\(_,x,_,_,_,y,_,_,_,_,_,_) -> x == contest_id_ && y == contest_type) status_list_
+          let status_ac = map (\x -> getACTime status_list user_id x) problem_list
+          let status_wa = map (\x -> getWA status_list user_id x) problem_list
+          let problems = zip4 problem_list (map aojurl problem_list) status_ac status_wa
+          
+          let users = getUsers status_list
+          let standings = map (user_status status_list problem_list) users :: [(String, [(Int, Int)], Int, Int)]
+          let contest_status = rank_standings standings :: [(Int, String, [(Int, Int)], Int, Int)]
+          
           html $ renderHtml $ $(hamletFile "./template/contest.hamlet") undefined
 
     post "/submit" $ do
