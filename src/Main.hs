@@ -27,6 +27,7 @@ import Web.Scotty
 import Config
 import Submit
 import Model
+import ModelTypes
 
 aojurl :: String -> String
 aojurl n = "http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=" ++ n
@@ -43,14 +44,16 @@ showTime t = formatTime defaultTimeLocale "%Y-%m-%d %H:%M:%S" t
 getLocalTime :: IO String
 getLocalTime = getZonedTime >>= (return . showTime)
 
-cssClass :: String -> String
-cssClass "Accepted" = "AC"
-cssClass "Wrong Answer" = "WA"
-cssClass "Runtime Error" = "RE"
-cssClass "Time Limit Exceeded" = "TLE"
-cssClass "Memory Limit Exceeded" = "MLE"
-cssClass "Ouput Limit Exceeded" = "OLE"
-cssClass _ = "CE"
+cssClass :: Judge -> String
+cssClass Accepted = "AC"
+cssClass WrongAnswer = "WA"
+cssClass RuntimeError = "RE"
+cssClass TimeLimitExceeded = "TLE"
+cssClass MemoryLimitExceeded = "MLE"
+cssClass OutputLimitExceeded = "OLE"
+cssClass CompileError = "CE"
+cssClass SubmissionError = "CE"
+cssClass Pending = "CE"
 
 getUsers [] = []
 getUsers ((_,_,_,_,x,_,_,_,_,_,_,_):xs) =
@@ -160,17 +163,17 @@ main = do
           let start_time = showTime $ contestStart contest
           let end_time = showTime $ contestEnd contest
           let problem_list = contestProblems contest
-          
+
           let status_list_ = map mkStatusTuple status_db
           let status_list = filter (\(_,x,_,_,_,y,_,_,_,_,_,_) -> x == contest_id_ && y == contest_type) status_list_
           let status_ac = map (\x -> getACTime status_list user_id x) problem_list
           let status_wa = map (\x -> getWA status_list user_id x) problem_list
           let problems = zip4 problem_list (map aojurl problem_list) status_ac status_wa
-          
+
           let users = getUsers status_list
           let standings = map (user_status status_list problem_list) users :: [(String, [(Int, Int)], Int, Int)]
           let contest_status = rank_standings standings :: [(Int, String, [(Int, Int)], Int, Int)]
-          
+
           html $ renderHtml $ $(hamletFile "./template/contest.hamlet") undefined
 
     post "/submit" $ do
@@ -184,7 +187,7 @@ main = do
       let size = show $ length code
       _ <- liftIO $ Sq.runSqlite db_file $ do
         Sq.insert $ Submit currentTime user_id judgeType contestId
-          problemId "Pending" "" "" size lang code
+          problemId Pending "" "" size lang code
       redirect "status"
 
     get "/setcontest" $ do
@@ -259,7 +262,7 @@ main = do
           let id = source_id_
           let problem = submitProblemId source :: String
           let userId = submitUserId source :: String
-          let judge = submitJudge source :: String
+          let judge = show $ submitJudge source :: String
           let time = submitTime source :: String
           let memory = submitMemory source :: String
           let size = submitSize source :: String

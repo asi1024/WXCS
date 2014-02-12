@@ -46,7 +46,7 @@ $doctype 5
               <td class="user"><a href="user?name=#{user}">#{user}
               <td class="problem">#{judge_type}
               <td class="problem"><a href="statistics?type=#{judge_type}&pid=#{pid}">#{pid}
-              <td class="judge">#{judge}
+              <td class="judge">#{show judge}
               <td class="time">#{time}
               <td class="memory">#{memory}
               <td class="size">#{size}

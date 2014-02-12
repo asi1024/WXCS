@@ -6,6 +6,8 @@ import Data.Time
 
 import Database.Persist.TH
 
+import ModelTypes
+
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 Contest
   name String
@@ -22,7 +24,7 @@ Submit
   judgeType String
   contestnumber Int
   problemId String
-  judge String
+  judge Judge
   time String
   memory String
   size String

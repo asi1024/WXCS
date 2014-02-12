@@ -11,12 +11,13 @@ import qualified Database.Persist.Sqlite as Sq
 
 import Config
 import Model
+import ModelTypes
 import qualified OnlineJudge as OJ
 
 findPendingSubmit :: Configuration -> IO (Maybe Submit)
 findPendingSubmit config = do
   submits <- Sq.runSqlite (db config) $
-             Sq.selectList [SubmitJudge ==. "Pending"] [LimitTo 1]
+             Sq.selectList [SubmitJudge ==. Pending] [LimitTo 1]
   if null submits
     then return Nothing
     else return . Just . Sq.entityVal $ head submits
@@ -27,7 +28,7 @@ mkSubmission :: Submit
                 -> String -- memory
                 -> Submit
 mkSubmission (Submit time user judge contest pid _ _ _ s l c) j t m =
-  Submit time user judge contest pid j t m s l c
+  Submit time user judge contest pid (toJudge j) t m s l c
 
 mkSubmissionFailed :: Submit -> Submit
 mkSubmissionFailed s@(Submit _ _ _ _ _ _ t m _ _ _) =
