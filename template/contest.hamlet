@@ -20,7 +20,7 @@ $doctype 5
         <strong>#{current_time}
 
     <div class="main">
-      <h1>Contest - #{contest_name}
+      <h1>Contest - #{contestName contest}
       <ul>
         <li>Contest Host : #{contest_type}
         <li>Contest Start : #{start_time}

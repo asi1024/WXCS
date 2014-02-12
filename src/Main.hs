@@ -73,14 +73,11 @@ user_status status problem_list user =
   where ac = map (getACTime status user) problem_list
         wa = map (getWA status user) problem_list
 
-rank_standings_ a (b,c,d,e) = (a,b,c,d,e)
+rank_standings :: [(String, [(Int, Int)], Int, Int)]
+                  -> [(Int, String, [(Int, Int)], Int, Int)]
 rank_standings l =
   zip5 [1..] name state ac wa
   where (name, state, ac, wa) = unzip4 l
-
---contest_status_ :: [(Int, String, [(Int, Int)], Int, Int)]
---contest_status_ = [(1, "A-san", [(0,10),(0,20),(0,30),(1,50),(0,90)], 5, 220),
---                  (2, "B-san", [(1,0),(2,0),(3,0),(99,0),(0,0)], 0, 0) ]
 
 getByIntId :: (Integral i, Sq.PersistEntity val, Sq.PersistStore m,
                Sq.PersistEntityBackend val ~ Sq.PersistMonadBackend m)
@@ -158,7 +155,6 @@ main = do
         Just contest -> do
           status_db <- liftIO (Sq.runSqlite "db.sqlite" (Sq.selectList [] []))
                       :: ActionM [Sq.Entity Submit]
-          let contest_name = contestName contest
           let contest_type = contestJudgeType contest
           let start_time = showTime $ contestStart contest
           let end_time = showTime $ contestEnd contest
@@ -166,13 +162,13 @@ main = do
 
           let status_list_ = map mkStatusTuple status_db
           let status_list = filter (\(_,x,_,_,_,y,_,_,_,_,_,_) -> x == contest_id_ && y == contest_type) status_list_
-          let status_ac = map (\x -> getACTime status_list user_id x) problem_list
-          let status_wa = map (\x -> getWA status_list user_id x) problem_list
+          let status_ac = map (getACTime status_list user_id) problem_list
+          let status_wa = map (getWA status_list user_id) problem_list
           let problems = zip4 problem_list (map aojurl problem_list) status_ac status_wa
 
           let users = getUsers status_list
-          let standings = map (user_status status_list problem_list) users :: [(String, [(Int, Int)], Int, Int)]
-          let contest_status = rank_standings standings :: [(Int, String, [(Int, Int)], Int, Int)]
+          let standings = map (user_status status_list problem_list) users
+          let contest_status = rank_standings standings
 
           html $ renderHtml $ $(hamletFile "./template/contest.hamlet") undefined
 
