@@ -62,11 +62,11 @@ getUsers ((_,_,_,_,x,_,_,_,_,_,_,_):xs) =
 
 getACTime status user pid =
   if length st == 0 then 0 else 1
-  where st = filter (\(_,_,_,_,u,_,p,j,_,_,_,_) -> u==user && p == filter ('\r'/=) pid && j=="Accepted") status
+  where st = filter (\(_,_,_,_,u,_,p,j,_,_,_,_) -> u==user && p == filter ('\r'/=) pid && j==Accepted) status
 
 getWA status user pid =
   length st
-  where st = filter (\(_,_,_,_,u,_,p,j,_,_,_,_) -> u==user && p == filter ('\r'/=) pid && j/="Accepted") status
+  where st = filter (\(_,_,_,_,u,_,p,j,_,_,_,_) -> u==user && p == filter ('\r'/=) pid && j/=Accepted) status
 
 user_status status problem_list user =
   (user, zip wa ac, length $ filter (>0) ac, sum ac)
