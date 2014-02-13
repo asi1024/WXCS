@@ -28,21 +28,10 @@ import Config
 import Submit
 import Model
 import ModelTypes
+import Utils
 
 aojurl :: String -> String
 aojurl n = "http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=" ++ n
-
-toZonedTime :: String -> IO ZonedTime
-toZonedTime s = do
-  timezone <- getCurrentTimeZone
-  return $ readTime defaultTimeLocale "%Y%m%d%H%M%S%z"
-    (s ++ (timeZoneOffsetString timezone))
-
-showTime :: ZonedTime -> String
-showTime t = formatTime defaultTimeLocale "%Y-%m-%d %H:%M:%S" t
-
-getLocalTime :: IO String
-getLocalTime = getZonedTime >>= (return . showTime)
 
 cssClass :: Judge -> String
 cssClass Accepted = "AC"
