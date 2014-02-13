@@ -1,6 +1,8 @@
 {-# LANGUAGE QuasiQuotes, TemplateHaskell, OverloadedStrings #-}
 {-# LANGUAGE GADTs #-}
 
+module Main where
+
 import Control.Concurrent (forkIO)
 import Control.Monad (when)
 
