@@ -31,6 +31,8 @@ mkRequest m url query = do
   return $ req { H.method = m
                , H.queryString = HT.renderSimpleQuery False query }
 
+mkQuery :: ByteString -> ByteString -> ByteString -> ByteString -> ByteString
+           -> [(ByteString, ByteString)]
 mkQuery user pass pid lang src =
   [("userID"    , user),
    ("password"  , pass),

@@ -21,7 +21,8 @@ import Network.Wai.Middleware.Static
 import Text.Blaze.Html.Renderer.Text (renderHtml)
 import Text.Hamlet
 
-import Web.Scotty
+import Web.Scotty hiding (source, status)
+import qualified Web.Scotty as WS
 
 import Model
 import ModelTypes
@@ -41,19 +42,26 @@ cssClass CompileError = "CE"
 cssClass SubmissionError = "CE"
 cssClass Pending = "CE"
 
+type StatusTuple = (Text, String, String, String, String, String, String, Judge,
+                    String, String, String, String)
+getUsers :: [StatusTuple] -> [String]
 getUsers [] = []
 getUsers ((_,_,_,_,x,_,_,_,_,_,_,_):xs) =
   if (elem x l) then l else (x:l)
   where l = getUsers xs
 
+getACTime :: [StatusTuple] -> String -> String -> Int
 getACTime status user pid =
   if length st == 0 then 0 else 1
   where st = filter (\(_,_,_,_,u,_,p,j,_,_,_,_) -> u==user && p == filter ('\r'/=) pid && j==Accepted) status
 
+getWA :: [StatusTuple] -> String -> String -> Int
 getWA status user pid =
   length st
   where st = filter (\(_,_,_,_,u,_,p,j,_,_,_,_) -> u==user && p == filter ('\r'/=) pid && j/=Accepted) status
 
+user_status :: [StatusTuple] -> [String] -> String
+               -> (String, [(Int, Int)], Int, Int)
 user_status status problem_list user =
   (user, zip wa ac, length $ filter (>0) ac, sum ac)
   where ac = map (getACTime status user) problem_list
@@ -80,6 +88,7 @@ mkContestTuple entity =
    showTime $ contestStart contest, showTime $ contestEnd contest,
    contestSetter contest)
 
+mkStatusTuple :: Sq.Entity Submit -> StatusTuple
 mkStatusTuple entity =
   let status_ = Sq.entityVal entity in
   (getId entity, show $ submitContestnumber status_,
@@ -94,10 +103,10 @@ forwardedUserKey = "X-Forwarded-User"
 -- Handler for exceptions.
 handleEx :: TL.Text -> ActionM ()
 handleEx "Unauthorized" = do
-  status status401
+  WS.status status401
   html $ "<h1>You are not logined.</h1>"
 handleEx message = do
-  status status500
+  WS.status status500
   text message
 
 -- Get remote user.
@@ -170,8 +179,7 @@ app db_file = do
     html $ renderHtml $ $(hamletFile "./template/setcontest.hamlet") undefined
 
   post "/setcontest" $ do
-    user_id <- getUser
-    current_time <- liftIO getLocalTime
+    _ <- getUser
     contest_name <- param "name" :: ActionM String
     contest_type <- param "type" :: ActionM String
     start_time_ <- param "starttime" :: ActionM String
@@ -226,19 +234,12 @@ app db_file = do
 
   get "/source/:source_id" $ do
     user_id <- getUser
-    source_id_ <- param "source_id" :: ActionM String
-    let source_id = read source_id_ :: Int
+    source_id <- param "source_id" :: ActionM Int
     current_time <- liftIO getLocalTime
     source' <- liftIO (Sq.runSqlite db_file (getByIntId source_id)) :: ActionM (Maybe Submit)
     case source' of
       Nothing -> redirect "/status" -- source code not found!
       Just source -> do
-        let id = source_id_
-        let problem = submitProblemId source :: String
-        let userId = submitUserId source :: String
-        let judge = show $ submitJudge source :: String
-        let time = submitTime source :: String
-        let memory = submitMemory source :: String
-        let size = submitSize source :: String
-        let code = submitCode source :: String
+        let problem_id = submitProblemId source
+        let submit_user_id = submitUserId source
         html $ renderHtml $ $(hamletFile "./template/source.hamlet") undefined

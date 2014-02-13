@@ -27,8 +27,8 @@ mkSubmission :: Submit
                 -> String -- time
                 -> String -- memory
                 -> Submit
-mkSubmission (Submit time user judge contest pid _ _ _ s l c) j t m =
-  Submit time user judge contest pid (toJudge j) t m s l c
+mkSubmission (Submit time user_ judge contest pid _ _ _ s l c) j t m =
+  Submit time user_ judge contest pid (toJudge j) t m s l c
 
 mkSubmissionFailed :: Submit -> Submit
 mkSubmissionFailed s@(Submit _ _ _ _ _ _ t m _ _ _) =
@@ -46,9 +46,9 @@ updateSubmit :: Configuration -> Submit -> IO ()
 updateSubmit config submit = do
   submitId <- findSubmit submit
   Sq.runSqlite (db config) $ Sq.replace submitId submit
-  where findSubmit (Submit time user _ _ _ _ _ _ _ _ _) = do
+  where findSubmit (Submit time submitUser _ _ _ _ _ _ _ _ _) = do
           submits <- Sq.runSqlite (db config) $
-            Sq.selectList [SubmitSubmitTime ==. time, SubmitUserId ==. user] [LimitTo 1]
+            Sq.selectList [SubmitSubmitTime ==. time, SubmitUserId ==. submitUser] [LimitTo 1]
           return $ Sq.entityKey $ head submits
 
 loop :: Configuration -> IO ()

@@ -22,15 +22,15 @@ $doctype 5
     <div class="main">
       <h1>Source Code
       <ul>
-        <li>Submission ID: #{id}
+        <li>Submission ID: #{source_id}
         <li>Problem:
-          <a href="../statistics?type=Aizu&amp;problem=2407">#{problem}
+          <a href="../statistics?type=Aizu&amp;problem=#{problem_id}">#{problem_id}
         <li>User:
-          <a href="../user?name=sss">#{userId}
+          <a href="../user?name=#{submit_user_id}">#{submit_user_id}
         <li>
-          <strong>Judge: #{judge}
-          (Time: #{time}, Memory: #{memory})
-        <li>Code length: #{size}
+          <strong>Judge: #{show $ submitJudge source}
+          (Time: #{submitTime source}, Memory: #{submitMemory source})
+        <li>Code length: #{submitSize source}
       <pre class="source">
-        #{code}
+        #{submitCode source}
     <address class="footer">contributed by ****,******(****)</address>
