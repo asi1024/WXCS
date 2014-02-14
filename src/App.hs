@@ -41,6 +41,7 @@ cssClass OutputLimitExceeded = "OLE"
 cssClass CompileError = "CE"
 cssClass SubmissionError = "CE"
 cssClass Pending = "CE"
+cssClass Running = "CE"
 
 type StatusTuple = (Text, String, String, String, String, JudgeType, String, JudgeStatus,
                     String, String, String, String)

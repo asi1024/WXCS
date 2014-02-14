@@ -17,6 +17,7 @@ data JudgeStatus =
   | CompileError
   | SubmissionError
   | Pending
+  | Running
     deriving (Eq, Ord, Enum, Bounded)
 
 instance Show JudgeStatus where
@@ -29,6 +30,7 @@ instance Show JudgeStatus where
   show CompileError = "Compile Error"
   show SubmissionError = "Submission Error"
   show Pending = "Pending"
+  show Running = "Running"
 
 instance Read JudgeStatus where
   readsPrec _ r = case res of

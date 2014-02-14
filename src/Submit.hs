@@ -43,7 +43,7 @@ getResultAndUpdate conf submit latest_run_id = loop
   where loop = do
           run_id <- OJ.getLatestRunId conf (submitJudgeType submit)
           if run_id /= latest_run_id
-            then getAndUpdateWithRunId conf submit run_id
+            then (forkIO $ getAndUpdateWithRunId conf submit run_id) >> return ()
             else threadDelay (1000 * 1000) >> loop
 
 updateSubmit :: Configuration -> Submit -> IO ()
@@ -57,6 +57,7 @@ updateSubmit conf s = do
 submitAndUpdate :: Configuration -> Submit -> IO ()
 submitAndUpdate conf s = do
   last_run_id <- OJ.getLatestRunId conf (submitJudgeType s)
+  updateSubmit conf (s { submitJudge = Running })
   success <- OJ.submit conf (submitJudgeType s) (submitProblemId s)
              (submitLang s) (submitCode s)
   if success
