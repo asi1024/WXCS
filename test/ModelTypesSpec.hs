@@ -14,7 +14,6 @@ instance Arbitrary JudgeStatus where
 
 spec :: Spec
 spec = do
-  describe "toJudge" $ do
+  describe "read" $ do
     prop "reverses show" $ \j ->
-      toJudge (show j) == j
-
+      (read (show j) :: JudgeStatus) == j

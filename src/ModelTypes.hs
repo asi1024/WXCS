@@ -1,6 +1,8 @@
 {-# LANGUAGE TemplateHaskell #-}
 module ModelTypes where
 
+import Data.List (stripPrefix)
+
 import Database.Persist.TH
 
 data JudgeStatus =
@@ -13,7 +15,7 @@ data JudgeStatus =
   | CompileError
   | SubmissionError
   | Pending
-    deriving (Eq, Ord, Enum, Bounded, Read)
+    deriving (Eq, Ord, Enum, Bounded)
 
 instance Show JudgeStatus where
   show Accepted = "Accepted"
@@ -26,17 +28,12 @@ instance Show JudgeStatus where
   show SubmissionError = "Submission Error"
   show Pending = "Pending"
 
-toJudge :: String -> JudgeStatus
-toJudge "Accepted" = Accepted
-toJudge "Wrong Answer" = WrongAnswer
-toJudge "Runtime Error" = RuntimeError
-toJudge "Time Limit Exceeded" = TimeLimitExceeded
-toJudge "Memory Limit Exceeded" = MemoryLimitExceeded
-toJudge "Output Limit Exceeded" = OutputLimitExceeded
-toJudge "Compile Error" = CompileError
-toJudge "Submission Error" = SubmissionError
-toJudge "Pending" = Pending
-toJudge "Running" = Pending
-toJudge _ = error "Invalid string : toJudge."
+instance Read JudgeStatus where
+  readsPrec _ r = case res of
+    Nothing -> [(SubmissionError, r)]
+    Just res' -> [res']
+    where res = foldl (\m st -> case stripPrefix (show st) r of
+                          Nothing -> m
+                          Just re -> Just (st, re)) Nothing [Accepted ..]
 
 derivePersistField "JudgeStatus"
