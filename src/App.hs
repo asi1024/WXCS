@@ -3,7 +3,7 @@ module App (
   app
   ) where
 
-import Control.Monad (when)
+import Control.Monad (when, liftM)
 import Control.Monad.IO.Class
 
 import Data.Maybe (fromJust, isNothing)
@@ -42,7 +42,7 @@ cssClass CompileError = "CE"
 cssClass SubmissionError = "CE"
 cssClass Pending = "CE"
 
-type StatusTuple = (Text, String, String, String, String, String, String, JudgeStatus,
+type StatusTuple = (Text, String, String, String, String, JudgeType, String, JudgeStatus,
                     String, String, String, String)
 getUsers :: [StatusTuple] -> [String]
 getUsers [] = []
@@ -81,7 +81,7 @@ getByIntId i = Sq.get $ Sq.Key $ Sq.PersistInt64 (fromIntegral i)
 getId :: Sq.Entity a -> Text
 getId ent = let Right key = Sq.fromPersistValue . Sq.unKey $ Sq.entityKey ent in key
 
-mkContestTuple :: Sq.Entity Contest -> (Text, String, String, String, String, String)
+mkContestTuple :: Sq.Entity Contest -> (Text, String, JudgeType, String, String, String)
 mkContestTuple entity =
   let contest = Sq.entityVal entity in
   (getId entity, contestName contest, contestJudgeType contest,
@@ -162,7 +162,7 @@ app db_file = do
   post "/submit" $ do
     user_id <- getUser
     currentTime <- liftIO getZonedTime
-    judgeType <- param "type" :: ActionM String
+    judgeType <- liftM read $ param "type" :: ActionM JudgeType
     problemId <- param "name" :: ActionM String
     lang <- param "language" :: ActionM String
     contestId <- param "contest" :: ActionM Int
@@ -181,7 +181,7 @@ app db_file = do
   post "/setcontest" $ do
     _ <- getUser
     contest_name <- param "name" :: ActionM String
-    contest_type <- param "type" :: ActionM String
+    contest_type <- liftM read $ param "type" :: ActionM JudgeType
     start_time_ <- param "starttime" :: ActionM String
     start_time <- liftIO $ toZonedTime start_time_
     end_time_ <- param "endtime" :: ActionM String
@@ -227,7 +227,7 @@ app db_file = do
     status_db <- liftIO (Sq.runSqlite "db.sqlite" (Sq.selectList [] []))
                  :: ActionM [Sq.Entity Submit]
     let status_l = map mkStatusTuple status_db
-    jtype <- param "type" :: ActionM String
+    jtype <- liftM read $ param "type" :: ActionM JudgeType
     pid <- param "pid" :: ActionM String
     let status_list = filter (\(_,_,_,_,_,t,p,_,_,_,_,_) -> t==jtype && p==pid) status_l
     html $ renderHtml $ $(hamletFile "./template/status.hamlet") undefined

@@ -28,7 +28,7 @@ $doctype 5
         <li>User:
           <a href="../user?name=#{submit_user_id}">#{submit_user_id}
         <li>
-          <strong>Judge: #{show $ submitJudge source}
+          <strong>Judge: #{submitJudge source}
           (Time: #{submitTime source}, Memory: #{submitMemory source})
         <li>Code length: #{submitSize source}
       <pre class="source">

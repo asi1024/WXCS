@@ -11,6 +11,7 @@ library
     build-depends: base >= 4 && < 5
                    , aeson == 0.6.2.1
                    , blaze-html == 0.7.0.0
+                   , blaze-markup == 0.6.0.0
                    , bytestring == 0.10.4.0
                    , conduit == 1.0.12
                    , data-default == 0.5.3
