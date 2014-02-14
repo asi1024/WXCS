@@ -26,5 +26,5 @@ main = do
 
   Sq.runSqlite db_file $ Sq.runMigration migrateAll
   -- TODO: error handling?
-  _ <- forkIO $ loop config
+  _ <- forkIO $ crawler config
   scotty (port config) $ app db_file

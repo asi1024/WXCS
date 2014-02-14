@@ -1,7 +1,8 @@
 module Utils (
   getLocalTime,
   toZonedTime,
-  showTime
+  showTime,
+  whenDef
   ) where
 
 import Data.Time
@@ -19,3 +20,6 @@ showTime t = formatTime defaultTimeLocale "%Y-%m-%d %H:%M:%S" t
 
 getLocalTime :: IO String
 getLocalTime = getZonedTime >>= (return . showTime)
+
+whenDef :: (Monad m) => a -> Bool -> m a -> m a
+whenDef def p act = if p then act else return def

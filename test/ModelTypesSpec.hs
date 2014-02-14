@@ -14,6 +14,6 @@ instance Arbitrary JudgeStatus where
 
 spec :: Spec
 spec = do
-  describe "read" $ do
-    prop "reverses show" $ \j ->
+  describe "JudgeStatus" $ do
+    prop "read reverses show" $ \j ->
       (read (show j) :: JudgeStatus) == j

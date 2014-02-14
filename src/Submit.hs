@@ -1,12 +1,13 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Submit (
-  loop
+  crawler
   ) where
 
 import Control.Concurrent
+import Control.Monad (liftM)
 
-import Database.Persist ((==.), SelectOpt(..))
+import Database.Persist ((==.), Filter)
 import qualified Database.Persist.Sqlite as Sq
 
 import Config
@@ -14,53 +15,60 @@ import Model
 import ModelTypes
 import qualified OnlineJudge as OJ
 
+findSubmit :: Configuration -> [Filter Submit] -> IO (Maybe (Sq.Entity Submit))
+findSubmit conf filt = Sq.runSqlite (db conf) $ Sq.selectFirst filt []
+
 findPendingSubmit :: Configuration -> IO (Maybe Submit)
-findPendingSubmit config = do
-  submits <- Sq.runSqlite (db config) $
-             Sq.selectList [SubmitJudge ==. Pending] [LimitTo 1]
-  if null submits
-    then return Nothing
-    else return . Just . Sq.entityVal $ head submits
+findPendingSubmit conf = do
+  submit' <- findSubmit conf [SubmitJudge ==. Pending]
+  return $ liftM Sq.entityVal $ submit'
 
 mkSubmission :: Submit
                 -> JudgeStatus
                 -> String -- time
                 -> String -- memory
                 -> Submit
-mkSubmission (Submit time user_ judge contest pid _ _ _ s l c) j t m =
-  Submit time user_ judge contest pid j t m s l c
+mkSubmission s j t m = s { submitJudge = j, submitTime = t, submitMemory = m }
 
-mkSubmissionFailed :: Submit -> Submit
-mkSubmissionFailed s@(Submit _ _ _ _ _ _ t m _ _ _) =
-  mkSubmission s SubmissionError t m
-
-getResultAndUpdate :: Configuration -> Submit -> IO ()
-getResultAndUpdate config submit = do
-  res <- OJ.fetchResult config (submitJudgeType submit) (submitProblemId submit)
+getAndUpdateWithRunId :: Configuration -> Submit -> Int -> IO ()
+getAndUpdateWithRunId conf submit rid = do
+  res <- OJ.fetchByRunId conf (submitJudgeType submit) rid
   case res of
-    Nothing -> updateSubmit config $ mkSubmissionFailed submit
+    Nothing -> updateSubmit conf $ submit { submitJudge = SubmissionError }
     Just (judge, time, mem) -> do
-      updateSubmit config $ mkSubmission submit judge time mem
+      updateSubmit conf $ mkSubmission submit judge time mem
+
+getResultAndUpdate :: Configuration -> Submit -> Int -> IO ()
+getResultAndUpdate conf submit latest_run_id = loop
+  where loop = do
+          run_id <- OJ.getLatestRunId conf (submitJudgeType submit)
+          if run_id /= latest_run_id
+            then getAndUpdateWithRunId conf submit run_id
+            else threadDelay (1000 * 1000) >> loop
 
 updateSubmit :: Configuration -> Submit -> IO ()
-updateSubmit config submit = do
-  submitId <- findSubmit submit
-  Sq.runSqlite (db config) $ Sq.replace submitId submit
-  where findSubmit (Submit time submitUser _ _ _ _ _ _ _ _ _) = do
-          submits <- Sq.runSqlite (db config) $
-            Sq.selectList [SubmitSubmitTime ==. time, SubmitUserId ==. submitUser] [LimitTo 1]
-          return $ Sq.entityKey $ head submits
+updateSubmit conf s = do
+  submit <- findSubmit conf
+            [SubmitSubmitTime ==. (submitSubmitTime s), SubmitUserId ==. (submitUserId s)]
+  case liftM Sq.entityKey $ submit of
+    Nothing -> return ()
+    Just submit_id -> Sq.runSqlite (db conf) $ Sq.replace submit_id s
 
-loop :: Configuration -> IO ()
-loop config = do
+submitAndUpdate :: Configuration -> Submit -> IO ()
+submitAndUpdate conf s = do
+  last_run_id <- OJ.getLatestRunId conf (submitJudgeType s)
+  success <- OJ.submit conf (submitJudgeType s) (submitProblemId s)
+             (submitLang s) (submitCode s)
+  if success
+    then getResultAndUpdate conf s last_run_id
+    else updateSubmit conf $ s { submitJudge = SubmissionError }
+
+crawler :: Configuration -> IO ()
+crawler conf = do
   threadDelay (1000 * 1000) -- sleep 1sec
-  submit' <- findPendingSubmit config
+  submit' <- findPendingSubmit conf
   case submit' of
-    Nothing -> loop config
+    Nothing -> crawler conf
     Just submit -> do
-      success <- OJ.submit config (submitJudgeType submit) (submitProblemId submit)
-                 (submitLang submit) (submitCode submit)
-      if success
-        then getResultAndUpdate config submit
-        else updateSubmit config $ mkSubmissionFailed submit
-      loop config
+      submitAndUpdate conf submit
+      crawler conf
