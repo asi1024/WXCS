@@ -6,6 +6,7 @@ module App (
 import Control.Monad (when, liftM)
 import Control.Monad.IO.Class
 
+import Data.ByteString.Lazy.Char8 (unpack)
 import Data.Maybe (fromJust, isNothing)
 import Data.Text (Text())
 import qualified Data.Text.Lazy as TL
@@ -17,6 +18,7 @@ import qualified Database.Persist.Sqlite as Sq
 import Network.HTTP.Types.Status (status401, status500)
 import Network.Wai.Middleware.RequestLogger
 import Network.Wai.Middleware.Static
+import Network.Wai.Parse (FileInfo(..))
 
 import Text.Blaze.Html.Renderer.Text (renderHtml)
 import Text.Hamlet
@@ -167,7 +169,9 @@ app db_file = do
     problemId <- liftM rmCRLF $ param "problem" :: ActionM String
     lang <- param "language" :: ActionM String
     contestId <- param "contest" :: ActionM Int
-    code <- param "code" :: ActionM String
+    code' <- param "code" :: ActionM String
+    codefiles <- files
+    let code = foldl (\acc (_,file) -> acc ++ unpack (fileContent file)) code' codefiles
     let size = show $ length code
     _ <- liftIO $ Sq.runSqlite db_file $ do
       Sq.insert $ Submit currentTime user_id judgeType contestId
