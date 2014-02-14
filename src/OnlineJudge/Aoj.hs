@@ -111,7 +111,7 @@ getText parent childName =
 getStatus :: XML.Element -> JudgeStatus
 getStatus xml =
   let st = XML.findChildren (XML.unqual "status") xml in
-  toJudge $ getText (head st) "status"
+  read $ getText (head st) "status"
 
 getTime :: XML.Element -> String
 getTime xml =
