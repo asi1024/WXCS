@@ -3,7 +3,6 @@ module OnlineJudge.Aoj where
 
 import Control.Concurrent
 import Control.Monad.IO.Class (liftIO)
-import Control.Monad.Trans.Class (lift)
 
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Char8 as BC
@@ -49,10 +48,8 @@ api :: (C.MonadBaseControl IO m, C.MonadResource m)
        -> H.Manager
        -> m (H.Response (C.ResumableSource m ByteString))
 api m url query mgr = do
-  req <- liftIO $ H.parseUrl url
-  let request = req { H.method = m,
-                      H.queryString = HT.renderSimpleQuery False query }
-  H.http request mgr
+  req <- liftIO $ mkRequest m url query
+  H.http req mgr
 
 submitAux :: (C.MonadBaseControl IO m, C.MonadResource m)
           => ByteString -- user id
@@ -64,6 +61,14 @@ submitAux :: (C.MonadBaseControl IO m, C.MonadResource m)
           -> m (H.Response (C.ResumableSource m ByteString))
 submitAux user pass pid lang src =
   api "POST" endpoint (mkQuery user pass pid lang src)
+
+submit :: AojConf -> String -> String -> String -> IO Bool
+submit conf pid lang code = H.withManager $ \mgr -> do
+  liftIO $ putStrLn "submit to AOJ"
+  res <- submitAux (BC.pack (C.user conf)) (BC.pack (C.pass conf)) (BC.pack pid)
+         (BC.pack lang) (BC.pack code) mgr
+  liftIO $ putStrLn (show (H.responseStatus res))
+  return (ok200 == (H.responseStatus res))
 
 mkStatusQuery :: String -> Maybe String -> HT.SimpleQuery
 mkStatusQuery userId problemId' =
@@ -82,17 +87,6 @@ status :: (C.MonadBaseControl IO m, C.MonadResource m)
 status userId problemId =
   api "GET" "http://judge.u-aizu.ac.jp/onlinejudge/webservice/status_log" (mkStatusQuery userId problemId)
 
-showAll :: C.Sink ByteString (C.ResourceT IO) ()
-showAll = CL.mapM_ (\s -> lift . putStrLn $ BC.unpack s)
-
-submit :: AojConf -> String -> String -> String -> IO Bool
-submit conf pid lang code = H.withManager $ \mgr -> do
-  liftIO $ putStrLn "submit to AOJ!"
-  res <- submitAux (BC.pack (C.user conf)) (BC.pack (C.pass conf)) (BC.pack pid)
-         (BC.pack lang) (BC.pack code) mgr
-  liftIO $ putStrLn (show (H.responseStatus res))
-  return (ok200 == (H.responseStatus res))
-
 fetchStatusXml :: String -> String -> IO ByteString
 fetchStatusXml userId problemId = H.withManager $ \mgr -> do
   res <- status userId (Just problemId) mgr
@@ -108,24 +102,14 @@ getText parent childName =
       let [XML.Text content] = XML.elContent child in
        XML.cdData content
 
-getStatus :: XML.Element -> JudgeStatus
+getStatus :: XML.Element -> (JudgeStatus, String, String)
 getStatus xml =
-  let st = XML.findChildren (XML.unqual "status") xml in
-  read $ getText (head st) "status"
-
-getTime :: XML.Element -> String
-getTime xml =
-  let st = XML.findChildren (XML.unqual "status") xml in
-  getText (head st) "cputime"
-
-getMemory :: XML.Element -> String
-getMemory xml =
-  let st = XML.findChildren (XML.unqual "status") xml in
-  getText (head st) "memory"
+  let st = head $ XML.findChildren (XML.unqual "status") xml in
+  (read $ getText st "status", getText st "cputime", getText st "memory")
 
 fetch :: AojConf -> String -> IO (Maybe (JudgeStatus, String, String))
 fetch conf pid = do
-  aux 0
+  aux (0 :: Int)
   where
     aux cnt =
       if cnt >= 5
@@ -137,7 +121,7 @@ fetch conf pid = do
         case xml_ of
           Nothing -> aux (cnt+1)
           Just xml -> do
-            let st = getStatus xml
+            let (st, time, mem) = getStatus xml
             if st /= Pending
-              then return $ Just (st, getTime xml, getMemory xml)
+              then return $ Just (st, time, mem)
               else aux (cnt+1)
