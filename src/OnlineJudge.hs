@@ -6,22 +6,15 @@ import Config
 import ModelTypes
 
 submit :: Configuration
-          -> String -- Judge type
+          -> JudgeType -- Judge type
           -> String -- problem id
           -> String -- language
           -> String -- code
           -> IO Bool
-submit conf judgeType pid lang code = do
-  putStrLn ("judge type = " ++ judgeType)
-  if judgeType == "Aizu"
-    then Aoj.submit (aoj conf) pid lang code
-    else return False
+submit conf Aizu pid lang code = Aoj.submit (aoj conf) pid lang code
 
 fetchResult :: Configuration
-               -> String -- Judge type
+               -> JudgeType-- Judge type
                -> String -- problem id
                -> IO (Maybe (JudgeStatus, String, String))
-fetchResult conf judge pid =
-  if judge == "Aizu"
-  then Aoj.fetch (aoj conf) pid
-  else return Nothing
+fetchResult conf Aizu pid = Aoj.fetch (aoj conf) pid

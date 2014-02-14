@@ -5,6 +5,8 @@ import Data.List (stripPrefix)
 
 import Database.Persist.TH
 
+import Text.Blaze (ToMarkup(..))
+
 data JudgeStatus =
   Accepted
   | WrongAnswer
@@ -37,3 +39,12 @@ instance Read JudgeStatus where
                           Just re -> Just (st, re)) Nothing [Accepted ..]
 
 derivePersistField "JudgeStatus"
+
+data JudgeType = Aizu
+  deriving (Eq, Ord, Enum, Bounded, Show, Read)
+
+instance ToMarkup JudgeType where
+  toMarkup = toMarkup . show
+  preEscapedToMarkup = preEscapedToMarkup . show
+
+derivePersistField "JudgeType"

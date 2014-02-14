@@ -11,7 +11,7 @@ import ModelTypes
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 Contest
   name String
-  judgeType String
+  judgeType JudgeType
   start ZonedTime
   end ZonedTime
   setter String
@@ -21,7 +21,7 @@ Contest
 Submit
   submitTime ZonedTime
   userId String
-  judgeType String
+  judgeType JudgeType
   contestnumber Int
   problemId String
   judge JudgeStatus
