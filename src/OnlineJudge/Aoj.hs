@@ -19,6 +19,8 @@ import qualified Text.XML.Light as XML
 import Config hiding (user, pass)
 import qualified Config as C
 
+import ModelTypes
+
 endpoint :: String
 endpoint = "http://judge.u-aizu.ac.jp/onlinejudge/servlet/Submit"
 
@@ -106,10 +108,10 @@ getText parent childName =
       let [XML.Text content] = XML.elContent child in
        XML.cdData content
 
-getStatus :: XML.Element -> String
+getStatus :: XML.Element -> JudgeStatus
 getStatus xml =
   let st = XML.findChildren (XML.unqual "status") xml in
-  getText (head st) "status"
+  toJudge $ getText (head st) "status"
 
 getTime :: XML.Element -> String
 getTime xml =
@@ -121,7 +123,7 @@ getMemory xml =
   let st = XML.findChildren (XML.unqual "status") xml in
   getText (head st) "memory"
 
-fetch :: AojConf -> String -> IO (Maybe (String, String, String))
+fetch :: AojConf -> String -> IO (Maybe (JudgeStatus, String, String))
 fetch conf pid = do
   aux 0
   where
@@ -136,6 +138,6 @@ fetch conf pid = do
           Nothing -> aux (cnt+1)
           Just xml -> do
             let st = getStatus xml
-            if st /= "Running"
+            if st /= Pending
               then return $ Just (st, getTime xml, getMemory xml)
               else aux (cnt+1)

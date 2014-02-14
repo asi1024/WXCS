@@ -23,16 +23,16 @@ findPendingSubmit config = do
     else return . Just . Sq.entityVal $ head submits
 
 mkSubmission :: Submit
-                -> String -- judge
+                -> JudgeStatus
                 -> String -- time
                 -> String -- memory
                 -> Submit
 mkSubmission (Submit time user_ judge contest pid _ _ _ s l c) j t m =
-  Submit time user_ judge contest pid (toJudge j) t m s l c
+  Submit time user_ judge contest pid j t m s l c
 
 mkSubmissionFailed :: Submit -> Submit
 mkSubmissionFailed s@(Submit _ _ _ _ _ _ t m _ _ _) =
-  mkSubmission s "Submission Failed" t m
+  mkSubmission s SubmissionError t m
 
 getResultAndUpdate :: Configuration -> Submit -> IO ()
 getResultAndUpdate config submit = do

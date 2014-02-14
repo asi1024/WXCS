@@ -3,7 +3,7 @@ module ModelTypes where
 
 import Database.Persist.TH
 
-data Judge =
+data JudgeStatus =
   Accepted
   | WrongAnswer
   | RuntimeError
@@ -15,7 +15,7 @@ data Judge =
   | Pending
     deriving (Eq, Ord, Enum, Bounded, Read)
 
-instance Show Judge where
+instance Show JudgeStatus where
   show Accepted = "Accepted"
   show WrongAnswer = "Wrong Answer"
   show RuntimeError = "Runtime Error"
@@ -26,7 +26,7 @@ instance Show Judge where
   show SubmissionError = "Submission Error"
   show Pending = "Pending"
 
-toJudge :: String -> Judge
+toJudge :: String -> JudgeStatus
 toJudge "Accepted" = Accepted
 toJudge "Wrong Answer" = WrongAnswer
 toJudge "Runtime Error" = RuntimeError
@@ -36,6 +36,7 @@ toJudge "Output Limit Exceeded" = OutputLimitExceeded
 toJudge "Compile Error" = CompileError
 toJudge "Submission Error" = SubmissionError
 toJudge "Pending" = Pending
+toJudge "Running" = Pending
 toJudge _ = error "Invalid string : toJudge."
 
-derivePersistField "Judge"
+derivePersistField "JudgeStatus"

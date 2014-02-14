@@ -3,6 +3,7 @@ module OnlineJudge where
 import qualified OnlineJudge.Aoj as Aoj
 
 import Config
+import ModelTypes
 
 submit :: Configuration
           -> String -- Judge type
@@ -19,8 +20,8 @@ submit conf judgeType pid lang code = do
 fetchResult :: Configuration
                -> String -- Judge type
                -> String -- problem id
-               -> IO (Maybe (String, String, String))
+               -> IO (Maybe (JudgeStatus, String, String))
 fetchResult conf judge pid =
   if judge == "Aizu"
   then Aoj.fetch (aoj conf) pid
-  else return $ Just ("Accept", "0.01", "10")
+  else return Nothing

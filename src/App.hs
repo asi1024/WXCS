@@ -31,7 +31,7 @@ import Utils
 aojurl :: String -> String
 aojurl n = "http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=" ++ n
 
-cssClass :: Judge -> String
+cssClass :: JudgeStatus -> String
 cssClass Accepted = "AC"
 cssClass WrongAnswer = "WA"
 cssClass RuntimeError = "RE"
@@ -42,7 +42,7 @@ cssClass CompileError = "CE"
 cssClass SubmissionError = "CE"
 cssClass Pending = "CE"
 
-type StatusTuple = (Text, String, String, String, String, String, String, Judge,
+type StatusTuple = (Text, String, String, String, String, String, String, JudgeStatus,
                     String, String, String, String)
 getUsers :: [StatusTuple] -> [String]
 getUsers [] = []

@@ -24,7 +24,7 @@ Submit
   judgeType String
   contestnumber Int
   problemId String
-  judge Judge
+  judge JudgeStatus
   time String
   memory String
   size String

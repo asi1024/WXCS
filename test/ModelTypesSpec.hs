@@ -7,7 +7,7 @@ import Test.QuickCheck
 
 import ModelTypes
 
-instance Arbitrary Judge where
+instance Arbitrary JudgeStatus where
   arbitrary = elements [Accepted, WrongAnswer, RuntimeError, TimeLimitExceeded,
                         MemoryLimitExceeded, OutputLimitExceeded, CompileError,
                         SubmissionError, Pending]
