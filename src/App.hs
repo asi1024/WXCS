@@ -164,7 +164,7 @@ app db_file = do
     user_id <- getUser
     currentTime <- liftIO getZonedTime
     judgeType <- liftM read $ param "type" :: ActionM JudgeType
-    problemId <- param "name" :: ActionM String
+    problemId <- liftM rmCRLF $ param "problem" :: ActionM String
     lang <- param "language" :: ActionM String
     contestId <- param "contest" :: ActionM Int
     code <- param "code" :: ActionM String

@@ -39,12 +39,17 @@ getAndUpdateWithRunId conf submit rid = do
       updateSubmit conf $ mkSubmission submit judge time mem
 
 getResultAndUpdate :: Configuration -> Submit -> Int -> IO ()
-getResultAndUpdate conf submit latest_run_id = loop
-  where loop = do
-          run_id <- OJ.getLatestRunId conf (submitJudgeType submit)
-          if run_id /= latest_run_id
-            then (forkIO $ getAndUpdateWithRunId conf submit run_id) >> return ()
-            else threadDelay (1000 * 1000) >> loop
+getResultAndUpdate conf submit latest_run_id = loop (0 :: Int)
+  where
+    loop n =
+      if n < 10
+      then do
+        run_id <- OJ.getLatestRunId conf (submitJudgeType submit)
+        if run_id /= latest_run_id
+          then (forkIO $ getAndUpdateWithRunId conf submit run_id) >> return ()
+          else threadDelay (1000 * 1000) >> loop (n+1)
+      else
+        updateSubmit conf (submit { submitJudge = Pending } )
 
 updateSubmit :: Configuration -> Submit -> IO ()
 updateSubmit conf s = do

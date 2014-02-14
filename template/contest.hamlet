@@ -90,7 +90,10 @@ $doctype 5
 
         <tr>
           <th>Problem ID:
-          <td><input type="text" name="name">
+          <td>
+            <select name="problem" size="1">
+              $forall problem <- problem_list
+                <option value="#{problem}" label="#{problem}">#{problem}
         <br>
 
         <tr>
