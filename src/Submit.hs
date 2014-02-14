@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Submit (
-  loop
+  crawler
   ) where
 
 import Control.Concurrent
@@ -30,13 +30,21 @@ mkSubmission :: Submit
                 -> Submit
 mkSubmission s j t m = s { submitJudge = j, submitTime = t, submitMemory = m }
 
-getResultAndUpdate :: Configuration -> Submit -> IO ()
-getResultAndUpdate conf submit = do
-  res <- OJ.fetchResult conf (submitJudgeType submit) (submitProblemId submit)
+getAndUpdateWithRunId :: Configuration -> Submit -> Int -> IO ()
+getAndUpdateWithRunId conf submit rid = do
+  res <- OJ.fetchByRunId conf (submitJudgeType submit) rid
   case res of
     Nothing -> updateSubmit conf $ submit { submitJudge = SubmissionError }
     Just (judge, time, mem) -> do
       updateSubmit conf $ mkSubmission submit judge time mem
+
+getResultAndUpdate :: Configuration -> Submit -> Int -> IO ()
+getResultAndUpdate conf submit latest_run_id = loop
+  where loop = do
+          run_id <- OJ.getLatestRunId conf (submitJudgeType submit)
+          if run_id /= latest_run_id
+            then getAndUpdateWithRunId conf submit run_id
+            else threadDelay (1000 * 1000) >> loop
 
 updateSubmit :: Configuration -> Submit -> IO ()
 updateSubmit conf s = do
@@ -46,16 +54,21 @@ updateSubmit conf s = do
     Nothing -> return ()
     Just submit_id -> Sq.runSqlite (db conf) $ Sq.replace submit_id s
 
-loop :: Configuration -> IO ()
-loop conf = do
+submitAndUpdate :: Configuration -> Submit -> IO ()
+submitAndUpdate conf s = do
+  last_run_id <- OJ.getLatestRunId conf (submitJudgeType s)
+  success <- OJ.submit conf (submitJudgeType s) (submitProblemId s)
+             (submitLang s) (submitCode s)
+  if success
+    then getResultAndUpdate conf s last_run_id
+    else updateSubmit conf $ s { submitJudge = SubmissionError }
+
+crawler :: Configuration -> IO ()
+crawler conf = do
   threadDelay (1000 * 1000) -- sleep 1sec
   submit' <- findPendingSubmit conf
   case submit' of
-    Nothing -> loop conf
+    Nothing -> crawler conf
     Just submit -> do
-      success <- OJ.submit conf (submitJudgeType submit) (submitProblemId submit)
-                 (submitLang submit) (submitCode submit)
-      if success
-        then getResultAndUpdate conf submit
-        else updateSubmit conf $ submit { submitJudge = SubmissionError }
-      loop conf
+      submitAndUpdate conf submit
+      crawler conf

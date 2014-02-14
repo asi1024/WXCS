@@ -2,12 +2,14 @@
 module OnlineJudge.Aoj where
 
 import Control.Concurrent
+import Control.Monad (liftM)
 import Control.Monad.IO.Class (liftIO)
 
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Char8 as BC
 import qualified Data.Conduit as C
 import qualified Data.Conduit.List as CL
+import Data.List (sort)
 
 import qualified Network.HTTP.Conduit as H
 import qualified Network.HTTP.Types as HT
@@ -19,6 +21,7 @@ import Config hiding (user, pass)
 import qualified Config as C
 
 import ModelTypes
+import Utils
 
 endpoint :: String
 endpoint = "http://judge.u-aizu.ac.jp/onlinejudge/servlet/Submit"
@@ -76,8 +79,8 @@ mkStatusQuery userId problemId' =
     Just problemId ->
       [("user_id", BC.pack userId),
        ("problem_id", BC.pack $ problemId),
-       ("limit", "1")]
-    Nothing -> [("user_id", BC.pack userId), ("limit", "1")]
+       ("limit", "10")]
+    Nothing -> [("user_id", BC.pack userId), ("limit", "10")]
 
 status :: (C.MonadBaseControl IO m, C.MonadResource m)
           => String -- User ID
@@ -87,9 +90,9 @@ status :: (C.MonadBaseControl IO m, C.MonadResource m)
 status userId problemId =
   api "GET" "http://judge.u-aizu.ac.jp/onlinejudge/webservice/status_log" (mkStatusQuery userId problemId)
 
-fetchStatusXml :: String -> String -> IO ByteString
-fetchStatusXml userId problemId = H.withManager $ \mgr -> do
-  res <- status userId (Just problemId) mgr
+fetchStatusXml :: String -> IO ByteString
+fetchStatusXml userId = H.withManager $ \mgr -> do
+  res <- status userId Nothing mgr
   xmls <- H.responseBody res C.$$+- CL.consume
   return $ BC.concat xmls
 
@@ -102,26 +105,57 @@ getText parent childName =
       let [XML.Text content] = XML.elContent child in
        XML.cdData content
 
-getStatus :: XML.Element -> (JudgeStatus, String, String)
-getStatus xml =
-  let st = head $ XML.findChildren (XML.unqual "status") xml in
-  (read $ getText st "status", getText st "cputime", getText st "memory")
+data AojStatus = AojStatus {
+  run_id :: Int,
+  user_id :: String,
+  problem_id :: String,
+  submission_date :: Integer,
+  judge_status :: JudgeStatus,
+  language :: String,
+  cpu_time :: Int,
+  memory :: Int,
+  code_size :: Int
+  } deriving (Show, Read, Eq)
 
-fetch :: AojConf -> String -> IO (Maybe (JudgeStatus, String, String))
-fetch conf pid = do
-  aux (0 :: Int)
+instance Ord AojStatus where
+  compare x y = compare (submission_date x) (submission_date y)
+
+parseXML :: ByteString -> Maybe XML.Element
+parseXML = XML.parseXMLDoc . filter (/= '\n') . BC.unpack
+
+getStatuses :: XML.Element -> [AojStatus]
+getStatuses xml = map f $ XML.findChildren (XML.unqual "status") xml
+  where f st = AojStatus {
+          run_id = read $ getText st "run_id",
+          user_id = getText st "user_id",
+          problem_id = getText st "problem_id",
+          submission_date = read $ getText st "submission_date",
+          judge_status = read $ getText st "status",
+          language = getText st "language",
+          cpu_time = read $ getText st "cputime",
+          memory = read $ getText st "memory",
+          code_size = read $ getText st "code_size" }
+
+fetchByRunId :: AojConf -> Int -> IO (Maybe (JudgeStatus, String, String))
+fetchByRunId conf rid = loop (0 :: Int)
   where
-    aux cnt =
-      if cnt >= 5
-      then return Nothing
-      else do
-        threadDelay (1000 * 1000)
-        xml' <- fetchStatusXml (C.user conf) pid
-        let xml_ = XML.parseXMLDoc $ filter (\c -> c /= '\n') (BC.unpack xml')
-        case xml_ of
-          Nothing -> aux (cnt+1)
-          Just xml -> do
-            let (st, time, mem) = getStatus xml
-            if st /= Pending
-              then return $ Just (st, time, mem)
-              else aux (cnt+1)
+    loop n = whenDef Nothing (n < 60) $ do
+      threadDelay (1000 * 1000) -- wait 1sec
+      xml' <- liftM parseXML $ fetchStatusXml (C.user conf)
+      case xml' of
+        Nothing -> loop (n+1)
+        Just xml -> do
+          let st = filter (\st' -> run_id st' == rid) $ getStatuses xml
+          if null st || ((judge_status $ head st) == Pending)
+            then loop (n+1)
+            else return $ f (head st)
+    f st = Just (judge_status st, show $ cpu_time st, show $ memory st)
+
+getLatestRunId :: AojConf -> IO Int
+getLatestRunId conf = do
+  xml' <- liftM parseXML $ fetchStatusXml (C.user conf)
+  case xml' of
+    Nothing -> error "Failed to fetch statux log."
+    Just xml -> do
+      let sts = reverse . sort $ getStatuses xml
+      return . run_id $ head sts
