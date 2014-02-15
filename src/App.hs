@@ -7,6 +7,7 @@ import Control.Monad (when, liftM)
 import Control.Monad.IO.Class
 
 import Data.ByteString.Lazy.Char8 (unpack)
+import Data.Char (isSpace)
 import Data.Maybe (fromJust, isNothing)
 import Data.Text (Text())
 import qualified Data.Text.Lazy as TL
@@ -166,7 +167,7 @@ app db_file = do
     user_id <- getUser
     currentTime <- liftIO getZonedTime
     judgeType <- liftM read $ param "type" :: ActionM JudgeType
-    problemId <- liftM rmCRLF $ param "problem" :: ActionM String
+    problemId <- liftM (filter $ not . isSpace) $ param "problem" :: ActionM String
     lang <- param "language" :: ActionM String
     contestId <- param "contest" :: ActionM Int
     code' <- param "code" :: ActionM String

@@ -2,8 +2,7 @@ module Utils (
   getLocalTime,
   toZonedTime,
   showTime,
-  whenDef,
-  rmCRLF
+  whenDef
   ) where
 
 import Data.Time
@@ -25,5 +24,3 @@ getLocalTime = getZonedTime >>= (return . showTime)
 whenDef :: (Monad m) => a -> Bool -> m a -> m a
 whenDef def p act = if p then act else return def
 
-rmCRLF :: String -> String
-rmCRLF = filter (\c -> c /= '\r' && c /= '\n')
