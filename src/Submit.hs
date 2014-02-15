@@ -40,7 +40,7 @@ getResultAndUpdate conf submit latest_run_id = loop (0 :: Int)
           then (forkIO $ getAndUpdateWithRunId conf submit run_id) >> return ()
           else threadDelay (1000 * 1000) >> loop (n+1)
       else
-        updateSubmit conf (submit { submitJudge = SubmissionError } )
+        updateSubmit (db conf) (submit { submitJudge = SubmissionError } )
 
 submitAndUpdate :: Configuration -> Submit -> IO ()
 submitAndUpdate conf s = do
