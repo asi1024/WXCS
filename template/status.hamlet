@@ -36,6 +36,7 @@ $doctype 5
             <th>Size
             <th>Lang
             <th>Source
+            <th>
 
         $forall (id, cid, st, submit_time, user, judge_type, pid, judge, time, memory, size, lang) <- status_list
           <tbody>
@@ -52,5 +53,6 @@ $doctype 5
               <td class="size">#{size}
               <td class="language">#{lang}
               <td class="source"><a href="source/#{id}">source
+              <td class="rejudge"><a href="rejudge/#{id}">rejudge
 
     <address class="footer">contributed by ****,******(2014)</address>
