@@ -243,8 +243,17 @@ app db_file = do
     current_time <- liftIO getLocalTime
     source' <- liftIO (Sq.runSqlite db_file (getByIntId source_id)) :: ActionM (Maybe Submit)
     case source' of
-      Nothing -> redirect "/status" -- source code not found!
+      Nothing -> redirect "../status" -- source code not found!
       Just source -> do
         let problem_id = submitProblemId source
         let submit_user_id = submitUserId source
         html $ renderHtml $ $(hamletFile "./template/source.hamlet") undefined
+
+  get "/rejudge/:submit_id" $ do
+    submit_id <- param "submit_id" :: ActionM Int
+    submit' <- liftIO $ Sq.runSqlite db_file (getByIntId submit_id)
+    case submit' of
+      Nothing -> redirect "../status"
+      Just submit -> do
+        liftIO $ updateSubmit db_file $ submit { submitJudge = Pending }
+        redirect "../status"

@@ -2,8 +2,12 @@
 {-# LANGUAGE TemplateHaskell, TypeFamilies, QuasiQuotes #-}
 module Model where
 
+import Control.Monad (liftM)
+
+import Data.Text (Text())
 import Data.Time
 
+import Database.Persist.Sqlite
 import Database.Persist.TH
 
 import ModelTypes
@@ -32,3 +36,14 @@ Submit
   code String
   deriving Show
 |]
+
+findSubmit :: Text -> [Filter Submit] -> IO (Maybe (Entity Submit))
+findSubmit db filt = runSqlite db $ selectFirst filt []
+
+updateSubmit :: Text -> Submit -> IO ()
+updateSubmit db s = do
+  submit <- findSubmit db [SubmitSubmitTime ==. (submitSubmitTime s),
+                           SubmitUserId ==. (submitUserId s)]
+  case liftM entityKey $ submit of
+    Nothing -> return ()
+    Just submit_id -> runSqlite db $ replace submit_id s
