@@ -12,8 +12,8 @@ import System.Locale (defaultTimeLocale)
 toZonedTime :: String -> IO ZonedTime
 toZonedTime s = do
   timezone <- getCurrentTimeZone
-  return $ readTime defaultTimeLocale "%Y%m%d%H%M%S%z"
-    (s ++ (timeZoneOffsetString timezone))
+  return $ readTime defaultTimeLocale "%Y%m%d%H%M%S %Z"
+    (s ++ " " ++ show timezone)
 
 showTime :: ZonedTime -> String
 showTime t = formatTime defaultTimeLocale "%Y-%m-%d %H:%M:%S" t
@@ -23,4 +23,3 @@ getLocalTime = getZonedTime >>= (return . showTime)
 
 whenDef :: (Monad m) => a -> Bool -> m a -> m a
 whenDef def p act = if p then act else return def
-

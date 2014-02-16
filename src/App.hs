@@ -1,7 +1,7 @@
 {-# LANGUAGE TemplateHaskell, GADTs, OverloadedStrings #-}
-module App (
-  app
-  ) where
+
+-- TODO: Split this module into public and private parts.
+module App where
 
 import Control.Monad (when, liftM)
 import Control.Monad.IO.Class
