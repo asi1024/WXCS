@@ -29,10 +29,8 @@ import qualified Web.Scotty as WS
 
 import Model
 import ModelTypes
+import OnlineJudge
 import Utils
-
-aojurl :: String -> String
-aojurl n = "http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=" ++ n
 
 cssClass :: JudgeStatus -> String
 cssClass Accepted = "AC"
@@ -155,7 +153,8 @@ app db_file = do
         let status_list = filter (\(_,x,_,_,_,y,_,_,_,_,_,_) -> x == contest_id_ && y == contest_type) status_list_
         let status_ac = map (getACTime status_list user_id) problem_list
         let status_wa = map (getWA status_list user_id) problem_list
-        let problems = zip4 problem_list (map aojurl problem_list) status_ac status_wa
+        let problems = zip4 problem_list (map (getDescriptionURL contest_type) problem_list)
+                       status_ac status_wa
 
         let users = getUsers status_list
         let standings = map (user_status status_list problem_list) users

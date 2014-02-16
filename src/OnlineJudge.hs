@@ -23,3 +23,8 @@ getLatestRunId :: Configuration
                   -> JudgeType -- judge type
                   -> IO Int
 getLatestRunId conf Aizu = Aoj.getLatestRunId (aoj conf)
+
+getDescriptionURL :: JudgeType
+                     -> String -- problem id
+                     -> String
+getDescriptionURL Aizu n = "http://judge.u-aizu.ac.jp/onlinejudge/description.jsp?id=" ++ n
