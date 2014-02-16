@@ -142,7 +142,7 @@ app db_file = do
     case contest' of
       Nothing -> redirect "/" -- contest not found!
       Just contest -> do
-        status_db <- liftIO (Sq.runSqlite "db.sqlite" (Sq.selectList [] []))
+        status_db <- liftIO (Sq.runSqlite db_file (Sq.selectList [] []))
                      :: ActionM [Sq.Entity Submit]
         let contest_type = contestJudgeType contest
         let start_time = showTime $ contestStart contest
@@ -207,7 +207,7 @@ app db_file = do
   get "/findcontest" $ do
     user_id <- getUser
     current_time <- liftIO getLocalTime
-    status_db <- liftIO (Sq.runSqlite "db.sqlite" (Sq.selectList [] []))
+    status_db <- liftIO (Sq.runSqlite db_file (Sq.selectList [] []))
                  :: ActionM [Sq.Entity Submit]
     let status_l = map mkStatusTuple status_db
     contest_id <- param "contest" :: ActionM String
@@ -218,7 +218,7 @@ app db_file = do
   get "/user" $ do
     user_id <- getUser
     current_time <- liftIO getLocalTime
-    status_db <- liftIO (Sq.runSqlite "db.sqlite" (Sq.selectList [] []))
+    status_db <- liftIO (Sq.runSqlite db_file (Sq.selectList [] []))
                  :: ActionM [Sq.Entity Submit]
     let status_l = map mkStatusTuple status_db
     name <- param "name" :: ActionM String
@@ -228,7 +228,7 @@ app db_file = do
   get "/statistics" $ do
     user_id <- getUser
     current_time <- liftIO getLocalTime
-    status_db <- liftIO (Sq.runSqlite "db.sqlite" (Sq.selectList [] []))
+    status_db <- liftIO (Sq.runSqlite db_file (Sq.selectList [] []))
                  :: ActionM [Sq.Entity Submit]
     let status_l = map mkStatusTuple status_db
     jtype <- liftM read $ param "type" :: ActionM JudgeType
