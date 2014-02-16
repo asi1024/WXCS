@@ -44,26 +44,25 @@ cssClass SubmissionError = "CE"
 cssClass Pending = "CE"
 cssClass Running = "CE"
 
-type StatusTuple = (Text, String, String, String, String, JudgeType, String, JudgeStatus,
-                    String, String, String, String)
-getUsers :: [StatusTuple] -> [String]
-getUsers [] = []
-getUsers ((_,_,_,_,x,_,_,_,_,_,_,_):xs) =
-  if (elem x l) then l else (x:l)
-  where l = getUsers xs
+type StatusTuple = (Text, Submit)
 
-getACTime :: [StatusTuple] -> String -> String -> Int
-getACTime status user pid =
+getUsers :: [Submit] -> [String]
+getUsers = nub . map submitUserId
+
+getACTime :: [Submit] -> String -> String -> Int
+getACTime statuses user pid =
   if length st == 0 then 0 else 1
-  where st = filter (\(_,_,_,_,u,_,p,j,_,_,_,_) -> u==user && p == filter ('\r'/=) pid && j==Accepted) status
+  where st = filter (\status -> eqUser status && eqProblem status && submitJudge status == Accepted) statuses
+        eqUser s = submitUserId s == user
+        eqProblem s = submitProblemId s == filter ('\r'/=) pid
 
-getWA :: [StatusTuple] -> String -> String -> Int
-getWA status user pid =
-  length st
-  where st = filter (\(_,_,_,_,u,_,p,j,_,_,_,_) -> u==user && p == filter ('\r'/=) pid && j/=Accepted) status
+getWA :: [Submit] -> String -> String -> Int
+getWA statuses user pid = length st
+  where st = filter (\status -> eqUser status && eqProblem status && submitJudge status /= Accepted) statuses
+        eqUser s = submitUserId s == user
+        eqProblem s = submitProblemId s == filter ('\r'/=) pid
 
-user_status :: [StatusTuple] -> [String] -> String
-               -> (String, [(Int, Int)], Int, Int)
+user_status :: [Submit] -> [String] -> String -> (String, [(Int, Int)], Int, Int)
 user_status status problem_list user =
   (user, zip wa ac, length $ filter (>0) ac, sum ac)
   where ac = map (getACTime status user) problem_list
@@ -90,14 +89,8 @@ mkContestTuple entity =
    showTime $ contestStart contest, showTime $ contestEnd contest,
    contestSetter contest)
 
-mkStatusTuple :: Sq.Entity Submit -> StatusTuple
-mkStatusTuple entity =
-  let status_ = Sq.entityVal entity in
-  (getId entity, show $ submitContestnumber status_,
-   cssClass $ submitJudge status_, showTime $ submitSubmitTime status_,
-   submitUserId status_, submitJudgeType status_, submitProblemId status_,
-   submitJudge status_, submitTime status_, submitMemory status_,
-   submitSize status_, submitLang status_)
+entityToTuple :: Sq.Entity a -> (Text, a)
+entityToTuple ent = (getId ent, Sq.entityVal ent)
 
 forwardedUserKey :: TL.Text
 forwardedUserKey = "X-Forwarded-User"
@@ -149,8 +142,9 @@ app db_file = do
         let end_time = showTime $ contestEnd contest
         let problem_list = contestProblems contest
 
-        let status_list_ = map mkStatusTuple status_db
-        let status_list = filter (\(_,x,_,_,_,y,_,_,_,_,_,_) -> x == contest_id_ && y == contest_type) status_list_
+        let status_list_ = map Sq.entityVal status_db
+        let status_list = filter (\s -> submitContestnumber s == contest_id
+                                        && submitJudgeType s == contest_type) status_list_
         let status_ac = map (getACTime status_list user_id) problem_list
         let status_wa = map (getWA status_list user_id) problem_list
         let problems = zip4 problem_list (map (getDescriptionURL contest_type) problem_list)
@@ -201,7 +195,7 @@ app db_file = do
     current_time <- liftIO getLocalTime
     status_db <- liftIO (Sq.runSqlite db_file (Sq.selectList [] []))
                  :: ActionM [Sq.Entity Submit]
-    let status_list = map mkStatusTuple status_db
+    let status_list = map entityToTuple status_db
     html $ renderHtml $ $(hamletFile "./template/status.hamlet") undefined
 
   get "/findcontest" $ do
@@ -209,10 +203,9 @@ app db_file = do
     current_time <- liftIO getLocalTime
     status_db <- liftIO (Sq.runSqlite db_file (Sq.selectList [] []))
                  :: ActionM [Sq.Entity Submit]
-    let status_l = map mkStatusTuple status_db
-    contest_id <- param "contest" :: ActionM String
-    let status_list = filter (\(_,x,_,_,_,_,_,_,_,_,_,_) -> x==contest_id) status_l
-    --let status_list = status_l
+    let status_l = map entityToTuple status_db
+    contest_id <- param "contest" :: ActionM Int
+    let status_list = filter (\(_,s) -> submitContestnumber s == contest_id) status_l
     html $ renderHtml $ $(hamletFile "./template/status.hamlet") undefined
 
   get "/user" $ do
@@ -220,9 +213,9 @@ app db_file = do
     current_time <- liftIO getLocalTime
     status_db <- liftIO (Sq.runSqlite db_file (Sq.selectList [] []))
                  :: ActionM [Sq.Entity Submit]
-    let status_l = map mkStatusTuple status_db
+    let status_l = map entityToTuple status_db
     name <- param "name" :: ActionM String
-    let status_list = filter (\(_,_,_,_,x,_,_,_,_,_,_,_) -> x==name) status_l
+    let status_list = filter (\(_,s) -> submitUserId s == name) status_l
     html $ renderHtml $ $(hamletFile "./template/status.hamlet") undefined
 
   get "/statistics" $ do
@@ -230,10 +223,10 @@ app db_file = do
     current_time <- liftIO getLocalTime
     status_db <- liftIO (Sq.runSqlite db_file (Sq.selectList [] []))
                  :: ActionM [Sq.Entity Submit]
-    let status_l = map mkStatusTuple status_db
+    let status_l = map entityToTuple status_db
     jtype <- liftM read $ param "type" :: ActionM JudgeType
     pid <- param "pid" :: ActionM String
-    let status_list = filter (\(_,_,_,_,_,t,p,_,_,_,_,_) -> t==jtype && p==pid) status_l
+    let status_list = filter (\(_,s) -> submitJudgeType s == jtype && submitProblemId s == pid) status_l
     html $ renderHtml $ $(hamletFile "./template/status.hamlet") undefined
 
   get "/source/:source_id" $ do

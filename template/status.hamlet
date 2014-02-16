@@ -38,20 +38,20 @@ $doctype 5
             <th>Source
             <th>
 
-        $forall (id, cid, st, submit_time, user, judge_type, pid, judge, time, memory, size, lang) <- status_list
+        $forall (id, s) <- status_list
           <tbody>
-            <tr class="#{st}">
+            <tr class="#{cssClass (submitJudge s)}">
               <td class="id">#{id}
-              <td class="id"><a href="findcontest?contest=#{cid}">#{cid}
-              <td class="datetime">#{submit_time}
-              <td class="user"><a href="user?name=#{user}">#{user}
-              <td class="problem">#{judge_type}
-              <td class="problem"><a href="statistics?type=#{judge_type}&pid=#{pid}">#{pid}
-              <td class="judge">#{judge}
-              <td class="time">#{time}
-              <td class="memory">#{memory}
-              <td class="size">#{size}
-              <td class="language">#{lang}
+              <td class="id"><a href="findcontest?contest=#{submitContestnumber s}">#{submitContestnumber s}
+              <td class="datetime">#{showTime $ submitSubmitTime s}
+              <td class="user"><a href="user?name=#{submitUserId s}">#{submitUserId s}
+              <td class="problem">#{submitJudgeType s}
+              <td class="problem"><a href="statistics?type=#{submitJudgeType s}&pid=#{submitProblemId s}">#{submitProblemId s}
+              <td class="judge">#{submitJudge s}
+              <td class="time">#{submitTime s}
+              <td class="memory">#{submitMemory s}
+              <td class="size">#{submitSize s}
+              <td class="language">#{submitLang s}
               <td class="source"><a href="source/#{id}">source
               <td class="rejudge"><a href="rejudge/#{id}">rejudge
 
