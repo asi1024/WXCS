@@ -43,7 +43,7 @@ $doctype 5
             <tr class="#{cssClass (submitJudge s)}">
               <td class="id">#{id}
               <td class="id"><a href="findcontest?contest=#{submitContestnumber s}">#{submitContestnumber s}
-              <td class="datetime">#{showTime $ submitSubmitTime s}
+              <td class="datetime">#{submitSubmitTime s}
               <td class="user"><a href="user?name=#{submitUserId s}">#{submitUserId s}
               <td class="problem">#{submitJudgeType s}
               <td class="problem"><a href="statistics?type=#{submitJudgeType s}&pid=#{submitProblemId s}">#{submitProblemId s}

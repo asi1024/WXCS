@@ -2,10 +2,13 @@
 module ModelTypes where
 
 import Data.List (stripPrefix)
+import Data.Time (ZonedTime())
 
 import Database.Persist.TH
 
 import Text.Blaze (ToMarkup(..))
+
+import Utils
 
 data JudgeStatus =
   Accepted
@@ -54,3 +57,7 @@ instance ToMarkup JudgeType where
   preEscapedToMarkup = preEscapedToMarkup . show
 
 derivePersistField "JudgeType"
+
+instance ToMarkup ZonedTime where
+  toMarkup = toMarkup . showTime
+  preEscapedToMarkup = preEscapedToMarkup . showTime

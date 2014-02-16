@@ -44,8 +44,6 @@ cssClass SubmissionError = "CE"
 cssClass Pending = "CE"
 cssClass Running = "CE"
 
-type StatusTuple = (Text, Submit)
-
 getUsers :: [Submit] -> [String]
 getUsers = nub . map submitUserId
 
@@ -82,12 +80,11 @@ getByIntId i = Sq.get $ Sq.Key $ Sq.PersistInt64 (fromIntegral i)
 getId :: Sq.Entity a -> Text
 getId ent = let Right key = Sq.fromPersistValue . Sq.unKey $ Sq.entityKey ent in key
 
-mkContestTuple :: Sq.Entity Contest -> (Text, String, JudgeType, String, String, String)
+mkContestTuple :: Sq.Entity Contest -> (Text, String, JudgeType, ZonedTime, ZonedTime, String)
 mkContestTuple entity =
   let contest = Sq.entityVal entity in
   (getId entity, contestName contest, contestJudgeType contest,
-   showTime $ contestStart contest, showTime $ contestEnd contest,
-   contestSetter contest)
+   contestStart contest, contestEnd contest, contestSetter contest)
 
 entityToTuple :: Sq.Entity a -> (Text, a)
 entityToTuple ent = (getId ent, Sq.entityVal ent)
@@ -138,8 +135,6 @@ app db_file = do
         status_db <- liftIO (Sq.runSqlite db_file (Sq.selectList [] []))
                      :: ActionM [Sq.Entity Submit]
         let contest_type = contestJudgeType contest
-        let start_time = showTime $ contestStart contest
-        let end_time = showTime $ contestEnd contest
         let problem_list = contestProblems contest
 
         let status_list_ = map Sq.entityVal status_db

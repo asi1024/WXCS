@@ -23,8 +23,8 @@ $doctype 5
       <h1>Contest - #{contestName contest}
       <ul>
         <li>Contest Host : #{contest_type}
-        <li>Contest Start : #{start_time}
-        <li>Contest Finish : #{end_time}
+        <li>Contest Start : #{contestStart contest}
+        <li>Contest Finish : #{contestEnd contest}
 
       <h2>Problem Set
       <table summary="problem set">
