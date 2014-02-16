@@ -114,7 +114,7 @@ app db_file = do
     current_time <- liftIO getLocalTime
     contests <- liftIO (Sq.runSqlite db_file (Sq.selectList [] []))
                 :: ActionM [Sq.Entity Contest]
-    let contest_list = map entityToTuple contests
+    let contest_list = reverse $ map entityToTuple contests
     html $ renderHtml $ $(hamletFile "./template/index.hamlet") undefined
 
   get "/contest/:contest_id" $ do
@@ -184,7 +184,7 @@ app db_file = do
     current_time <- liftIO getLocalTime
     status_db <- liftIO (Sq.runSqlite db_file (Sq.selectList [] []))
                  :: ActionM [Sq.Entity Submit]
-    let status_list = map entityToTuple status_db
+    let status_list = take 20 $ reverse $ map entityToTuple status_db
     html $ renderHtml $ $(hamletFile "./template/status.hamlet") undefined
 
   get "/findcontest" $ do
@@ -194,7 +194,7 @@ app db_file = do
                  :: ActionM [Sq.Entity Submit]
     let status_l = map entityToTuple status_db
     contest_id <- param "contest" :: ActionM Int
-    let status_list = filter (\(_,s) -> submitContestnumber s == contest_id) status_l
+    let status_list = reverse $ filter (\(_,s) -> submitContestnumber s == contest_id) status_l
     html $ renderHtml $ $(hamletFile "./template/status.hamlet") undefined
 
   get "/user" $ do
@@ -204,7 +204,7 @@ app db_file = do
                  :: ActionM [Sq.Entity Submit]
     let status_l = map entityToTuple status_db
     name <- param "name" :: ActionM String
-    let status_list = filter (\(_,s) -> submitUserId s == name) status_l
+    let status_list = reverse $ filter (\(_,s) -> submitUserId s == name) status_l
     html $ renderHtml $ $(hamletFile "./template/status.hamlet") undefined
 
   get "/statistics" $ do
@@ -215,7 +215,7 @@ app db_file = do
     let status_l = map entityToTuple status_db
     jtype <- liftM read $ param "type" :: ActionM JudgeType
     pid <- param "pid" :: ActionM String
-    let status_list = filter (\(_,s) -> submitJudgeType s == jtype && submitProblemId s == pid) status_l
+    let status_list = reverse $ filter (\(_,s) -> submitJudgeType s == jtype && submitProblemId s == pid) status_l
     html $ renderHtml $ $(hamletFile "./template/status.hamlet") undefined
 
   get "/source/:source_id" $ do
