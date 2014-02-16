@@ -29,15 +29,15 @@ $doctype 5
             <th>Problem Setter
             <th>Edit
 
-        $forall (id, name, type, start_time, end_time, setter) <- contest_list
+        $forall (id, c) <- contest_list
           <tbody>
             <tr>
-            <td><a class="white" href="contest/#{id}">#{name}
-            <td>#{type}
-            <td>#{start_time}
-            <td>#{end_time}
-            <td>#{setter}
-            <td><a href="setcontest?id=1">Edit
+            <td><a class="white" href="contest/#{id}">#{contestName c}
+            <td>#{contestJudgeType c}
+            <td>#{contestStart c}
+            <td>#{contestEnd c}
+            <td>#{contestSetter c}
+            <td><a href="setcontest?id=#{id}">Edit
 
       <h1>Setting
       <ul>

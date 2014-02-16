@@ -80,12 +80,6 @@ getByIntId i = Sq.get $ Sq.Key $ Sq.PersistInt64 (fromIntegral i)
 getId :: Sq.Entity a -> Text
 getId ent = let Right key = Sq.fromPersistValue . Sq.unKey $ Sq.entityKey ent in key
 
-mkContestTuple :: Sq.Entity Contest -> (Text, String, JudgeType, ZonedTime, ZonedTime, String)
-mkContestTuple entity =
-  let contest = Sq.entityVal entity in
-  (getId entity, contestName contest, contestJudgeType contest,
-   contestStart contest, contestEnd contest, contestSetter contest)
-
 entityToTuple :: Sq.Entity a -> (Text, a)
 entityToTuple ent = (getId ent, Sq.entityVal ent)
 
@@ -120,7 +114,7 @@ app db_file = do
     current_time <- liftIO getLocalTime
     contests <- liftIO (Sq.runSqlite db_file (Sq.selectList [] []))
                 :: ActionM [Sq.Entity Contest]
-    let contest_list = map mkContestTuple contests
+    let contest_list = map entityToTuple contests
     html $ renderHtml $ $(hamletFile "./template/index.hamlet") undefined
 
   get "/contest/:contest_id" $ do
