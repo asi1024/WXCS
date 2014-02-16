@@ -184,14 +184,13 @@ app db_file = do
     html $ renderHtml $ $(hamletFile "./template/setcontest.hamlet") undefined
 
   post "/setcontest" $ do
-    _ <- getUser
+    setter <- getUser
     contest_name <- param "name" :: ActionM String
     contest_type <- liftM read $ param "type" :: ActionM JudgeType
     start_time_ <- param "starttime" :: ActionM String
     start_time <- liftIO $ toZonedTime start_time_
     end_time_ <- param "endtime" :: ActionM String
     end_time <- liftIO $ toZonedTime end_time_
-    setter <- param "setter" :: ActionM String
     problem <- param "problem" :: ActionM String
     _ <- liftIO $ Sq.runSqlite db_file $ do
       Sq.insert $ Contest contest_name contest_type start_time end_time setter (lines problem)
