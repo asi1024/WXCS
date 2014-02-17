@@ -1,11 +1,8 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module ModelTypesSpec where
 
-import Test.Hspec
-import Test.Hspec.QuickCheck (prop)
-import Test.QuickCheck
-
 import ModelTypes
+import SpecHelper
 
 instance Arbitrary JudgeStatus where
   arbitrary = elements [Accepted, WrongAnswer, RuntimeError, TimeLimitExceeded,

@@ -1,34 +1,10 @@
 {-# LANGUAGE FlexibleInstances #-}
 module AppSpec where
 
-import Data.Default
-import Data.Time
-
-import Test.Hspec
-
 import ModelTypes
 import Model
 import App
-
-instance Default TimeZone where
-  def = utc
-
-instance Default UTCTime where
-  def = UTCTime (fromGregorian 2000 1 1) (secondsToDiffTime 0)
-
-instance Default (SubmitGeneric t) where
-  def = Submit {
-    submitSubmitTime = utcToZonedTime def def,
-    submitUserId = def,
-    submitJudgeType = Aizu,
-    submitContestnumber = def,
-    submitProblemId = def,
-    submitJudge = Accepted,
-    submitTime = def,
-    submitMemory = def,
-    submitSize = def,
-    submitLang = def,
-    submitCode = def }
+import SpecHelper
 
 spec :: Spec
 spec = do
