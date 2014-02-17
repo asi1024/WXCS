@@ -59,7 +59,7 @@ getACTime statuses start user pid =
 
 getWA :: [Submit] -> String -> String -> Int
 getWA statuses user pid = length st
-  where st = filter (\status -> eqUser status && eqProblem status && submitJudge status /= Accepted) statuses
+  where st = takeWhile (\x -> submitJudge x /= Accepted) $ filter (\x -> eqUser x && eqProblem x) statuses
         eqUser s = submitUserId s == user
         eqProblem s = submitProblemId s == filter ('\r'/=) pid
 
