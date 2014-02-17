@@ -1,5 +1,6 @@
 module SpecHelper (
   module Data.Default,
+  module Data.Time,
   module Test.Hspec,
   module Test.QuickCheck,
   prop

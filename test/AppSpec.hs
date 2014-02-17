@@ -27,15 +27,19 @@ spec = do
 
   describe "getACTime" $ do
     context "user already have got AC" $ do
-      it "should return the difference in minute between AC time and now" $ do
-        pending
+      let contestStart = def
+      let acceptedTime = utcToZonedTime (zonedTimeZone def) $ addUTCTime 300 def -- 5 mins after.
+      let submits = [ def { submitUserId = "user", submitJudge = Accepted, submitProblemId = "1",
+                            submitSubmitTime = acceptedTime } ]
+      it "should return the difference in minute between AC time and contest start time" $ do
+        getACTime submits contestStart "user" "1" `shouldBe` 5
 
     context "user have not got AC yet" $ do
       let submits = [ def { submitUserId = "user", submitJudge = WrongAnswer, submitProblemId = "1" },
                       def { submitUserId = "user2", submitJudge = Accepted, submitProblemId = "1" },
                       def { submitUserId = "user", submitJudge = CompileError, submitProblemId = "1" } ]
       it "should return 0" $ do
-        getACTime submits "user" "1" `shouldBe` 0
+        getACTime submits def "user" "1" `shouldBe` 0
 
   describe "getWA" $ do
     context "user already have got AC" $ do
