@@ -46,4 +46,4 @@ updateSubmit db s = do
                            SubmitUserId ==. (submitUserId s)]
   case liftM entityKey $ submit of
     Nothing -> return ()
-    Just submit_id -> runSqlite db $ replace submit_id s
+    Just submitId -> runSqlite db $ replace submitId s

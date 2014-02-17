@@ -74,13 +74,13 @@ submit conf pid lang code = H.withManager $ \mgr -> do
   return (ok200 == (H.responseStatus res))
 
 mkStatusQuery :: String -> Maybe String -> HT.SimpleQuery
-mkStatusQuery userId problemId' =
+mkStatusQuery userId' problemId' =
   case problemId' of
     Just problemId ->
-      [("user_id", BC.pack userId),
+      [("user_id", BC.pack userId'),
        ("problem_id", BC.pack $ problemId),
        ("limit", "10")]
-    Nothing -> [("user_id", BC.pack userId), ("limit", "10")]
+    Nothing -> [("user_id", BC.pack userId'), ("limit", "10")]
 
 status :: (C.MonadBaseControl IO m, C.MonadResource m)
           => String -- User ID
@@ -106,19 +106,19 @@ getText parent childName =
        XML.cdData content
 
 data AojStatus = AojStatus {
-  run_id :: Int,
-  user_id :: String,
-  problem_id :: String,
-  submission_date :: Integer,
-  judge_status :: JudgeStatus,
+  runId :: Int,
+  userId :: String,
+  problemId :: String,
+  submissionDate :: Integer,
+  judgeStatus :: JudgeStatus,
   language :: String,
-  cpu_time :: Int,
+  cpuTime :: Int,
   memory :: Int,
-  code_size :: Int
+  codeSize :: Int
   } deriving (Show, Read, Eq)
 
 instance Ord AojStatus where
-  compare x y = compare (submission_date x) (submission_date y)
+  compare x y = compare (submissionDate x) (submissionDate y)
 
 parseXML :: ByteString -> Maybe XML.Element
 parseXML = XML.parseXMLDoc . filter (/= '\n') . BC.unpack
@@ -126,15 +126,15 @@ parseXML = XML.parseXMLDoc . filter (/= '\n') . BC.unpack
 getStatuses :: XML.Element -> [AojStatus]
 getStatuses xml = map f $ XML.findChildren (XML.unqual "status") xml
   where f st = AojStatus {
-          run_id = read $ getText st "run_id",
-          user_id = getText st "user_id",
-          problem_id = getText st "problem_id",
-          submission_date = read $ getText st "submission_date",
-          judge_status = read $ getText st "status",
+          runId = read $ getText st "run_id",
+          userId = getText st "user_id",
+          problemId = getText st "problem_id",
+          submissionDate = read $ getText st "submission_date",
+          judgeStatus = read $ getText st "status",
           language = getText st "language",
-          cpu_time = read $ getText st "cputime",
+          cpuTime = read $ getText st "cputime",
           memory = read $ getText st "memory",
-          code_size = read $ getText st "code_size" }
+          codeSize = read $ getText st "code_size" }
 
 fetchByRunId :: AojConf -> Int -> IO (Maybe (JudgeStatus, String, String))
 fetchByRunId conf rid = loop (0 :: Int)
@@ -145,11 +145,11 @@ fetchByRunId conf rid = loop (0 :: Int)
       case xml' of
         Nothing -> loop (n+1)
         Just xml -> do
-          let st = filter (\st' -> run_id st' == rid) $ getStatuses xml
-          if null st || ((judge_status $ head st) == Pending)
+          let st = filter (\st' -> runId st' == rid) $ getStatuses xml
+          if null st || ((judgeStatus $ head st) == Pending)
             then loop (n+1)
             else return $ f (head st)
-    f st = Just (judge_status st, show $ cpu_time st, show $ memory st)
+    f st = Just (judgeStatus st, show $ cpuTime st, show $ memory st)
 
 getLatestRunId :: AojConf -> IO Int
 getLatestRunId conf = do
@@ -158,4 +158,4 @@ getLatestRunId conf = do
     Nothing -> error "Failed to fetch statux log."
     Just xml -> do
       let sts = reverse . sort $ getStatuses xml
-      return . run_id $ head sts
+      return . runId $ head sts

@@ -30,26 +30,26 @@ getAndUpdateWithRunId conf submit rid = do
         submit { submitJudge = judge, submitTime = time, submitMemory = mem }
 
 getResultAndUpdate :: Configuration -> Submit -> Int -> IO ()
-getResultAndUpdate conf submit latest_run_id = loop (0 :: Int)
+getResultAndUpdate conf submit latestRunId = loop (0 :: Int)
   where
     loop n =
       if n < 10
       then do
-        run_id <- OJ.getLatestRunId conf (submitJudgeType submit)
-        if run_id /= latest_run_id
-          then (forkIO $ getAndUpdateWithRunId conf submit run_id) >> return ()
+        runId <- OJ.getLatestRunId conf (submitJudgeType submit)
+        if runId /= latestRunId
+          then (forkIO $ getAndUpdateWithRunId conf submit runId) >> return ()
           else threadDelay (1000 * 1000) >> loop (n+1)
       else
         updateSubmit (db conf) (submit { submitJudge = SubmissionError } )
 
 submitAndUpdate :: Configuration -> Submit -> IO ()
 submitAndUpdate conf s = do
-  last_run_id <- OJ.getLatestRunId conf (submitJudgeType s)
+  lastRunId <- OJ.getLatestRunId conf (submitJudgeType s)
   updateSubmit (db conf) (s { submitJudge = Running })
   success <- OJ.submit conf (submitJudgeType s) (submitProblemId s)
              (submitLang s) (submitCode s)
   if success
-    then getResultAndUpdate conf s last_run_id
+    then getResultAndUpdate conf s lastRunId
     else updateSubmit (db conf) $ s { submitJudge = SubmissionError }
 
 crawler :: Configuration -> IO ()
