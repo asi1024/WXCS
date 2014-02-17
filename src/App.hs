@@ -48,7 +48,7 @@ getUsers :: [Submit] -> [String]
 getUsers = nub . map submitUserId
 
 diffTime :: ZonedTime -> ZonedTime -> Int
-diffTime a b = round $ diffUTCTime (zonedTimeToUTC a) (zonedTimeToUTC b) / 60
+diffTime a b = ceiling $ diffUTCTime (zonedTimeToUTC a) (zonedTimeToUTC b) / 60
 
 getACTime :: [Submit] -> ZonedTime -> String -> String -> Int
 getACTime statuses start user pid =
@@ -125,6 +125,7 @@ app dbFile = do
     contestId_ <- param "contest_id" :: ActionM String
     let contestId = read contestId_ :: Int
     currentTime <- liftIO getLocalTime
+    currentTime_ <- liftIO getZonedTime
     contest' <- liftIO (Sq.runSqlite dbFile (getByIntId contestId)) :: ActionM (Maybe Contest)
     case contest' of
       Nothing -> redirect "/" -- contest not found!
@@ -132,7 +133,8 @@ app dbFile = do
         statusDb <- liftIO (Sq.runSqlite dbFile (Sq.selectList [] []))
                      :: ActionM [Sq.Entity Submit]
         let contestType = contestJudgeType contest
-        let problemList = contestProblems contest
+        let problemList_ = contestProblems contest
+        let problemList = map (\x -> if diffTime currentTime_ (contestStart contest) > 0 then x else "????") problemList_
 
         let statusList_ = map Sq.entityVal statusDb
         let statusList = filter (\s -> submitContestnumber s == contestId
