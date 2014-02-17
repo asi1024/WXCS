@@ -171,6 +171,18 @@ app dbFile = do
     currentTime <- liftIO getLocalTime
     html $ renderHtml $ $(hamletFile "./template/setcontest.hamlet") undefined
 
+  get "/setcontest/:contestId" $ do
+    userId <- getUser
+    currentTime <- liftIO getLocalTime
+    contestId <- param "contestId" :: ActionM Int
+    contest' <- liftIO $ Sq.runSqlite dbFile $ getByIntId contestId :: ActionM (Maybe Contest)
+    case contest' of
+      Nothing -> redirect "../"
+      Just contest -> do
+        if contestSetter contest /= userId
+          then redirect "../"
+          else html $ renderHtml $ $(hamletFile "./template/editcontest.hamlet") undefined
+
   post "/setcontest" $ do
     setter <- getUser
     contestName <- param "name" :: ActionM String
@@ -183,6 +195,32 @@ app dbFile = do
     _ <- liftIO $ Sq.runSqlite dbFile $ do
       Sq.insert $ Contest contestName contestType startTime endTime setter (lines problem)
     redirect "./"
+
+  post "/setcontest/:contestId" $ do
+    setter <- getUser
+    cName <- param "name" :: ActionM String
+    contestType <- liftM read $ param "type" :: ActionM JudgeType
+    startTime_ <- param "starttime" :: ActionM String
+    startTime <- liftIO $ toZonedTime startTime_
+    endTime_ <- param "endtime" :: ActionM String
+    endTime <- liftIO $ toZonedTime endTime_
+    problem <- param "problem" :: ActionM String
+    contestId_ <- param "contestId" :: ActionM String
+    let contestId = read contestId_ :: Int
+    contest' <- liftIO $ Sq.runSqlite dbFile (getByIntId contestId)
+                :: ActionM (Maybe Contest)
+    case contest' of
+      Nothing -> redirect "../status"
+      Just contest -> do
+        liftIO $ updateContest dbFile $ contest {
+          contestName = cName,
+          contestJudgeType = contestType,
+          contestStart = startTime,
+          contestEnd = endTime,
+          contestSetter = setter,
+          contestProblems = (lines problem)
+          }
+        redirect "../"
 
   get "/status" $ do
     userId <- getUser

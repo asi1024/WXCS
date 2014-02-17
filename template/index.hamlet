@@ -37,7 +37,7 @@ $doctype 5
             <td>#{contestStart c}
             <td>#{contestEnd c}
             <td>#{contestSetter c}
-            <td><a href="setcontest?id=#{id}">Edit
+            <td><a href="setcontest/#{id}">Edit
 
       <h1>Setting
       <ul>

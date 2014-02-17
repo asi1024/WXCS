@@ -1,0 +1,43 @@
+$doctype 5
+<html lang="ja">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=euc-jp">
+    <meta http-equiv="Content-Style-Type" content="text/css">
+    <link rel="stylesheet" href="../css/default.css" type="text/css">
+
+    <title>WX Contest System
+  <body>
+    <div class="header">
+      <h1 id="logo">WX Contest System
+      <span class="username">You are #{userId}. |
+      <span class="index-link">
+        <a href="../">Top
+        |
+      <span class="status-link">
+        <a href="../status">Status
+        |
+      <span class="current-time">Current Time:
+        <strong>#{currentTime}
+
+    <div class="main">
+      <h1>Set Contest
+
+      <form action="../setcontest/#{contestId}" method="post">
+        <input type="hidden" name="id" value="">
+        <input type="hidden" name="setter" value="sss">
+        Setter User: #{contestSetter contest}<br>
+        <input type="hidden" name="name" value="#{contestName contest}">
+        Contest Name: #{contestName contest}<br>
+        <select name="type">
+          <option value="Aizu" >Aizu
+
+        Problem Sets:<br>
+        <textarea rows="10" cols="90" name="problem">
+          #{unlines $ contestProblems contest}
+        <br>
+        Start Datetime:<input type="text" name="starttime" value="#{fromZonedTime $ contestStart contest}"><br>
+        End Datetime:<input type="text" name="endtime" value="#{fromZonedTime $ contestEnd contest}"><br>
+
+        <p><input type="submit" name="submit" value="Submit">
+
+    <address class="footer">contributed by ***,******(2014)
