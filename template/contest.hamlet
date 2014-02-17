@@ -9,7 +9,7 @@ $doctype 5
   <body>
     <div class="header">
       <h1 id="logo">WX Contest System</h1>
-      <span class="username">You are #{user_id}. |
+      <span class="username">You are #{userId}. |
       <span class="index-link">
         <a href="../">Top
         |
@@ -17,12 +17,12 @@ $doctype 5
         <a href="../status">Status
         |
       <span class="current-time">Current Time:
-        <strong>#{current_time}
+        <strong>#{currentTime}
 
     <div class="main">
       <h1>Contest - #{contestName contest}
       <ul>
-        <li>Contest Host : #{contest_type}
+        <li>Contest Host : #{contestType}
         <li>Contest Start : #{contestStart contest}
         <li>Contest Finish : #{contestEnd contest}
 
@@ -60,11 +60,11 @@ $doctype 5
             <th>Accepted
             <th>Penalty
 
-          $forall (rank, user_name, user_status, ac, penalty) <- contest_status
+          $forall (rank, userName, userStatus, ac, penalty) <- contestStatus
             <tr>
               <td>#{rank}
-              <td><style="color:#ffffff">#{user_name}
-              $forall (wa, t) <- user_status
+              <td><style="color:#ffffff">#{userName}
+              $forall (wa, t) <- userStatus
                 $if wa > 0
                   $if t > 0
                     <td class="stAC"> +#{wa} @#{t}
@@ -83,7 +83,7 @@ $doctype 5
         <tr>
           <th>Host:
           <td>
-            <input type="hidden" name="contest" value="#{contest_id_}">
+            <input type="hidden" name="contest" value="#{contestId}">
             <select name="type">
               <option value="Aizu" selected>Aizu
         <br>
@@ -92,7 +92,7 @@ $doctype 5
           <th>Problem ID:
           <td>
             <select name="problem" size="1">
-              $forall problem <- problem_list
+              $forall problem <- problemList
                 <option value="#{problem}" label="#{problem}">#{problem}
         <br>
 

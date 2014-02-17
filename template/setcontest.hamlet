@@ -9,7 +9,7 @@ $doctype 5
   <body>
     <div class="header">
       <h1 id="logo">WX Contest System
-      <span class="username">You are #{user_id}. |
+      <span class="username">You are #{userId}. |
       <span class="index-link">
         <a href="./">Top
         |
@@ -17,7 +17,7 @@ $doctype 5
         <a href="status">Status
         |
       <span class="current-time">Current Time:
-        <strong>#{current_time}
+        <strong>#{currentTime}
 
     <div class="main">
       <h1>Set Contest
@@ -25,7 +25,7 @@ $doctype 5
       <form action="setcontest" method="post">
         <input type="hidden" name="id" value="">
         <input type="hidden" name="setter" value="sss">
-        Setter User: #{user_id}<br>
+        Setter User: #{userId}<br>
         Contest Name:<input type="text" name="name" value=""><br>
         <select name="type">
           <option value="Aizu" >Aizu

@@ -9,14 +9,14 @@ $doctype 5
   <body>
     <div class="header">
       <h1 id="logo">WX Contest System
-      <span class="username">You are #{user_id}. |
+      <span class="username">You are #{userId}. |
       <span class="index-link">
         <a href="./">Top
         |
         <a href="status">Status
         |
       <span class="current-time">Current Time:
-        <strong>#{current_time}
+        <strong>#{currentTime}
 
     <div class="main">
       <h1>Judge Status
@@ -38,7 +38,7 @@ $doctype 5
             <th>Source
             <th>
 
-        $forall (id, s) <- status_list
+        $forall (id, s) <- statusList
           <tbody>
             <tr class="#{cssClass (submitJudge s)}">
               <td class="id">#{id}

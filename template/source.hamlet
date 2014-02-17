@@ -9,7 +9,7 @@ $doctype 5
   <body>
     <div class="header">
       <h1 id="logo">WX Contest System
-      <span class="username">You are #{user_id}. |
+      <span class="username">You are #{userId}. |
       <span class="index-link">
         <a href="../">Top
         |
@@ -17,16 +17,16 @@ $doctype 5
         <a href="../status">Status
         |
       <span class="current-time">Current Time:
-        <strong>#{current_time}
+        <strong>#{currentTime}
 
     <div class="main">
       <h1>Source Code
       <ul>
-        <li>Submission ID: #{source_id}
+        <li>Submission ID: #{sourceId}
         <li>Problem:
-          <a href="../statistics?type=Aizu&amp;problem=#{problem_id}">#{problem_id}
+          <a href="../statistics?type=Aizu&amp;problem=#{problemId}">#{problemId}
         <li>User:
-          <a href="../user?name=#{submit_user_id}">#{submit_user_id}
+          <a href="../user?name=#{submitUser}">#{submitUser}
         <li>
           <strong>Judge: #{submitJudge source}
           (Time: #{submitTime source}, Memory: #{submitMemory source})

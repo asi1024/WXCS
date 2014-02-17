@@ -63,15 +63,15 @@ getWA statuses user pid = length st
         eqUser s = submitUserId s == user
         eqProblem s = submitProblemId s == filter ('\r'/=) pid
 
-user_status :: [Submit] -> ZonedTime -> [String] -> String -> (String, [(Int, Int)], Int, Int)
-user_status status start problem_list user =
+userStatus :: [Submit] -> ZonedTime -> [String] -> String -> (String, [(Int, Int)], Int, Int)
+userStatus status start problemList user =
   (user, zip wa ac, length $ filter (>0) ac, (sum ac) + (sum (map (\(x,y) -> if y > 0 then x else 0) (zip wa ac))) * 20)
-  where ac = map (getACTime status start user) problem_list
-        wa = map (getWA status user) problem_list
+  where ac = map (getACTime status start user) problemList
+        wa = map (getWA status user) problemList
 
-rank_standings :: [(String, [(Int, Int)], Int, Int)]
+rankStandings :: [(String, [(Int, Int)], Int, Int)]
                   -> [(Int, String, [(Int, Int)], Int, Int)]
-rank_standings l =
+rankStandings l =
   zip5 [1..] name state ac wa
   where (name, state, ac, wa) = unzip4 l
 
@@ -106,50 +106,50 @@ getUser = do
  return . TL.unpack $ fromJust user'
 
 app :: Text -> ScottyM ()
-app db_file = do
+app dbFile = do
   middleware logStdoutDev
   middleware $ staticPolicy $ addBase "static"
     >-> (contains "/js/" <|> contains "/css/" <|> contains "/image/")
   defaultHandler handleEx
 
   get "/" $ do
-    user_id <- getUser
-    current_time <- liftIO getLocalTime
-    contests <- liftIO (Sq.runSqlite db_file (Sq.selectList [] []))
+    userId <- getUser
+    currentTime <- liftIO getLocalTime
+    contests <- liftIO (Sq.runSqlite dbFile (Sq.selectList [] []))
                 :: ActionM [Sq.Entity Contest]
-    let contest_list = reverse $ map entityToTuple contests
+    let contestList = reverse $ map entityToTuple contests
     html $ renderHtml $ $(hamletFile "./template/index.hamlet") undefined
 
   get "/contest/:contest_id" $ do
-    user_id <- getUser
-    contest_id_ <- param "contest_id" :: ActionM String
-    let contest_id = read contest_id_ :: Int
-    current_time <- liftIO getLocalTime
-    contest' <- liftIO (Sq.runSqlite db_file (getByIntId contest_id)) :: ActionM (Maybe Contest)
+    userId <- getUser
+    contestId_ <- param "contest_id" :: ActionM String
+    let contestId = read contestId_ :: Int
+    currentTime <- liftIO getLocalTime
+    contest' <- liftIO (Sq.runSqlite dbFile (getByIntId contestId)) :: ActionM (Maybe Contest)
     case contest' of
       Nothing -> redirect "/" -- contest not found!
       Just contest -> do
-        status_db <- liftIO (Sq.runSqlite db_file (Sq.selectList [] []))
+        statusDb <- liftIO (Sq.runSqlite dbFile (Sq.selectList [] []))
                      :: ActionM [Sq.Entity Submit]
-        let contest_type = contestJudgeType contest
-        let problem_list = contestProblems contest
+        let contestType = contestJudgeType contest
+        let problemList = contestProblems contest
 
-        let status_list_ = map Sq.entityVal status_db
-        let status_list = filter (\s -> submitContestnumber s == contest_id
-                                        && submitJudgeType s == contest_type) status_list_
-        let status_ac = map (getACTime status_list (contestStart contest) user_id) problem_list
-        let status_wa = map (getWA status_list user_id) problem_list
-        let problems = zip4 problem_list (map (getDescriptionURL contest_type) problem_list)
-                       status_ac status_wa
+        let statusList_ = map Sq.entityVal statusDb
+        let statusList = filter (\s -> submitContestnumber s == contestId
+                                       && submitJudgeType s == contestType) statusList_
+        let statusAc = map (getACTime statusList (contestStart contest) userId) problemList
+        let statusWa = map (getWA statusList userId) problemList
+        let problems = zip4 problemList (map (getDescriptionURL contestType) problemList)
+                       statusAc statusWa
 
-        let users = getUsers status_list
-        let standings = map (user_status status_list (contestStart contest) problem_list) users
-        let contest_status = rank_standings standings
+        let users = getUsers statusList
+        let standings = map (userStatus statusList (contestStart contest) problemList) users
+        let contestStatus = rankStandings standings
 
         html $ renderHtml $ $(hamletFile "./template/contest.hamlet") undefined
 
   post "/submit" $ do
-    user_id <- getUser
+    userId <- getUser
     currentTime <- liftIO getZonedTime
     judgeType <- liftM read $ param "type" :: ActionM JudgeType
     problemId <- liftM (filter $ not . isSpace) $ param "problem" :: ActionM String
@@ -159,85 +159,85 @@ app db_file = do
     codefiles <- files
     let code = foldl (\acc (_,file) -> acc ++ unpack (fileContent file)) code' codefiles
     let size = show $ length code
-    _ <- liftIO $ Sq.runSqlite db_file $ do
-      Sq.insert $ Submit currentTime user_id judgeType contestId
+    _ <- liftIO $ Sq.runSqlite dbFile $ do
+      Sq.insert $ Submit currentTime userId judgeType contestId
         problemId Pending "" "" size lang code
     redirect "status"
 
   get "/setcontest" $ do
-    user_id <- getUser
-    current_time <- liftIO getLocalTime
+    userId <- getUser
+    currentTime <- liftIO getLocalTime
     html $ renderHtml $ $(hamletFile "./template/setcontest.hamlet") undefined
 
   post "/setcontest" $ do
     setter <- getUser
-    contest_name <- param "name" :: ActionM String
-    contest_type <- liftM read $ param "type" :: ActionM JudgeType
-    start_time_ <- param "starttime" :: ActionM String
-    start_time <- liftIO $ toZonedTime start_time_
-    end_time_ <- param "endtime" :: ActionM String
-    end_time <- liftIO $ toZonedTime end_time_
+    contestName <- param "name" :: ActionM String
+    contestType <- liftM read $ param "type" :: ActionM JudgeType
+    startTime_ <- param "starttime" :: ActionM String
+    startTime <- liftIO $ toZonedTime startTime_
+    endTime_ <- param "endtime" :: ActionM String
+    endTime <- liftIO $ toZonedTime endTime_
     problem <- param "problem" :: ActionM String
-    _ <- liftIO $ Sq.runSqlite db_file $ do
-      Sq.insert $ Contest contest_name contest_type start_time end_time setter (lines problem)
+    _ <- liftIO $ Sq.runSqlite dbFile $ do
+      Sq.insert $ Contest contestName contestType startTime endTime setter (lines problem)
     redirect "./"
 
   get "/status" $ do
-    user_id <- getUser
-    current_time <- liftIO getLocalTime
-    status_db <- liftIO (Sq.runSqlite db_file (Sq.selectList [] []))
-                 :: ActionM [Sq.Entity Submit]
-    let status_list = take 20 $ reverse $ map entityToTuple status_db
+    userId <- getUser
+    currentTime <- liftIO getLocalTime
+    statusDb <- liftIO (Sq.runSqlite dbFile (Sq.selectList [] []))
+                :: ActionM [Sq.Entity Submit]
+    let statusList = take 20 $ reverse $ map entityToTuple statusDb
     html $ renderHtml $ $(hamletFile "./template/status.hamlet") undefined
 
   get "/findcontest" $ do
-    user_id <- getUser
-    current_time <- liftIO getLocalTime
-    status_db <- liftIO (Sq.runSqlite db_file (Sq.selectList [] []))
-                 :: ActionM [Sq.Entity Submit]
-    let status_l = map entityToTuple status_db
-    contest_id <- param "contest" :: ActionM Int
-    let status_list = reverse $ filter (\(_,s) -> submitContestnumber s == contest_id) status_l
+    userId <- getUser
+    currentTime <- liftIO getLocalTime
+    statusDb <- liftIO (Sq.runSqlite dbFile (Sq.selectList [] []))
+                :: ActionM [Sq.Entity Submit]
+    let statusL = map entityToTuple statusDb
+    contestId <- param "contest" :: ActionM Int
+    let statusList = reverse $ filter (\(_,s) -> submitContestnumber s == contestId) statusL
     html $ renderHtml $ $(hamletFile "./template/status.hamlet") undefined
 
   get "/user" $ do
-    user_id <- getUser
-    current_time <- liftIO getLocalTime
-    status_db <- liftIO (Sq.runSqlite db_file (Sq.selectList [] []))
-                 :: ActionM [Sq.Entity Submit]
-    let status_l = map entityToTuple status_db
+    userId <- getUser
+    currentTime <- liftIO getLocalTime
+    statusDb <- liftIO (Sq.runSqlite dbFile (Sq.selectList [] []))
+                :: ActionM [Sq.Entity Submit]
+    let statusL = map entityToTuple statusDb
     name <- param "name" :: ActionM String
-    let status_list = reverse $ filter (\(_,s) -> submitUserId s == name) status_l
+    let statusList = reverse $ filter (\(_,s) -> submitUserId s == name) statusL
     html $ renderHtml $ $(hamletFile "./template/status.hamlet") undefined
 
   get "/statistics" $ do
-    user_id <- getUser
-    current_time <- liftIO getLocalTime
-    status_db <- liftIO (Sq.runSqlite db_file (Sq.selectList [] []))
-                 :: ActionM [Sq.Entity Submit]
-    let status_l = map entityToTuple status_db
+    userId <- getUser
+    currentTime <- liftIO getLocalTime
+    statusDb <- liftIO (Sq.runSqlite dbFile (Sq.selectList [] []))
+                :: ActionM [Sq.Entity Submit]
+    let statusL = map entityToTuple statusDb
     jtype <- liftM read $ param "type" :: ActionM JudgeType
     pid <- param "pid" :: ActionM String
-    let status_list = reverse $ filter (\(_,s) -> submitJudgeType s == jtype && submitProblemId s == pid) status_l
+    let statusList = reverse $ filter (\(_,s) -> submitJudgeType s == jtype && submitProblemId s == pid) statusL
     html $ renderHtml $ $(hamletFile "./template/status.hamlet") undefined
 
   get "/source/:source_id" $ do
-    user_id <- getUser
-    source_id <- param "source_id" :: ActionM Int
-    current_time <- liftIO getLocalTime
-    source' <- liftIO (Sq.runSqlite db_file (getByIntId source_id)) :: ActionM (Maybe Submit)
+    userId <- getUser
+    sourceId <- param "source_id" :: ActionM Int
+    currentTime <- liftIO getLocalTime
+    source' <- liftIO (Sq.runSqlite dbFile (getByIntId sourceId)) :: ActionM (Maybe Submit)
     case source' of
       Nothing -> redirect "../status" -- source code not found!
       Just source -> do
-        let problem_id = submitProblemId source
-        let submit_user_id = submitUserId source
+        let problemId = submitProblemId source
+        let submitUser = submitUserId source
         html $ renderHtml $ $(hamletFile "./template/source.hamlet") undefined
 
   get "/rejudge/:submit_id" $ do
-    submit_id <- param "submit_id" :: ActionM Int
-    submit' <- liftIO $ Sq.runSqlite db_file (getByIntId submit_id)
+    submitId <- param "submit_id" :: ActionM Int
+    submit' <- liftIO $ Sq.runSqlite dbFile (getByIntId submitId)
     case submit' of
       Nothing -> redirect "../status"
       Just submit -> do
-        liftIO $ updateSubmit db_file $ submit { submitJudge = Pending }
+        liftIO $ updateSubmit dbFile $ submit { submitJudge = Pending }
         redirect "../status"
