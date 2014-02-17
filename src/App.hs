@@ -47,9 +47,12 @@ cssClass Running = "CE"
 getUsers :: [Submit] -> [String]
 getUsers = nub . map submitUserId
 
-getACTime :: [Submit] -> String -> String -> Int
-getACTime statuses user pid =
-  if length st == 0 then 0 else 1
+diffTime :: ZonedTime -> ZonedTime -> Int
+diffTime a b = round $ diffUTCTime (zonedTimeToUTC a) (zonedTimeToUTC b) / 60
+
+getACTime :: [Submit] -> ZonedTime -> String -> String -> Int
+getACTime statuses start user pid =
+  if length st == 0 then 0 else diffTime (submitSubmitTime $ head st) start
   where st = filter (\status -> eqUser status && eqProblem status && submitJudge status == Accepted) statuses
         eqUser s = submitUserId s == user
         eqProblem s = submitProblemId s == filter ('\r'/=) pid
@@ -60,10 +63,10 @@ getWA statuses user pid = length st
         eqUser s = submitUserId s == user
         eqProblem s = submitProblemId s == filter ('\r'/=) pid
 
-user_status :: [Submit] -> [String] -> String -> (String, [(Int, Int)], Int, Int)
-user_status status problem_list user =
-  (user, zip wa ac, length $ filter (>0) ac, sum ac)
-  where ac = map (getACTime status user) problem_list
+user_status :: [Submit] -> ZonedTime -> [String] -> String -> (String, [(Int, Int)], Int, Int)
+user_status status start problem_list user =
+  (user, zip wa ac, length $ filter (>0) ac, (sum ac) + (sum (map (\(x,y) -> if y > 0 then x else 0) (zip wa ac))) * 20)
+  where ac = map (getACTime status start user) problem_list
         wa = map (getWA status user) problem_list
 
 rank_standings :: [(String, [(Int, Int)], Int, Int)]
@@ -134,13 +137,13 @@ app db_file = do
         let status_list_ = map Sq.entityVal status_db
         let status_list = filter (\s -> submitContestnumber s == contest_id
                                         && submitJudgeType s == contest_type) status_list_
-        let status_ac = map (getACTime status_list user_id) problem_list
+        let status_ac = map (getACTime status_list (contestStart contest) user_id) problem_list
         let status_wa = map (getWA status_list user_id) problem_list
         let problems = zip4 problem_list (map (getDescriptionURL contest_type) problem_list)
                        status_ac status_wa
 
         let users = getUsers status_list
-        let standings = map (user_status status_list problem_list) users
+        let standings = map (user_status status_list (contestStart contest) problem_list) users
         let contest_status = rank_standings standings
 
         html $ renderHtml $ $(hamletFile "./template/contest.hamlet") undefined
