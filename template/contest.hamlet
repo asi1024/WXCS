@@ -119,4 +119,4 @@ $doctype 5
           <br>
             .. or upload from file:<input type="file" name="codefile">
           <tr><td colspan="2" style="text-align: right"><input type="submit" name="../submit" value="Submit">
-    <address class="footer">contributed by ***,******(****)
+    <address class="footer">contributed by asi1024,chir(2014)
