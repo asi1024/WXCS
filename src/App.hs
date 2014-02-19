@@ -227,7 +227,7 @@ app dbFile = do
     currentTime <- liftIO getLocalTime
     statusDb <- liftIO (Sq.runSqlite dbFile (Sq.selectList [] []))
                 :: ActionM [Sq.Entity Submit]
-    let statusList = take 20 $ reverse $ map entityToTuple statusDb
+    let statusList = take 50 $ reverse $ map entityToTuple statusDb
     html $ renderHtml $ $(hamletFile "./template/status.hamlet") undefined
 
   get "/findcontest" $ do

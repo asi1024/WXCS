@@ -11,14 +11,16 @@ th, td { border: solid 1px #222222; padding: 1ex; font-weight: bold; }
 tr.even { background-color: #222222; }
 tr.odd { background-color: #333333; }
 th { background-color: #222222; color: #ffffff; }
+th a:link { color: #aaaaaa; }
+th a:visited { color: #aaaaaa; }
 td a:link { color: #aaaaaa; }
-td a:visited { color: #eeeeaa; }
+td a:visited { color: #aaaaaa; }
 .AC { color: #00ff00; background-color: #000000; }
 .WA { color: #ff0000; background-color: #000000; }
 .RE { color: #ff00ff; background-color: #000000; }
 .OLE { color: #330022; background-color: #ff88ff; }
-.MLE { color: #330022; background-color: #ff88ff; }
-.TLE { color: #000033; background-color: #9999ff; }
+.MLE { color: #00dd88; background-color: #000000; }
+.TLE { color: #ffff00; background-color: #000000; }
 .PE { color: #330000; background-color: #ffdd99; }
 .CE { color: #888888; background-color: #000000; }
 .JFF { color: #333333; background-color: #bbbbbb; }

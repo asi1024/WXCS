@@ -56,14 +56,14 @@ $doctype 5
             <th>Rank
             <th>User
             $forall (pid, _, _, _) <- problems
-              <th>#{pid}
+              <th><a href="../statistics?type=#{contestType}&pid=#{pid}">#{pid}
             <th>Accepted
             <th>Penalty
 
           $forall (rank, userName, userStatus, ac, penalty) <- contestStatus
             <tr>
               <td>#{rank}
-              <td><style="color:#ffffff">#{userName}
+              <td><a href="../user?name=#{userName}">#{userName}
               $forall (wa, t) <- userStatus
                 $if wa > 0
                   $if t > 0
