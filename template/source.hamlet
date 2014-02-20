@@ -3,7 +3,7 @@ $doctype 5
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=euc-jp">
     <meta http-equiv="Content-Style-Type" content="text/css">
-    <link rel="stylesheet" href="https://yandex.st/highlightjs/8.0/styles/tomorrow-night-bright.min.css">
+    <link rel="stylesheet" href="https://yandex.st/highlightjs/8.0/styles/tomorrow-night.min.css">
     <script src="https://yandex.st/highlightjs/8.0/highlight.min.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
     <link rel="stylesheet" href="../css/default.css" type="text/css">
@@ -34,7 +34,9 @@ $doctype 5
           <strong>Judge: #{submitJudge source}
           (Time: #{submitTime source}, Memory: #{submitMemory source})
         <li>Code length: #{submitSize source}
-      <pre>
-        <code>
-          #{submitCode source}
+      <div style="margin-left:60px; margin-right:60px">
+        <pre>
+          <code>
+            <font face="Ubuntu mono" size="4">
+              #{submitCode source}
     <address class="footer">contributed by asi1024,chir(2014)</address>
