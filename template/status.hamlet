@@ -23,7 +23,7 @@ $doctype 5
 
       <form action="status" method="get">
         Contest:<input type="text" name="contest" value="#{contestId}">
-        User:<input type="text" name="name" value="#{userId}">
+        User:<input type="text" name="name" value="#{user}">
         Type:
           <select name="type">
             <option value="Aizu"> Aizu

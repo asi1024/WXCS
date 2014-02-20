@@ -232,13 +232,13 @@ app dbFile = do
                 :: ActionM [Sq.Entity Submit]
     let statusL = map entityToTuple statusDb
     contestId <- param "contest" :: ActionM String
-    userId <- param "name" :: ActionM String
+    user <- param "name" :: ActionM String
     jtype_ <- param "type" :: ActionM String
     jtype <- liftM read $ param "type" :: ActionM JudgeType
     pid <- param "problem" :: ActionM String
     num <- param "number" :: ActionM Int
     let statusL_ = if contestId == "" then statusL else filter (\(_,s) -> submitContestnumber s == read contestId) statusL
-    let statusL__ = if userId == "" then statusL_ else filter (\(_,s) -> submitUserId s == userId) statusL_
+    let statusL__ = if user == "" then statusL_ else filter (\(_,s) -> submitUserId s == user) statusL_
     let statusL___ = if jtype_ == "" then statusL__ else filter (\(_,s) -> submitJudgeType s == jtype) statusL__
     let statusList = take num $ reverse $ if pid == "" then statusL___ else filter (\(_,s) -> submitProblemId s == pid) statusL___
     html $ renderHtml $ $(hamletFile "./template/status.hamlet") undefined
