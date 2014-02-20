@@ -230,55 +230,17 @@ app dbFile = do
     currentTime <- liftIO getLocalTime
     statusDb <- liftIO (Sq.runSqlite dbFile (Sq.selectList [] []))
                 :: ActionM [Sq.Entity Submit]
-    let statusList = take 50 $ reverse $ map entityToTuple statusDb
-    html $ renderHtml $ $(hamletFile "./template/status.hamlet") undefined
-
-  get "/findcontest" $ do
-    userId <- getUser
-    currentTime <- liftIO getLocalTime
-    statusDb <- liftIO (Sq.runSqlite dbFile (Sq.selectList [] []))
-                :: ActionM [Sq.Entity Submit]
-    let statusL = map entityToTuple statusDb
-    contestId <- param "contest" :: ActionM Int
-    let statusList = filter (\(_,s) -> submitContestnumber s == contestId) statusL
-    html $ renderHtml $ $(hamletFile "./template/status.hamlet") undefined
-
-  get "/statistics" $ do
-    userId <- getUser
-    currentTime <- liftIO getLocalTime
-    statusDb <- liftIO (Sq.runSqlite dbFile (Sq.selectList [] []))
-                :: ActionM [Sq.Entity Submit]
     let statusL = map entityToTuple statusDb
     contestId <- param "contest" :: ActionM String
     userId <- param "name" :: ActionM String
     jtype_ <- param "type" :: ActionM String
     jtype <- liftM read $ param "type" :: ActionM JudgeType
     pid <- param "problem" :: ActionM String
+    num <- param "number" :: ActionM Int
     let statusL_ = if contestId == "" then statusL else filter (\(_,s) -> submitContestnumber s == read contestId) statusL
     let statusL__ = if userId == "" then statusL_ else filter (\(_,s) -> submitUserId s == userId) statusL_
     let statusL___ = if jtype_ == "" then statusL__ else filter (\(_,s) -> submitJudgeType s == jtype) statusL__
-    let statusList = reverse $ if pid == "" then statusL___ else filter (\(_,s) -> submitProblemId s == pid) statusL___
-    html $ renderHtml $ $(hamletFile "./template/status.hamlet") undefined
-
-  get "/user" $ do
-    userId <- getUser
-    currentTime <- liftIO getLocalTime
-    statusDb <- liftIO (Sq.runSqlite dbFile (Sq.selectList [] []))
-                :: ActionM [Sq.Entity Submit]
-    let statusL = map entityToTuple statusDb
-    name <- param "name" :: ActionM String
-    let statusList = reverse $ filter (\(_,s) -> submitUserId s == name) statusL
-    html $ renderHtml $ $(hamletFile "./template/status.hamlet") undefined
-
-  get "/findproblem" $ do
-    userId <- getUser
-    currentTime <- liftIO getLocalTime
-    statusDb <- liftIO (Sq.runSqlite dbFile (Sq.selectList [] []))
-                :: ActionM [Sq.Entity Submit]
-    let statusL = map entityToTuple statusDb
-    jtype <- liftM read $ param "type" :: ActionM JudgeType
-    pid <- param "pid" :: ActionM String
-    let statusList = reverse $ filter (\(_,s) -> submitJudgeType s == jtype && submitProblemId s == pid) statusL
+    let statusList = take num $ reverse $ if pid == "" then statusL___ else filter (\(_,s) -> submitProblemId s == pid) statusL___
     html $ renderHtml $ $(hamletFile "./template/status.hamlet") undefined
 
   get "/source/:source_id" $ do

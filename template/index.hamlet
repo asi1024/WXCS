@@ -12,7 +12,7 @@ $doctype 5
       <span class="username">You are #{userId}. |
       Top |
       <span class="status-link">
-        <a href="status">Status
+        <a href="status?contest=&name=&type=&problem=&number=50">Status
         |
       <span class="current-time">Current Time:
         <strong>#{currentTime}

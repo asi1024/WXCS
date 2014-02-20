@@ -13,7 +13,7 @@ $doctype 5
       <span class="index-link">
         <a href="./">Top
         |
-        <a href="status">Status
+        <a href="status?contest=&name=&type=&problem=&number=50">Status
         |
       <span class="current-time">Current Time:
         <strong>#{currentTime}
@@ -21,13 +21,14 @@ $doctype 5
     <div class="main">
       <h1>Judge Status
 
-      <form action="statistics" method="get">
-        Contest:<input type="text" name="contest" value="">
-        User:<input type="text" name="name" value="">
+      <form action="status" method="get">
+        Contest:<input type="text" name="contest" value="#{contestId}">
+        User:<input type="text" name="name" value="#{userId}">
         Type:
           <select name="type">
             <option value="Aizu"> Aizu
-        Problem Sets:<input type="text" name="problem" value="">
+        Problem Sets:<input type="text" name="problem" value="#{pid}">
+        Number:<input type="text" name="number" value="#{num}">
         <input type="submit" name="search" value="search">
 
       <table summary="status table">
@@ -51,11 +52,11 @@ $doctype 5
           <tbody>
             <tr class="#{cssClass (submitJudge s)}">
               <td class="id">#{id}
-              <td class="id"><a href="findcontest?contest=#{submitContestnumber s}">#{submitContestnumber s}
+              <td class="id"><a href="status?contest=#{submitContestnumber s}&name=&type=&problem=&number=50">#{submitContestnumber s}
               <td class="datetime">#{submitSubmitTime s}
-              <td class="user"><a href="user?name=#{submitUserId s}">#{submitUserId s}
+              <td class="user"><a href="status?contest=&name=#{submitUserId s}&type=&problem=&number=50">#{submitUserId s}
               <td class="problem">#{submitJudgeType s}
-              <td class="problem"><a href="findproblem?type=#{submitJudgeType s}&pid=#{submitProblemId s}">#{submitProblemId s}
+              <td class="problem"><a href="status?contest=&name=&type=#{submitJudgeType s}&problem=#{submitProblemId s}&number=50">#{submitProblemId s}
               <td class="judge">#{submitJudge s}
               <td class="time">#{submitTime s}
               <td class="memory">#{submitMemory s}
