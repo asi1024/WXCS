@@ -66,12 +66,16 @@ $doctype 5
               <td><a href="../user?name=#{userName}">#{userName}
               $forall (wa, t) <- userStatus
                 $if wa > 0
-                  $if t > 0
+                  $if t > duration
+                    <td class="stRV"> +#{wa} @#{t}
+                  $elseif t > 0
                     <td class="stAC"> +#{wa} @#{t}
                   $else
                     <td class="stWA"> +#{wa}
                 $else
-                  $if t > 0
+                  $if t > duration
+                    <td class="stRV"> @#{t}
+                  $elseif t > 0
                     <td class="stAC"> @#{t}
                   $else
                     <td>

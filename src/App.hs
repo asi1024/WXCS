@@ -63,11 +63,12 @@ getWA statuses user pid = length st
         eqUser s = submitUserId s == user
         eqProblem s = submitProblemId s == filter ('\r'/=) pid
 
-userStatus :: [Submit] -> ZonedTime -> [String] -> String -> (String, [(Int, Int)], Int, Int)
-userStatus status start problemList user =
-  (user, zip wa ac, length $ filter (>0) ac, (sum ac) + (sum (map (\(x,y) -> if y > 0 then x else 0) (zip wa ac))) * 20)
+userStatus :: [Submit] -> ZonedTime -> Int -> [String] -> String -> (String, [(Int, Int)], Int, Int)
+userStatus status start duration problemList user =
+  (user, zip wa ac, length ac', (sum (map (\(x,y) -> if x > 0 && x <= duration then x + y * 20 else 0) (zip ac wa))))
   where ac = map (getACTime status start user) problemList
         wa = map (getWA status user) problemList
+        ac' = filter (\x -> x > 0 && x <= duration) ac
 
 rankStandings :: [(String, [(Int, Int)], Int, Int)]
                   -> [(Int, String, [(Int, Int)], Int, Int)]
@@ -132,6 +133,7 @@ app dbFile = do
       Just contest -> do
         statusDb <- liftIO (Sq.runSqlite dbFile (Sq.selectList [] []))
                      :: ActionM [Sq.Entity Submit]
+        let duration = diffTime (contestEnd contest) (contestStart contest)
         let contestType = contestJudgeType contest
         let problemList_ = contestProblems contest
         let problemList = map (\x -> if diffTime currentTime_ (contestStart contest) > 0 then x else "????") problemList_
@@ -145,7 +147,7 @@ app dbFile = do
                        statusAc statusWa
 
         let users = getUsers statusList
-        let standings = map (userStatus statusList (contestStart contest) problemList) users
+        let standings = map (userStatus statusList (contestStart contest) duration problemList) users
         let contestStatus = rankStandings standings
 
         html $ renderHtml $ $(hamletFile "./template/contest.hamlet") undefined

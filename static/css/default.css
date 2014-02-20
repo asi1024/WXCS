@@ -40,4 +40,5 @@ a.white:visited { color: #FFFF88; }
 .problem-menu { background-color: #000000; padding: 1ex 1ex 1ex 2ex; font-weight: bold; text-align: right; }
 
 .stAC { color: #02ff02; background-color: #000000; }
+.stRV { color: #00ffff; background-color: #000000; }
 .stWA { color: #c00000; background-color: #000000; }
