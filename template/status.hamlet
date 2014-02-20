@@ -21,6 +21,15 @@ $doctype 5
     <div class="main">
       <h1>Judge Status
 
+      <form action="statistics" method="get">
+        Contest:<input type="text" name="contest" value="">
+        User:<input type="text" name="name" value="">
+        Type:
+          <select name="type">
+            <option value="Aizu"> Aizu
+        Problem Sets:<input type="text" name="problem" value="">
+        <input type="submit" name="search" value="search">
+
       <table summary="status table">
         <thead>
           <tr>
@@ -46,7 +55,7 @@ $doctype 5
               <td class="datetime">#{submitSubmitTime s}
               <td class="user"><a href="user?name=#{submitUserId s}">#{submitUserId s}
               <td class="problem">#{submitJudgeType s}
-              <td class="problem"><a href="statistics?type=#{submitJudgeType s}&pid=#{submitProblemId s}">#{submitProblemId s}
+              <td class="problem"><a href="findproblem?type=#{submitJudgeType s}&pid=#{submitProblemId s}">#{submitProblemId s}
               <td class="judge">#{submitJudge s}
               <td class="time">#{submitTime s}
               <td class="memory">#{submitMemory s}
