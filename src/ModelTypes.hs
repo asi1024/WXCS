@@ -31,7 +31,7 @@ instance Show JudgeStatus where
   show TimeLimitExceeded = "Time Limit Exceeded"
   show MemoryLimitExceeded = "Memory Limit Exceeded"
   show OutputLimitExceeded = "Output Limit Exceeded"
-  show PresentationError = "Presentation Error"
+  show PresentationError = "WA: Presentation Error"
   show CompileError = "Compile Error"
   show SubmissionError = "Submission Error"
   show Pending = "Pending"
