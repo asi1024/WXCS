@@ -33,7 +33,7 @@ getResultAndUpdate :: Configuration -> Submit -> Int -> IO ()
 getResultAndUpdate conf submit latestRunId = loop (0 :: Int)
   where
     loop n =
-      if n < 10
+      if n < 100
       then do
         runId <- OJ.getLatestRunId conf (submitJudgeType submit)
         if runId /= latestRunId
