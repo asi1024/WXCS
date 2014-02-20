@@ -91,6 +91,9 @@ entityToTuple ent = (getId ent, Sq.entityVal ent)
 forwardedUserKey :: TL.Text
 forwardedUserKey = "X-Forwarded-User"
 
+statusPage :: TL.Text
+statusPage = "../status?contest=&name=&type=&problem=&number=50"
+
 -- Handler for exceptions.
 handleEx :: TL.Text -> ActionM ()
 handleEx "Unauthorized" = do
@@ -213,7 +216,7 @@ app dbFile = do
     contest' <- liftIO $ Sq.runSqlite dbFile (getByIntId contestId)
                 :: ActionM (Maybe Contest)
     case contest' of
-      Nothing -> redirect "../status"
+      Nothing -> redirect statusPage
       Just contest -> do
         liftIO $ updateContest dbFile $ contest {
           contestName = cName,
@@ -249,7 +252,7 @@ app dbFile = do
     currentTime <- liftIO getLocalTime
     source' <- liftIO (Sq.runSqlite dbFile (getByIntId sourceId)) :: ActionM (Maybe Submit)
     case source' of
-      Nothing -> redirect "../status" -- source code not found!
+      Nothing -> redirect statusPage -- source code not found!
       Just source -> do
         let problemId = submitProblemId source
         let submitUser = submitUserId source
@@ -259,7 +262,7 @@ app dbFile = do
     submitId <- param "submit_id" :: ActionM Int
     submit' <- liftIO $ Sq.runSqlite dbFile (getByIntId submitId)
     case submit' of
-      Nothing -> redirect "../status"
+      Nothing -> redirect statusPage
       Just submit -> do
         liftIO $ updateSubmit dbFile $ submit { submitJudge = Pending }
-        redirect "../status"
+        redirect statusPage
