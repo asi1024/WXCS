@@ -7,7 +7,7 @@ import SpecHelper
 instance Arbitrary JudgeStatus where
   arbitrary = elements [Accepted, WrongAnswer, RuntimeError, TimeLimitExceeded,
                         MemoryLimitExceeded, OutputLimitExceeded, CompileError,
-                        SubmissionError, Pending]
+                        PresentationError, SubmissionError, Pending]
 
 spec :: Spec
 spec = do
