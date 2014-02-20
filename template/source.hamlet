@@ -3,8 +3,8 @@ $doctype 5
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=euc-jp">
     <meta http-equiv="Content-Style-Type" content="text/css">
-    <link rel="stylesheet" href="http://yandex.st/highlightjs/8.0/styles/tomorrow-night-bright.min.css">
-    <script src="http://yandex.st/highlightjs/8.0/highlight.min.js"></script>
+    <link rel="stylesheet" href="https://yandex.st/highlightjs/8.0/styles/tomorrow-night-bright.min.css">
+    <script src="https://yandex.st/highlightjs/8.0/highlight.min.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
     <link rel="stylesheet" href="../css/default.css" type="text/css">
 
