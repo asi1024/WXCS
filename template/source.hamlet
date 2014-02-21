@@ -24,7 +24,7 @@ $doctype 5
         <strong>#{currentTime}
 
     <div class="main">
-      <h1>Source Code
+      <h3>Source Code
       <ul>
         <li>Submission ID: #{sourceId}
         <li>Problem:
@@ -38,6 +38,6 @@ $doctype 5
       <div style="margin-left:60px; margin-right:60px">
         <pre>
           <code>
-            <font face="Ubuntu mono" size="4">
+            <font face="Courier New" size="4">
               #{submitCode source}
     <address class="footer">contributed by asi1024,chir(2014)

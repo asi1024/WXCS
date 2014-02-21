@@ -21,13 +21,13 @@ $doctype 5
         <strong>#{currentTime}
 
     <div class="main">
-      <h1>Contest - #{contestName contest}
+      <h2>Contest - #{contestName contest}
       <ul>
         <li>Contest Host : #{contestType}
         <li>Contest Start : #{contestStart contest}
         <li>Contest Finish : #{contestEnd contest}
 
-      <h2>Problem Set
+      <h3>Problem Set
       <table summary="problem set">
 
         <tbody>
@@ -50,7 +50,7 @@ $doctype 5
                   $else
                     <img src="../image/WrongAnswer.png">
 
-      <h2>Standings
+      <h4>Standings
       <table summary="standings">
         <thead>
           <tr>
@@ -64,28 +64,55 @@ $doctype 5
 
           $forall (rank, userName, userStatus, ac, penalty) <- contestStatus
             <tr>
-              <td>#{rank}
-              <td>
-                <a href="../status?contest=&amp;name=#{userName}&amp;type=&amp;problem=&amp;number=50">#{userName}
+              $if userName == userId
+                <td class="myUN">#{rank}
+                <td class="myUN">
+                  <a href="../status?contest=&amp;name=#{userName}&amp;type=&amp;problem=&amp;number=50">#{userName}
+              $else
+                <td class="stUN">#{rank}
+                <td class="stUN">
+                  <a href="../status?contest=&amp;name=#{userName}&amp;type=&amp;problem=&amp;number=50">#{userName}
               $forall (wa, t) <- userStatus
                 $if wa > 0
                   $if t > duration
-                    <td class="stRV"> +#{wa} @#{t}
+                    $if userName == userId
+                      <td class="myRV"> +#{wa} @#{t}
+                    $else
+                      <td class="stRV"> +#{wa} @#{t}
                   $elseif t > 0
-                    <td class="stAC"> +#{wa} @#{t}
+                    $if userName == userId
+                      <td class="myAC"> +#{wa} @#{t}
+                    $else
+                      <td class="stAC"> +#{wa} @#{t}
                   $else
-                    <td class="stWA"> +#{wa}
+                    $if userName == userId
+                      <td class="myWA"> +#{wa}
+                    $else
+                      <td class="stWA"> +#{wa}
                 $else
                   $if t > duration
-                    <td class="stRV"> @#{t}
+                    $if userName == userId
+                      <td class="myRV"> @#{t}
+                    $else
+                      <td class="stRV"> @#{t}
                   $elseif t > 0
-                    <td class="stAC"> @#{t}
+                    $if userName == userId
+                      <td class="myAC"> @#{t}
+                    $else
+                      <td class="stAC"> @#{t}
                   $else
-                    <td>
-              <td>#{ac}
-              <td>#{penalty}
+                    $if userName == userId
+                      <td class="myUN">
+                    $else
+                      <td class="stUN">
+              $if userName == userId
+                <td class="myUN">#{ac}
+                <td class="myUN">#{penalty}
+              $else
+                <td class="stUN">#{ac}
+                <td class="stUN">#{penalty}
 
-      <h2>Submit
+      <h5>Submit
       <form id="submit" action="../submit" method="post" enctype="multipart/form-data">
         <input type="hidden" name="contest" value="#{contestId}">
           Host:

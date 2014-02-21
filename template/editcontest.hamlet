@@ -21,7 +21,7 @@ $doctype 5
         <strong>#{currentTime}
 
     <div class="main">
-      <h1>Set Contest
+      <h3>Set Contest
 
       <form action="../setcontest/#{contestId}" method="post">
         <input type="hidden" name="id" value="">

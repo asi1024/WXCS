@@ -19,7 +19,7 @@ $doctype 5
           <strong>#{currentTime}
 
       <div class="main">
-        <h1>Contest
+        <h3>Contest
         <table summary="contest table">
           <thead>
             <tr>
@@ -42,7 +42,7 @@ $doctype 5
                 <td>
                   <a href="setcontest/#{id}">Edit
 
-        <h1>Setting
+        <h4>Setting
         <ul>
           <li>
           <a href="setcontest">Set Contest

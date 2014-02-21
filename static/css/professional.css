@@ -1,0 +1,52 @@
+body { color: #ffffff; background-color: #000000; font-family: "Courier New", arial, sans-serif, arial, helvetica; padding: 0em; margin: 0em; font-size: 18px; }
+.header { text-align: right; margin: 0em; padding: 1.5ex; }
+.header a:link, .problem-menu a:link { color: #ffffff; }
+.header a:visited, .problem-menu a:visited { color: #ffffff; }
+.header a:hover, .problem-menu a:hover { background-color: 000000; text-decoration: none; }
+#logo { margin: 0.1em; color: #ffffff; }
+
+.main { margin: 0em; color: #ffffff; background-color: #000000; border: 1em transparent solid; }
+h1 { font-size: 30px; color: #ffffff; }
+h2 { font-size: 24px; color: #ffffff; }
+h3 { font-size: 24px; color: #ffffff; }
+h4 { font-size: 24px; color: #ffffff; }
+h5 { font-size: 24px; color: #ffffff; }
+
+table { border-collapse: border; }
+th, td { border: solid 1px #000000; padding: 1ex; font-weight: bold; }
+th { background-color: #000000; color: #ffffff; }
+th a:link { color: #ffffff; }
+th a:visited { color: #ffffff; }
+td a:link { color: #ffffff; }
+td a:visited { color: #ffffff; }
+img { width: 80px; height: 80px; }
+
+.myAC { color: #02ff02; background-color: #330000; }
+.myRV { color: #00ffff; background-color: #330000; }
+.myWA { color: #c00000; background-color: #330000; }
+.myUN { color: #ffffff; background-color: #330000; }
+.stAC { color: #02ff02; background-color: #000000; }
+.stRV { color: #00ffff; background-color: #000000; }
+.stWA { color: #c00000; background-color: #000000; }
+.stUN { color: #ffffff; background-color: #000000; }
+
+.AC { color: #00ff00; background-color: #000000; }
+.WA { color: #ff0000; background-color: #000000; }
+.RE { color: #ff00ff; background-color: #000000; }
+.OLE { color: #330022; background-color: #ff88ff; }
+.MLE { color: #00dd88; background-color: #000000; }
+.TLE { color: #ffff00; background-color: #000000; }
+.PE { color: #ffffff; background-color: #000000; }
+.CE { color: #888888; background-color: #000000; }
+.JFF { color: #333333; background-color: #bbbbbb; }
+.SF { color: #333333; background-color: #bbbbbb; }
+.RUN { color: #000000; background-color: #ffffff; }
+
+td.datetime, td.user, td.problem, td.judge, td.language { text-align: center; }
+td.id, td.time, td.memory, td.size { text-align: right; }
+td.datetime, td.user, td.problem, td.language { text-align: center; color: #ffffff;}
+td.id, td.time, td.memory, td.size { text-align: right; color: #ffffff;}
+pre.source { font-family: Courier New, DejaVu Sans Mono, monospace; background-color: #000000; color: #000000; border: solid 1px #000000; padding: 1em; }
+.footer { font-size: smaller; text-align: right; margin: 1em; }
+
+.message { border: #f26800 2px solid; color: #000000; background-color: #ffffff; font-size: large; padding: 1ex; }

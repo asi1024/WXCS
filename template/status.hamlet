@@ -20,7 +20,7 @@ $doctype 5
         <strong>#{currentTime}
 
     <div class="main">
-      <h1>Judge Status
+      <h3>Judge Status
 
       <form action="status" method="get">
         Contest:<input type="text" size="10" name="contest" value="#{contestId}">
