@@ -4,6 +4,7 @@ $doctype 5
     <meta http-equiv="Content-Type" content="text/html; charset=euc-jp">
     <meta http-equiv="Content-Style-Type" content="text/css">
     <link rel="stylesheet" href="css/default.css" type="text/css">
+    <link rel="stylesheet" href="../~#{userId}/wxcs.css" type="text/css">
 
     <title>WX Contest System
   <body>

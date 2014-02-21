@@ -7,7 +7,8 @@ $doctype 5
     <script src="https://yandex.st/highlightjs/8.0/highlight.min.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
     <link rel="stylesheet" href="../css/default.css" type="text/css">
-
+    <link rel="stylesheet" href="../../~#{userId}/wxcs.css" type="text/css">
+o
     <title>WX Contest System
   <body>
     <div class="header">
