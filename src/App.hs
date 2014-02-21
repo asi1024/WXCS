@@ -7,9 +7,12 @@ import Control.Monad (when, liftM)
 import Control.Monad.IO.Class
 
 import Data.ByteString.Lazy.Char8 (unpack)
+import qualified Data.ByteString.Base64 as B
 import Data.Char (isSpace)
 import Data.Maybe (fromJust, isNothing)
 import Data.Text (Text())
+import Data.Text.Lazy.Encoding
+import qualified Data.ByteString.Char8 as B8
 import qualified Data.Text.Lazy as TL
 import Data.Time
 import Data.List
@@ -89,7 +92,7 @@ entityToTuple :: Sq.Entity a -> (Text, a)
 entityToTuple ent = (getId ent, Sq.entityVal ent)
 
 forwardedUserKey :: TL.Text
-forwardedUserKey = "X-Forwarded-User"
+forwardedUserKey = "Authorization"
 
 statusPage :: TL.Text
 statusPage = "../status?contest=&name=&type=&problem=&number=50"
@@ -106,9 +109,12 @@ handleEx message = do
 -- Get remote user.
 getUser :: ActionM String
 getUser = do
- user' <- reqHeader forwardedUserKey
- when (isNothing user') $ raise "Unauthorized"
- return . TL.unpack $ fromJust user'
+  user' <- reqHeader forwardedUserKey
+  when (isNothing user') $ raise "Unauthorized"
+  return . head $ words $ map (\x -> if x == ':' then ' ' else x) $ eitherToString $ B.decode $ B8.pack $ head $ tail $ words $ TL.unpack $ fromJust user'
+
+eitherToString (Right x) = B8.unpack x
+eitherToString (Left x) = x
 
 app :: Text -> ScottyM ()
 app dbFile = do
@@ -170,7 +176,7 @@ app dbFile = do
     _ <- liftIO $ Sq.runSqlite dbFile $ do
       Sq.insert $ Submit currentTime userId judgeType contestId
         problemId Pending "" "" size lang code
-    redirect "status"
+    redirect $ TL.drop 3 statusPage
 
   get "/setcontest" $ do
     userId <- getUser
