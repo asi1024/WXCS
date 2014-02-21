@@ -9,13 +9,13 @@ $doctype 5
     <title>WX Contest System
   <body>
     <div class="header">
-      <h1 id="logo">WX Contest System</h1>
+      <h1 id="logo">WX Contest System
       <span class="username">You are #{userId}. |
       <span class="index-link">
         <a href="../">Top
         |
       <span class="status-link">
-        <a href="../status?contest=#{contestId_}&name=&type=&problem=&number=50">Status
+        <a href="../status?contest=#{contestId_}&amp;name=&amp;type=&amp;problem=&amp;number=50">Status
         |
       <span class="current-time">Current Time:
         <strong>#{currentTime}
@@ -57,14 +57,16 @@ $doctype 5
             <th>Rank
             <th>User
             $forall (pid, _, _, _) <- problems
-              <th><a href="../statistics?type=#{contestType}&pid=#{pid}">#{pid}
+              <th>
+                <a href="../status?contest=&amp;name=&amp;type=#{contestType}&amp;problem=#{pid}&amp;number=50">#{pid}
             <th>Accepted
             <th>Penalty
 
           $forall (rank, userName, userStatus, ac, penalty) <- contestStatus
             <tr>
               <td>#{rank}
-              <td><a href="../user?name=#{userName}">#{userName}
+              <td>
+                <a href="../status?contest=&amp;name=#{userName}&amp;type=&amp;problem=&amp;number=50">#{userName}
               $forall (wa, t) <- userStatus
                 $if wa > 0
                   $if t > duration
@@ -85,43 +87,45 @@ $doctype 5
 
       <h2>Submit
       <form id="submit" action="../submit" method="post" enctype="multipart/form-data">
-        <tr>
-          <th>Host:
-          <td>
-            <input type="hidden" name="contest" value="#{contestId}">
-            <select name="type">
-              <option value="Aizu" selected>Aizu
-        <br>
-
-        <tr>
-          <th>Problem ID:
-          <td>
+        <input type="hidden" name="contest" value="#{contestId}">
+          Host:
+          <select name="type">
+            <option value="Aizu" selected>Aizu
+          Problem ID:
             <select name="problem" size="1">
               $forall problem <- problemList
                 <option value="#{problem}" label="#{problem}">#{problem}
-        <br>
 
-        <tr>
-          <th>Language:
-          <td>
-            <input type="radio" name="language" value="C" >C 
-            <input type="radio" name="language" value="C++" >C++ 
-            <input type="radio" name="language" value="Ruby" >Ruby 
-            <input type="radio" name="language" value="Perl" >Perl 
-            <input type="radio" name="language" value="Python" >Python 
-            <input type="radio" name="language" value="C#" >C# 
-            <input type="radio" name="language" value="Haskell" >Haskell 
-            <input type="radio" name="language" value="JAVA" >JAVA 
-            <input type="radio" name="language" value="C++11" checked>C++11 
-            <input type="radio" name="language" value="JavaScript" >JavaScript 
-        <br>
-
-        <tr><th colspan="2">Source Code:
-        <br>
-        <tr>
-          <td colspan="2">
-            <textarea rows="10" cols="90" name="code">
           <br>
-            .. or upload from file:<input type="file" name="codefile">
-          <tr><td colspan="2" style="text-align: right"><input type="submit" name="../submit" value="Submit">
+          Language:
+          <input type="radio" name="language" value="C" >
+          C
+          <input type="radio" name="language" value="C++" >
+          C++
+          <input type="radio" name="language" value="Ruby" >
+          Ruby
+          <input type="radio" name="language" value="Perl" >
+          Perl
+          <input type="radio" name="language" value="Python" >
+          Python
+          <input type="radio" name="language" value="C#" >
+          C#
+          <input type="radio" name="language" value="Haskell" >
+          Haskell
+          <input type="radio" name="language" value="JAVA" >
+          JAVA
+          <input type="radio" name="language" value="C++11" checked>
+          C++11
+          <input type="radio" name="language" value="JavaScript" >
+          JavaScript
+          <br>
+
+          Source Code:
+          <br>
+          <textarea rows="10" cols="90" name="code">
+          <br>
+          .. or upload from file:<input type="file" name="codefile">
+          --------------------------
+          <input type="submit" name="../submit" value="Submit">
+          ------
     <address class="footer">contributed by asi1024,chir(2014)

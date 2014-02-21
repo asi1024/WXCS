@@ -1,47 +1,49 @@
 $doctype 5
   <html lang="ja">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=euc-jp">
-    <meta http-equiv="Content-Style-Type" content="text/css">
-    <link rel="stylesheet" href="./css/default.css" type="text/css">
-    <link rel="stylesheet" href="../~#{userId}/wxcs.css" type="text/css">
+    <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=euc-jp">
+      <meta http-equiv="Content-Style-Type" content="text/css">
+      <link rel="stylesheet" href="./css/default.css" type="text/css">
+      <link rel="stylesheet" href="../~#{userId}/wxcs.css" type="text/css">
 
-    <title>WX Contest System
-  <body>
-    <div class="header">
-      <h1 id="logo">WX Contest System
-      <span class="username">You are #{userId}. |
-      Top |
-      <span class="status-link">
-        <a href="status?contest=&name=&type=&problem=&number=50">Status
-        |
-      <span class="current-time">Current Time:
-        <strong>#{currentTime}
+      <title>WX Contest System
+    <body>
+      <div class="header">
+        <h1 id="logo">WX Contest System
+        <span class="username">You are #{userId}. |
+        Top |
+        <span class="status-link">
+          <a href="status?contest=&amp;name=&amp;type=&amp;problem=&amp;number=50">Status
+          |
+        <span class="current-time">Current Time:
+          <strong>#{currentTime}
 
-    <div class="main">
-      <h1>Contest
-      <table summary="contest table">
-        <thead>
-          <tr>
-            <th>Contest Name
-            <th>Contest type
-            <th>Start time
-            <th>End time
-            <th>Problem Setter
-            <th>Edit
-
-        $forall (id, c) <- contestList
-          <tbody>
+      <div class="main">
+        <h1>Contest
+        <table summary="contest table">
+          <thead>
             <tr>
-            <td><a href="contest/#{id}">#{contestName c}
-            <td>#{contestJudgeType c}
-            <td>#{contestStart c}
-            <td>#{contestEnd c}
-            <td>#{contestSetter c}
-            <td><a href="setcontest/#{id}">Edit
+              <th>Contest Name
+              <th>Contest type
+              <th>Start time
+              <th>End time
+              <th>Problem Setter
+              <th>Edit
 
-      <h1>Setting
-      <ul>
-        <li>
+          $forall (id, c) <- contestList
+            <tbody>
+              <tr>
+                <td>
+                  <a href="contest/#{id}">#{contestName c}
+                <td>#{contestJudgeType c}
+                <td>#{contestStart c}
+                <td>#{contestEnd c}
+                <td>#{contestSetter c}
+                <td>
+                  <a href="setcontest/#{id}">Edit
+
+        <h1>Setting
+        <ul>
+          <li>
           <a href="setcontest">Set Contest
-    <address class="footer">contributed by asi1024,chir(2014)
+      <address class="footer">contributed by asi1024,chir(2014)
