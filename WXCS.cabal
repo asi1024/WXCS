@@ -43,8 +43,7 @@ library
       Submit
       Utils
 
-    ghc-options:   -Wall
-    extra-libraries: pthread
+    ghc-options: -Wall -threaded
 
 executable main
   hs-source-dirs: src-exec
@@ -55,8 +54,7 @@ executable main
                  , scotty == 0.6.2
                  , WXCS
 
-  ghc-options: -Wall
-  extra-libraries: pthread
+  ghc-options: -Wall -threaded
 
 test-suite spec
   type: exitcode-stdio-1.0
