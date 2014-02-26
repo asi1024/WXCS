@@ -48,6 +48,9 @@ cssClass SubmissionError = "CE"
 cssClass Pending = "CE"
 cssClass Running = "CE"
 
+langs :: [String]
+langs = ["C","C++","C++11","C#","D","JAVA","Ruby","Python","PHP","JavaScript"]
+
 getUsers :: [Submit] -> [String]
 getUsers = nub . map submitUserId
 

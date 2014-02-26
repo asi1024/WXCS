@@ -125,28 +125,11 @@ $doctype 5
 
           <br>
           Language:
-          <input type="radio" name="language" value="C" >
-          C
-          <input type="radio" name="language" value="C++" >
-          C++
-          <input type="radio" name="language" value="Ruby" >
-          Ruby
-          <input type="radio" name="language" value="Perl" >
-          Perl
-          <input type="radio" name="language" value="Python" >
-          Python
-          <input type="radio" name="language" value="C#" >
-          C#
-          <input type="radio" name="language" value="Haskell" >
-          Haskell
-          <input type="radio" name="language" value="JAVA" >
-          JAVA
-          <input type="radio" name="language" value="C++11" checked>
-          C++11
-          <input type="radio" name="language" value="JavaScript" >
-          JavaScript
-          <br>
+          $forall lang <- langs
+            #{lang}
+            <input type="radio" name="language" value="#{lang}">
 
+          <br>
           Source Code:
           <br>
           <textarea rows="10" cols="90" name="code">
