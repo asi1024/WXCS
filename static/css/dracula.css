@@ -1,20 +1,20 @@
-body { color: #ffffff; background-color: #000000; font-family: Ubuntu mono, arial, sans-serif, arial, helvetica; padding: 0em; margin: 0em; font-size: 14px; }
+body { color: #ff8888; background-color: #000000; font-family: cursive, Ubuntu mono, arial, sans-serif, arial, helvetica; padding: 0em; margin: 0em; font-size: 18px; }
 .header { text-align: right; margin: 0em; padding: 1.5ex; }
 .header a:link, .problem-menu a:link { color: #ffffff; }
 .header a:visited, .problem-menu a:visited { color: #ffffff; }
 .header a:hover, .problem-menu a:hover { background-color: 000000; text-decoration: none; }
-#logo { margin: 0.1em; color: #ffffff; }
+#logo { margin: 0.1em; color: #ff0000; }
 
-.main { margin: 0em; color: #ffffff; background-color: #000000; border: 1em transparent solid; }
-h1 { font-size: 20px; color: #ffffff; }
-h2 { font-size: 18px; color: #ffffff; }
-h3 { font-size: 18px; color: #ffffff; }
-h4 { font-size: 18px; color: #ffffff; }
-h5 { font-size: 18px; color: #ffffff; }
+.main { margin: 0em; color: #ffffff; border: 1em transparent solid; }
+h1 { font-size: 30px; color: #ffff00; }
+h2 { font-size: 24px; color: #ffff00; }
+h3 { font-size: 24px; color: #ff0000; }
+h4 { font-size: 24px; color: #ff0088; }
+h5 { font-size: 24px; color: #C0FFEE; }
 
 table { border-collapse: border; }
 th, td { border: solid 1px #000000; padding: 1ex; font-weight: bold; }
-th { background-color: #000000; color: #ffffff; }
+th { background-color: #010101; color: #00ffff; }
 th a:link { color: #ffffff; }
 th a:visited { color: #ffffff; }
 td a:link { color: #ffffff; }
