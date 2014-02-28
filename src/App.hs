@@ -60,17 +60,20 @@ diffTime a b = ceiling $ diffUTCTime (zonedTimeToUTC a) (zonedTimeToUTC b) / 60
 getACTime :: [Submit] -> ZonedTime -> String -> String -> Int
 getACTime statuses start user pid =
   if length st == 0 then 0 else diffTime (submitSubmitTime $ head st) start
-  where st = filter (\status -> eqUser status && eqProblem status && submitJudge status == Accepted) statuses
+  where st = filter (\s -> eqUser s && eqProblem s && eqAC s) statuses
         eqUser s = submitUserId s == user
         eqProblem s = submitProblemId s == filter ('\r'/=) pid
+        eqAC s = submitJudge s == Accepted
 
 getWA :: [Submit] -> String -> String -> Int
 getWA statuses user pid = length st
-  where st = takeWhile (\x -> submitJudge x /= Accepted) $ filter (\x -> eqUser x && eqProblem x) statuses
+  where st = takeWhile (\x -> submitJudge x /= Accepted) $ filter isSt statuses
+        isSt x = eqUser x && eqProblem x && submitJudge x /= CompileError
         eqUser s = submitUserId s == user
         eqProblem s = submitProblemId s == filter ('\r'/=) pid
 
-userStatus :: [Submit] -> ZonedTime -> Int -> [String] -> String -> (String, [(Int, Int)], Int, Int)
+userStatus :: [Submit] -> ZonedTime -> Int -> [String] -> String
+               -> (String, [(Int, Int)], Int, Int)
 userStatus status start duration problemList user =
   (user, zip wa ac, length ac', (sum (map (\(x,y) -> if x > 0 && x <= duration then x + y * 20 else 0) (zip ac wa))))
   where ac = map (getACTime status start user) problemList
@@ -164,6 +167,37 @@ app dbFile = do
         let contestStatus = rankStandings standings
 
         html $ renderHtml $ $(hamletFile "./template/contest.hamlet") undefined
+
+  get "/standings/:contest_id" $ do
+    userId <- getUser
+    contestId_ <- param "contest_id" :: ActionM String
+    let contestId = read contestId_ :: Int
+    currentTime <- liftIO getLocalTime
+    currentTime_ <- liftIO getZonedTime
+    contest' <- liftIO (Sq.runSqlite dbFile (getByIntId contestId)) :: ActionM (Maybe Contest)
+    case contest' of
+      Nothing -> redirect "/" -- contest not found!
+      Just contest -> do
+        statusDb <- liftIO (Sq.runSqlite dbFile (Sq.selectList [] []))
+                     :: ActionM [Sq.Entity Submit]
+        let duration = diffTime (contestEnd contest) (contestStart contest)
+        let contestType = contestJudgeType contest
+        let problemList_ = contestProblems contest
+        let problemList = map (\x -> if diffTime currentTime_ (contestStart contest) > 0 then x else "????") problemList_
+
+        let statusList_ = map Sq.entityVal statusDb
+        let statusList = filter (\s -> submitContestnumber s == contestId
+                                       && submitJudgeType s == contestType) statusList_
+        let statusAc = map (getACTime statusList (contestStart contest) userId) problemList
+        let statusWa = map (getWA statusList userId) problemList
+        let problems = zip4 problemList (map (getDescriptionURL contestType) problemList)
+                       statusAc statusWa
+
+        let users = getUsers statusList
+        let standings = map (userStatus statusList (contestStart contest) duration problemList) users
+        let contestStatus = rankStandings standings
+
+        html $ renderHtml $ $(hamletFile "./template/standings.hamlet") undefined
 
   post "/submit" $ do
     userId <- getUser
