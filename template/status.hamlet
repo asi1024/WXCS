@@ -9,7 +9,8 @@ $doctype 5
     <title>WX Contest System
   <body>
     <div class="header">
-      <h1 id="logo">WX Contest System
+      <h1 id="logo">
+        <a href="./">WX Contest System
       <span class="username">You are #{userId}. |
       <span class="index-link">
         <a href="./">Top
@@ -32,11 +33,14 @@ $doctype 5
         Number:<input type="text" size="10" name="number" value="#{num}">
         <input type="submit" name="search" value="search">
 
+        $if contestId /= ""
+          <a href="./contest/#{contestId}">Go to Contest Page
+
       <table summary="status table">
         <thead>
           <tr>
             <th>ID
-            <th>Contest
+            <th>CID
             <th>Datetime
             <th>User
             <th>Type
@@ -46,13 +50,13 @@ $doctype 5
             <th>Memory
             <th>Size
             <th>Lang
-            <th>Source
             <th>
 
         $forall (id, s) <- statusList
           <tbody>
             <tr class="#{cssClass (submitJudge s)}">
-              <td class="id">#{id}
+              <td class="id">
+                <a href="source/#{id}">#{id}
               <td class="id">
                 <a href="status?contest=#{submitContestnumber s}&amp;name=&amp;type=&amp;problem=&amp;number=50">#{submitContestnumber s}
               <td class="datetime">#{submitSubmitTime s}
@@ -66,8 +70,6 @@ $doctype 5
               <td class="memory">#{submitMemory s}
               <td class="size">#{submitSize s}
               <td class="language">#{submitLang s}
-              <td class="source">
-                <a href="source/#{id}">source
               <td class="rejudge">
                 <a href="rejudge/#{id}">rejudge
 

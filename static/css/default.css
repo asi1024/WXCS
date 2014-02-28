@@ -1,11 +1,14 @@
 body { color: #ffffff; background-color: #222222; font-family: verdana, arial, helvetica, sans-serif; padding: 0em; margin: 0em; }
 .header { text-align: right; margin: 0em; padding: 1.5ex; }
-.header a:link, .problem-menu a:link { color: #aaaaff; }
-.header a:visited, .problem-menu a:visited { color: #aaffaa; }
-.header a:hover, .problem-menu a:hover { background-color: #ffffff; text-decoration: none; }
+.header a:link, .problem-menu a:link { color: #aaffff; }
+.header a:visited, .problem-menu a:visited { color: #aaffff; }
+.header a:hover, .problem-menu a:hover { background-color: #888888; text-decoration: none; }
 #logo { margin: 0.1em; color: #00ffff; }
 
-.main { margin: 0em; color: #ffffff; background-color: #000000; border: 1em transparent solid; }
+.main { margin: 0em; color: #ffffff; background-color: #000000; border: 1em transp
+arent solid; }
+.main a:visited { color: #aaaaaa; }
+
 h1 { font-size: 32px; color: #7070e0; }
 h2 { font-size: 32px; color: #7070e0; }
 h3 { font-size: 24px; color: #7070e0; }
