@@ -11,7 +11,6 @@ import qualified Data.ByteString.Base64 as B
 import Data.Char (isSpace)
 import Data.Maybe (fromJust, isNothing)
 import Data.Text (Text())
-import Data.Text.Lazy.Encoding
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.Text.Lazy as TL
 import Data.Time
@@ -117,8 +116,9 @@ getUser :: ActionM String
 getUser = do
   user' <- reqHeader forwardedUserKey
   when (isNothing user') $ raise "Unauthorized"
-  return . head $ words $ map (\x -> if x == ':' then ' ' else x) $ eitherToString $ B.decode $ B8.pack $ head $ tail $ words $ TL.unpack $ fromJust user'
+  return $ takeWhile (\x -> x /= ':') $ eitherToString $ B.decode $ B8.pack $ head $ tail $ words $ TL.unpack $ fromJust user'
 
+eitherToString :: Either String B8.ByteString -> String
 eitherToString (Right x) = B8.unpack x
 eitherToString (Left x) = x
 
@@ -187,11 +187,11 @@ app dbFile = do
 
         let statusList_ = map Sq.entityVal statusDb
         let statusList = filter (\s -> submitContestnumber s == contestId
-                                       && submitJudgeType s == contestType) statusList_
+                            && submitJudgeType s == contestType) statusList_
         let statusAc = map (getACTime statusList (contestStart contest) userId) problemList
         let statusWa = map (getWA statusList userId) problemList
-        let problems = zip4 problemList (map (getDescriptionURL contestType) problemList)
-                       statusAc statusWa
+        let problems = zip4 problemList (map (getDescriptionURL contestType)
+                                         problemList) statusAc statusWa
 
         let users = getUsers statusList
         let standings = map (userStatus statusList (contestStart contest) duration problemList) users
@@ -208,7 +208,7 @@ app dbFile = do
     contestId <- param "contest" :: ActionM Int
     code' <- param "code" :: ActionM String
     codefiles <- files
-    let code = foldl (\acc (_,file) -> acc ++ unpack (fileContent file)) code' codefiles
+    let code = foldl (\acc (_, f) -> acc ++ unpack (fileContent f)) code' codefiles
     let size = show $ length code
     _ <- liftIO $ Sq.runSqlite dbFile $ do
       Sq.insert $ Submit currentTime userId judgeType contestId
@@ -234,15 +234,15 @@ app dbFile = do
 
   post "/setcontest" $ do
     setter <- getUser
-    contestName <- param "name" :: ActionM String
-    contestType <- liftM read $ param "type" :: ActionM JudgeType
+    cName <- param "name" :: ActionM String
+    cType <- liftM read $ param "type" :: ActionM JudgeType
     startTime_ <- param "starttime" :: ActionM String
     startTime <- liftIO $ toZonedTime startTime_
     endTime_ <- param "endtime" :: ActionM String
     endTime <- liftIO $ toZonedTime endTime_
     problem <- param "problem" :: ActionM String
     _ <- liftIO $ Sq.runSqlite dbFile $ do
-      Sq.insert $ Contest contestName contestType startTime endTime setter (lines problem)
+      Sq.insert $ Contest cName cType startTime endTime setter (lines problem)
     redirect "./"
 
   post "/setcontest/:contestId" $ do
@@ -306,6 +306,6 @@ app dbFile = do
     submit' <- liftIO $ Sq.runSqlite dbFile (getByIntId submitId)
     case submit' of
       Nothing -> redirect statusPage
-      Just submit -> do
-        liftIO $ updateSubmit dbFile $ submit { submitJudge = Pending }
+      Just submit_ -> do
+        liftIO $ updateSubmit dbFile $ submit_ { submitJudge = Pending }
         redirect statusPage

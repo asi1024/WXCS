@@ -24,10 +24,11 @@ $doctype 5
           <thead>
             <tr>
               <th>Contest Name
-              <th>Contest type
+              <th>Type
               <th>Start time
               <th>End time
-              <th>Problem Setter
+              <th>Duration
+              <th>Coordinator
               <th>Edit
 
           $forall (id, c) <- contestList
@@ -38,6 +39,7 @@ $doctype 5
                 <td>#{contestJudgeType c}
                 <td>#{contestStart c}
                 <td>#{contestEnd c}
+                <td>#{diffTime (contestEnd c) (contestStart c)}
                 <td>#{contestSetter c}
                 <td>
                   <a href="setcontest/#{id}">Edit

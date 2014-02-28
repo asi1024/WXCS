@@ -33,10 +33,12 @@ $doctype 5
         <tbody>
           <tr>
             $forall (pid, _, ac, wa) <- problems
-              $if ac > 0
+              $if ac > duration
+                <td class="stRV">#{pid}
+              $elseif ac > 0
                 <td class="stAC">#{pid}
               $elseif wa == 0
-                <td class="">#{pid}
+                <td class="stUN">#{pid}
               $else
                 <td class="stWA">#{pid}
           <tr>
@@ -118,16 +120,16 @@ $doctype 5
           Host:
           <select name="type">
             <option value="Aizu" selected>Aizu
+
           Problem ID:
             <select name="problem" size="1">
               $forall problem <- problemList
                 <option value="#{problem}" label="#{problem}">#{problem}
 
-          <br>
           Language:
-          $forall lang <- langs
-            #{lang}
-            <input type="radio" name="language" value="#{lang}">
+            <select name="language" size="1">
+              $forall lang <- langs
+                <option value="#{lang}" label="#{lang}">#{lang}
 
           <br>
           Source Code:
