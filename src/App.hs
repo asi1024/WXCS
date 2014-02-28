@@ -15,6 +15,7 @@ import qualified Data.ByteString.Char8 as B8
 import qualified Data.Text.Lazy as TL
 import Data.Time
 import Data.List
+import Data.Monoid
 
 import qualified Database.Persist.Sqlite as Sq
 
@@ -79,11 +80,15 @@ userStatus status start duration problemList user =
         wa = map (getWA status user) problemList
         ac' = filter (\x -> x > 0 && x <= duration) ac
 
+ordStanding :: (String, [(Int, Int)], Int, Int)
+               -> (String, [(Int, Int)], Int, Int) -> Ordering
+ordStanding (_,_,a,b) (_,_,c,d) = mappend (compare a c) (compare b d)
+
 rankStandings :: [(String, [(Int, Int)], Int, Int)]
                   -> [(Int, String, [(Int, Int)], Int, Int)]
 rankStandings l =
   zip5 [1..] name state ac wa
-  where (name, state, ac, wa) = unzip4 l
+  where (name, state, ac, wa) = unzip4 $ sortBy ordStanding l
 
 getByIntId :: (Integral i, Sq.PersistEntity val, Sq.PersistStore m,
                Sq.PersistEntityBackend val ~ Sq.PersistMonadBackend m)
