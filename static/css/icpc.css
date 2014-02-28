@@ -1,0 +1,49 @@
+body { color: #000000; background-color: #ffffff; font-family: verdana, arial, helvetica, sans-serif; padding: 0em; margin: 0em; }
+.header { text-align: center; margin: 0em; padding: 1.5ex; }
+.header a:link, .problem-menu a:link { color: #0000ff; }
+.header a:visited, .problem-menu a:visited { color: #ff3333; }
+.header a:hover, .problem-menu a:hover { background-color: #ffffff; text-decoration: none; }
+#logo { margin: 0.1em; color: #0000ff; }
+
+.main { margin: 0em; color: #101010; background-color: #ffffff; border: 1em transparent solid; text-align: center}
+h1 { font-size: 32px; color: #7070e0; }
+h2 { font-size: 32px; color: #7070e0; }
+h3 { font-size: 24px; color: #7070e0; }
+h4 { font-size: 24px; color: #7070e0; }
+h5 { font-size: 24px; color: #7070e0; }
+
+table { border-collapse: collapse; margin-right: auto; margin-left: auto}
+th, td { border: solid 1px #555555; padding: 1ex; font-weight: bold; }
+th { background-color: #333333; color: #ffffff; }
+th a:link { color: #aaaaaa; }
+th a:visited { color: #aaaaaa; }
+td a:link { color: #0000ff; }
+td a:visited { color: #3300ff; }
+
+.myAC { color: #000011; background-color: #02ff02; }
+.myRV { color: #000011; background-color: #ffffff; }
+.myWA { color: #ffeded; background-color: #df0202; }
+.myUN { color: #000000; background-color: #ffffff; }
+.stAC { color: #000011; background-color: #02ff02; }
+.stRV { color: #000011; background-color: #ffffff; }
+.stWA { color: #ffeded; background-color: #df0202; }
+.stUN { color: #000000; background-color: #ffffff; }
+
+.AC { color: #002200; background-color: #88ff88; }
+.WA { color: #330000; background-color: #ff9999; }
+.RE { color: #330022; background-color: #ff88ff; }
+.OLE { color: #330022; background-color: #ff88ff; }
+.MLE { color: #330022; background-color: #ff88ff; }
+.TLE { color: #000033; background-color: #9999ff; }
+.PE { color: #330000; background-color: #ffdd99; }
+.CE { color: #333333; background-color: #cccccc; }
+.JFF { color: #333333; background-color: #bbbbbb; }
+.SF { color: #333333; background-color: #bbbbbb; }
+.RUN { color: #000000; background-color: #ffffff; }
+
+td.user, td.problem, td.judge, td.language { text-align: center; }
+td.id, td.time, td.memory, td.size { text-align: right; }
+pre.source { font-family: DejaVu Sans Mono, monospace; background-color: #f8f8f8; color: #000000; border: solid 1px #555555; padding: 1em; }
+.footer { font-size: smaller; text-align: right; margin: 1em; }
+
+.message { border: #f26800 2px solid; color: #000000; background-color: #ffffff; font-size: large; padding: 1ex; }
