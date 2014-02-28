@@ -82,7 +82,7 @@ userStatus status start duration problemList user =
 
 ordStanding :: (String, [(Int, Int)], Int, Int)
                -> (String, [(Int, Int)], Int, Int) -> Ordering
-ordStanding (_,_,a,b) (_,_,c,d) = mappend (compare a c) (compare b d)
+ordStanding (_,_,a,b) (_,_,c,d) = mappend (compare c a) (compare b d)
 
 rankStandings :: [(String, [(Int, Int)], Int, Int)]
                   -> [(Int, String, [(Int, Int)], Int, Int)]
