@@ -5,7 +5,7 @@ body { color: #ffffff; background-color: #222222; font-family: verdana, arial, h
 .header a:hover, .problem-menu a:hover { background-color: #888888; text-decoration: none; }
 #logo { margin: 0.1em; color: #00ffff; }
 
-.main { margin: 0em; color: #ffffff; background-color: #000000; border: 1em transp
+.main { padding : 1em; margin: 0em; color: #ffffff; background-color: #000000; border: 1em transp
 arent solid; }
 .main a:visited { color: #aaaaaa; }
 
