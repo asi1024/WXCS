@@ -122,8 +122,7 @@ handleEx message = do
 getUser :: ActionM String
 getUser = do
   user' <- reqHeader forwardedUserKey
-  when (isNothing user') $ raise "Unauthorized"
-  return $ takeWhile (\x -> x /= ':') $ eitherToString $ B.decode $ B8.pack $ head $ tail $ words $ TL.unpack $ fromJust user'
+  return $ if (isNothing user') then "annonymous" else takeWhile (\x -> x /= ':') $ eitherToString $ B.decode $ B8.pack $ head $ tail $ words $ TL.unpack $ fromJust user'
 
 eitherToString :: Either String B8.ByteString -> String
 eitherToString (Right x) = B8.unpack x
