@@ -10,6 +10,7 @@ library
     default-Language: Haskell2010
     build-depends: base >= 4 && < 5
                    , aeson == 0.7.0.2
+                   , base64-bytestring == 1.0.0.1
                    , blaze-html == 0.7.0.1
                    , blaze-markup == 0.6.0.0
                    , bytestring == 0.10.4.0
@@ -32,7 +33,6 @@ library
                    , wai-extra == 2.1.1.1
                    , wai-middleware-static == 0.5.0.0
                    , xml == 1.3.13
-                   , base64-bytestring
 
     exposed-modules:
       App
@@ -66,6 +66,6 @@ test-suite spec
                  , data-default
                  , hspec == 1.9.1
                  , QuickCheck == 2.7.3
-                 , time
+                 , time == 1.4.2
                  , WXCS
   ghc-options: -Wall
