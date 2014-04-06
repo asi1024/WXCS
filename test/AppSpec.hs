@@ -52,4 +52,4 @@ spec = do
                       def { submitUserId = "user2" },
                       def { submitUserId = "user", submitJudge = CompileError, submitProblemId = "1" },
                       def { submitUserId = "user", submitProblemId = "2" } ]
-        getWA submits "user" "1" `shouldBe` 2
+        getWA submits "user" "1" `shouldBe` 1
