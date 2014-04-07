@@ -76,9 +76,9 @@ submit conf pid lang code = H.withManager $ \mgr -> do
 mkStatusQuery :: String -> Maybe String -> HT.SimpleQuery
 mkStatusQuery userId' problemId' =
   case problemId' of
-    Just problemId ->
+    Just problemId'' ->
       [("user_id", BC.pack userId'),
-       ("problem_id", BC.pack $ problemId),
+       ("problem_id", BC.pack $ problemId''),
        ("limit", "10")]
     Nothing -> [("user_id", BC.pack userId'), ("limit", "10")]
 
@@ -87,12 +87,12 @@ status :: (C.MonadBaseControl IO m, C.MonadResource m)
           -> Maybe String -- Problem ID
           -> H.Manager
           -> m (H.Response (C.ResumableSource m ByteString))
-status userId problemId =
-  api "GET" "http://judge.u-aizu.ac.jp/onlinejudge/webservice/status_log" (mkStatusQuery userId problemId)
+status userId' problemId' =
+  api "GET" "http://judge.u-aizu.ac.jp/onlinejudge/webservice/status_log" (mkStatusQuery userId' problemId')
 
 fetchStatusXml :: String -> IO ByteString
-fetchStatusXml userId = H.withManager $ \mgr -> do
-  res <- status userId Nothing mgr
+fetchStatusXml userId' = H.withManager $ \mgr -> do
+  res <- status userId' Nothing mgr
   xmls <- H.responseBody res C.$$+- CL.consume
   return $ BC.concat xmls
 

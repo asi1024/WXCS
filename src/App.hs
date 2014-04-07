@@ -3,7 +3,7 @@
 -- TODO: Split this module into public and private parts.
 module App where
 
-import Control.Monad (when, liftM)
+import Control.Monad (liftM)
 import Control.Monad.IO.Class
 
 import Data.ByteString.Lazy.Char8 (unpack)
@@ -121,7 +121,7 @@ handleEx message = do
 -- Get remote user.
 getUser :: ActionM String
 getUser = do
-  user' <- reqHeader forwardedUserKey
+  user' <- header forwardedUserKey
   return $ if (isNothing user') then "annonymous" else takeWhile (\x -> x /= ':') $ eitherToString $ B.decode $ B8.pack $ head $ tail $ words $ TL.unpack $ fromJust user'
 
 eitherToString :: Either String B8.ByteString -> String

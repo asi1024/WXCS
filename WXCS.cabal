@@ -44,7 +44,7 @@ library
       Submit
       Utils
 
-    ghc-options: -Wall -threaded
+    ghc-options: -Wall -threaded -fno-warn-orphans
 
 executable main
   hs-source-dirs: src-exec
@@ -68,4 +68,4 @@ test-suite spec
                  , QuickCheck == 2.7.3
                  , time == 1.4.2
                  , WXCS
-  ghc-options: -Wall
+  ghc-options: -Wall -fno-warn-orphans
