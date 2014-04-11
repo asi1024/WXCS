@@ -3,6 +3,7 @@
 -- TODO: Split this module into public and private parts.
 module App where
 
+import Control.Concurrent.Lock (Lock())
 import Control.Monad (liftM)
 import Control.Monad.IO.Class
 
@@ -128,8 +129,8 @@ eitherToString :: Either String B8.ByteString -> String
 eitherToString (Right x) = B8.unpack x
 eitherToString (Left x) = x
 
-app :: Text -> ScottyM ()
-app dbFile = do
+app :: Text -> Lock -> ScottyM ()
+app dbFile lock = do
   middleware logStdoutDev
   middleware $ staticPolicy $ addBase "static"
     >-> (contains "/js/" <|> contains "/css/" <|> contains "/image/")
@@ -138,7 +139,7 @@ app dbFile = do
   get "/" $ do
     userId <- getUser
     currentTime <- liftIO getLocalTime
-    contests <- liftIO (Sq.runSqlite dbFile (Sq.selectList [] []))
+    contests <- liftIO (runSqlWithLock lock dbFile (Sq.selectList [] []))
                 :: ActionM [Sq.Entity Contest]
     let contestList = reverse $ map entityToTuple contests
     html $ renderHtml $ $(hamletFile "./template/index.hamlet") undefined
@@ -149,11 +150,12 @@ app dbFile = do
     let contestId = read contestId_ :: Int
     currentTime <- liftIO getLocalTime
     currentTime_ <- liftIO getZonedTime
-    contest' <- liftIO (Sq.runSqlite dbFile (getByIntId contestId)) :: ActionM (Maybe Contest)
+    contest' <- liftIO (runSqlWithLock lock dbFile (getByIntId contestId))
+                :: ActionM (Maybe Contest)
     case contest' of
       Nothing -> redirect "/" -- contest not found!
       Just contest -> do
-        statusDb <- liftIO (Sq.runSqlite dbFile (Sq.selectList [] []))
+        statusDb <- liftIO (runSqlWithLock lock dbFile (Sq.selectList [] []))
                      :: ActionM [Sq.Entity Submit]
         let duration = diffTime (contestEnd contest) (contestStart contest)
         let contestType = contestJudgeType contest
@@ -184,7 +186,7 @@ app dbFile = do
     case contest' of
       Nothing -> redirect "/" -- contest not found!
       Just contest -> do
-        statusDb <- liftIO (Sq.runSqlite dbFile (Sq.selectList [] []))
+        statusDb <- liftIO (runSqlWithLock lock dbFile (Sq.selectList [] []))
                      :: ActionM [Sq.Entity Submit]
         let duration = diffTime (contestEnd contest) (contestStart contest)
         let contestType = contestJudgeType contest
@@ -216,7 +218,7 @@ app dbFile = do
     codefiles <- files
     let code = foldl (\acc (_, f) -> acc ++ unpack (fileContent f)) code' codefiles
     let size = show $ length code
-    _ <- liftIO $ Sq.runSqlite dbFile $ do
+    _ <- liftIO $ runSqlWithLock lock dbFile $ do
       Sq.insert $ Submit currentTime userId judgeType contestId
         problemId Pending "" "" size lang code
     redirect $ TL.drop 3 statusPage
@@ -230,7 +232,8 @@ app dbFile = do
     userId <- getUser
     currentTime <- liftIO getLocalTime
     contestId <- param "contestId" :: ActionM Int
-    contest' <- liftIO $ Sq.runSqlite dbFile $ getByIntId contestId :: ActionM (Maybe Contest)
+    contest' <- liftIO $ runSqlWithLock lock dbFile $ getByIntId contestId
+                :: ActionM (Maybe Contest)
     case contest' of
       Nothing -> redirect "../"
       Just contest -> do
@@ -247,7 +250,7 @@ app dbFile = do
     endTime_ <- param "endtime" :: ActionM String
     endTime <- liftIO $ toZonedTime endTime_
     problem <- param "problem" :: ActionM String
-    _ <- liftIO $ Sq.runSqlite dbFile $ do
+    _ <- liftIO $ runSqlWithLock lock dbFile $ do
       Sq.insert $ Contest cName cType startTime endTime setter (lines problem)
     redirect "./"
 
@@ -262,12 +265,12 @@ app dbFile = do
     problem <- param "problem" :: ActionM String
     contestId_ <- param "contestId" :: ActionM String
     let contestId = read contestId_ :: Int
-    contest' <- liftIO $ Sq.runSqlite dbFile (getByIntId contestId)
+    contest' <- liftIO $ runSqlWithLock lock dbFile (getByIntId contestId)
                 :: ActionM (Maybe Contest)
     case contest' of
       Nothing -> redirect statusPage
       Just contest -> do
-        liftIO $ updateContest dbFile $ contest {
+        liftIO $ updateContest lock dbFile $ contest {
           contestName = cName,
           contestJudgeType = contestType,
           contestStart = startTime,
@@ -280,7 +283,7 @@ app dbFile = do
   get "/status" $ do
     userId <- getUser
     currentTime <- liftIO getLocalTime
-    statusDb <- liftIO (Sq.runSqlite dbFile (Sq.selectList [] []))
+    statusDb <- liftIO (runSqlWithLock lock dbFile (Sq.selectList [] []))
                 :: ActionM [Sq.Entity Submit]
     let statusL = map entityToTuple statusDb
     contestId <- param "contest" :: ActionM String
@@ -299,7 +302,8 @@ app dbFile = do
     userId <- getUser
     sourceId <- param "source_id" :: ActionM Int
     currentTime <- liftIO getLocalTime
-    source' <- liftIO (Sq.runSqlite dbFile (getByIntId sourceId)) :: ActionM (Maybe Submit)
+    source' <- liftIO (runSqlWithLock lock dbFile (getByIntId sourceId))
+               :: ActionM (Maybe Submit)
     case source' of
       Nothing -> redirect statusPage -- source code not found!
       Just source -> do
@@ -309,9 +313,9 @@ app dbFile = do
 
   get "/rejudge/:submit_id" $ do
     submitId <- param "submit_id" :: ActionM Int
-    submit' <- liftIO $ Sq.runSqlite dbFile (getByIntId submitId)
+    submit' <- liftIO $ runSqlWithLock lock dbFile (getByIntId submitId)
     case submit' of
       Nothing -> redirect statusPage
       Just submit_ -> do
-        liftIO $ updateSubmit dbFile $ submit_ { submitJudge = Pending }
+        liftIO $ updateSubmit lock dbFile $ submit_ { submitJudge = Pending }
         redirect statusPage
