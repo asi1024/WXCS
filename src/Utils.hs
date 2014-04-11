@@ -2,11 +2,16 @@ module Utils (
   getLocalTime,
   toZonedTime,
   fromZonedTime,
+  runSqlWithLock,
   showTime,
   whenDef
   ) where
 
+import Control.Concurrent.Lock (Lock(), acquire, release)
+import Control.Exception (bracket_)
+
 import Data.Time
+import qualified Database.Persist.Sqlite as Sq
 
 import System.Locale (defaultTimeLocale)
 
@@ -27,3 +32,6 @@ getLocalTime = getZonedTime >>= (return . showTime)
 
 whenDef :: (Monad m) => a -> Bool -> m a -> m a
 whenDef def p act = if p then act else return def
+
+runSqlWithLock lock dbFile action =
+  bracket_ (acquire lock) (release lock) (Sq.runSqlite dbFile action)

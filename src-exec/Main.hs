@@ -4,6 +4,7 @@
 module Main where
 
 import Control.Concurrent (forkIO)
+import Control.Concurrent.Lock (new)
 import Control.Monad (when)
 
 import Data.Maybe (fromJust, isNothing)
@@ -26,5 +27,6 @@ main = do
 
   Sq.runSqlite db_file $ Sq.runMigration migrateAll
   -- TODO: error handling?
-  _ <- forkIO $ crawler config
-  scotty (port config) $ app db_file
+  lock <- new
+  _ <- forkIO $ crawler config lock
+  scotty (port config) $ app db_file lock

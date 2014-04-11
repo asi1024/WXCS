@@ -2,6 +2,7 @@
 {-# LANGUAGE TemplateHaskell, TypeFamilies, QuasiQuotes #-}
 module Model where
 
+import Control.Concurrent.Lock (Lock())
 import Control.Monad (liftM)
 
 import Data.Text (Text())
@@ -11,6 +12,7 @@ import Database.Persist.Sqlite
 import Database.Persist.TH
 
 import ModelTypes
+import Utils
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
 Contest
@@ -37,23 +39,23 @@ Submit
   deriving Show
 |]
 
-findSubmit :: Text -> [Filter Submit] -> IO (Maybe (Entity Submit))
-findSubmit db filt = runSqlite db $ selectFirst filt []
+findSubmit :: Lock -> Text -> [Filter Submit] -> IO (Maybe (Entity Submit))
+findSubmit lock db filt = runSqlWithLock lock db $ selectFirst filt []
 
-updateSubmit :: Text -> Submit -> IO ()
-updateSubmit db s = do
-  submit <- findSubmit db [SubmitSubmitTime ==. (submitSubmitTime s),
-                           SubmitUserId ==. (submitUserId s)]
+updateSubmit :: Lock -> Text -> Submit -> IO ()
+updateSubmit lock db s = do
+  submit <- findSubmit lock db [SubmitSubmitTime ==. (submitSubmitTime s),
+                                SubmitUserId ==. (submitUserId s)]
   case liftM entityKey $ submit of
     Nothing -> return ()
-    Just submitId -> runSqlite db $ replace submitId s
+    Just submitId -> runSqlWithLock lock db $ replace submitId s
 
-findContest :: Text -> [Filter Contest] -> IO (Maybe (Entity Contest))
-findContest db filt = runSqlite db $ selectFirst filt []
+findContest :: Lock -> Text -> [Filter Contest] -> IO (Maybe (Entity Contest))
+findContest lock db filt = runSqlWithLock lock db $ selectFirst filt []
 
-updateContest :: Text -> Contest -> IO ()
-updateContest db c = do
-  contest <- findContest db [ContestName ==. (contestName c)]
+updateContest :: Lock -> Text -> Contest -> IO ()
+updateContest lock db c = do
+  contest <- findContest lock db [ContestName ==. (contestName c)]
   case liftM entityKey $ contest of
     Nothing -> return ()
-    Just contestId -> runSqlite db $ replace contestId c
+    Just contestId -> runSqlWithLock lock db $ replace contestId c
