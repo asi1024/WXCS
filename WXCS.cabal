@@ -23,6 +23,7 @@ library
                    , http-conduit == 2.0.0.10
                    , http-types == 0.8.4
                    , old-locale == 1.0.0.5
+                   , mtl == 2.1.3.1
                    , monad-logger == 0.3.5.1
                    , persistent == 1.3.0.6
                    , persistent-sqlite == 1.3.0.5
@@ -44,6 +45,7 @@ library
       OnlineJudge
       OnlineJudge.Aoj
       Submit
+      Types
       Utils
 
     ghc-options: -Wall -threaded -fno-warn-orphans
@@ -55,6 +57,7 @@ executable main
   build-depends: base >= 4 && < 5
                  , concurrent-extra == 0.7.0.6
                  , persistent-sqlite == 1.3.0.5
+                 , mtl == 2.1.3.1
                  , scotty == 0.7.1
                  , WXCS
 

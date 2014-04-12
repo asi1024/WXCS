@@ -4,8 +4,8 @@
 module App where
 
 import Control.Concurrent.Lock (Lock())
-import Control.Monad (liftM)
 import Control.Monad.IO.Class
+import Control.Monad.Reader
 
 import Data.ByteString.Lazy.Char8 (unpack)
 import qualified Data.ByteString.Base64 as B
@@ -31,6 +31,7 @@ import Text.Hamlet
 import Web.Scotty hiding (source, status)
 import qualified Web.Scotty as WS
 
+import Config (Configuration, db)
 import Model
 import ModelTypes
 import OnlineJudge
@@ -129,8 +130,9 @@ eitherToString :: Either String B8.ByteString -> String
 eitherToString (Right x) = B8.unpack x
 eitherToString (Left x) = x
 
-app :: Text -> Lock -> ScottyM ()
-app dbFile lock = do
+app :: Configuration -> Lock -> ScottyM ()
+app conf lock = do
+  let dbFile = db conf
   middleware logStdoutDev
   middleware $ staticPolicy $ addBase "static"
     >-> (contains "/js/" <|> contains "/css/" <|> contains "/image/")
@@ -270,14 +272,21 @@ app dbFile lock = do
     case contest' of
       Nothing -> redirect statusPage
       Just contest -> do
-        liftIO $ updateContest lock dbFile $ contest {
+        liftIO $ runReaderT (updateContest $ contest {
           contestName = cName,
           contestJudgeType = contestType,
           contestStart = startTime,
           contestEnd = endTime,
           contestSetter = setter,
-          contestProblems = (lines problem)
-          }
+          contestProblems = lines problem }) (lock, conf)
+        -- liftIO $ updateContest lock dbFile $ contest {
+        --   contestName = cName,
+        --   contestJudgeType = contestType,
+        --   contestStart = startTime,
+        --   contestEnd = endTime,
+        --   contestSetter = setter,
+        --   contestProblems = (lines problem)
+        --   }
         redirect "../"
 
   get "/status" $ do
@@ -317,5 +326,6 @@ app dbFile lock = do
     case submit' of
       Nothing -> redirect statusPage
       Just submit_ -> do
-        liftIO $ updateSubmit lock dbFile $ submit_ { submitJudge = Pending }
+        liftIO $ runReaderT (updateSubmit $ submit_ { submitJudge = Pending }) (lock, conf)
+--        liftIO $ updateSubmit lock dbFile $ submit_ { submitJudge = Pending }
         redirect statusPage

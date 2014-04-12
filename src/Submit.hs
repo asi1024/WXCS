@@ -5,60 +5,62 @@ module Submit (
   ) where
 
 import Control.Concurrent
-import Control.Concurrent.Lock (Lock())
-import Control.Monad (liftM)
+import Control.Monad.Reader
 
 import Database.Persist ((==.))
 import qualified Database.Persist.Sqlite as Sq
 
-import Config
 import Model
 import ModelTypes
 import qualified OnlineJudge as OJ
+import Types
+import Utils
 
-findPendingSubmit :: Lock -> Configuration -> IO (Maybe Submit)
-findPendingSubmit lock conf = do
-  submit' <- findSubmit lock (db conf) [SubmitJudge ==. Pending]
+findPendingSubmit :: DatabaseT (Maybe Submit)
+findPendingSubmit = do
+  submit' <- findSubmit [SubmitJudge ==. Pending]
   return $ liftM Sq.entityVal $ submit'
 
-getAndUpdateWithRunId :: Lock -> Configuration -> Submit -> Int -> IO ()
-getAndUpdateWithRunId lock conf submit rid = do
-  res <- OJ.fetchByRunId conf (submitJudgeType submit) rid
+getAndUpdateWithRunId :: Submit -> Int -> DatabaseT ()
+getAndUpdateWithRunId submit rid = do
+  (_, conf) <- ask
+  res <- liftIO $ OJ.fetchByRunId conf (submitJudgeType submit) rid
   case res of
-    Nothing -> updateSubmit lock (db conf) $ submit { submitJudge = SubmissionError }
+    Nothing -> updateSubmit $ submit { submitJudge = SubmissionError }
     Just (judge, time, mem) -> do
-      updateSubmit lock (db conf) $
-        submit { submitJudge = judge, submitTime = time, submitMemory = mem }
+      updateSubmit $ submit { submitJudge = judge, submitTime = time, submitMemory = mem }
 
-getResultAndUpdate :: Lock -> Configuration -> Submit -> Int -> IO ()
-getResultAndUpdate lock conf submit latestRunId = loop (0 :: Int)
+getResultAndUpdate :: Submit -> Int -> DatabaseT ()
+getResultAndUpdate submit latestRunId = loop (0 :: Int)
   where
     loop n =
       if n < 100
       then do
-        runId <- OJ.getLatestRunId conf (submitJudgeType submit)
+        (lock, conf) <- ask
+        runId <- liftIO $ OJ.getLatestRunId conf (submitJudgeType submit)
         if runId /= latestRunId
-          then (forkIO $ getAndUpdateWithRunId lock conf submit runId) >> return ()
-          else threadDelay (1000 * 1000) >> loop (n+1)
+          then liftIO $ forkIO_ $ runReaderT (getAndUpdateWithRunId submit runId) (lock, conf)
+          else liftIO (threadDelay (1000 * 1000)) >> loop (n + 1)
       else
-        updateSubmit lock (db conf) (submit { submitJudge = SubmissionError } )
+        updateSubmit $ submit { submitJudge = SubmissionError }
 
-submitAndUpdate :: Lock -> Configuration -> Submit -> IO ()
-submitAndUpdate lock conf s = do
-  lastRunId <- OJ.getLatestRunId conf (submitJudgeType s)
-  updateSubmit lock (db conf) (s { submitJudge = Running })
-  success <- OJ.submit conf (submitJudgeType s) (submitProblemId s)
+submitAndUpdate :: Submit -> DatabaseT ()
+submitAndUpdate s = do
+  (_, conf) <- ask
+  lastRunId <- liftIO $ OJ.getLatestRunId conf (submitJudgeType s)
+  updateSubmit $ s { submitJudge = Running }
+  success <- liftIO $ OJ.submit conf (submitJudgeType s) (submitProblemId s)
              (submitLang s) (submitCode s)
   if success
-    then getResultAndUpdate lock conf s lastRunId
-    else updateSubmit lock (db conf) $ s { submitJudge = SubmissionError }
+    then getResultAndUpdate s lastRunId
+    else updateSubmit $ s { submitJudge = SubmissionError }
 
-crawler :: Configuration -> Lock -> IO ()
-crawler conf lock = do
-  threadDelay (1000 * 1000) -- sleep 1sec
-  submit' <- findPendingSubmit lock conf
+crawler :: DatabaseT ()
+crawler = do
+  liftIO $ threadDelay (1000 * 1000) -- sleep 1sec
+  submit' <- findPendingSubmit
   case submit' of
-    Nothing -> crawler conf lock
+    Nothing -> crawler
     Just submit -> do
-      submitAndUpdate lock conf submit
-      crawler conf lock
+      submitAndUpdate submit
+      crawler

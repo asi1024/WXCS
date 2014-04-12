@@ -2,16 +2,15 @@
 {-# LANGUAGE TemplateHaskell, TypeFamilies, QuasiQuotes #-}
 module Model where
 
-import Control.Concurrent.Lock (Lock())
 import Control.Monad (liftM)
 
-import Data.Text (Text())
 import Data.Time
 
 import Database.Persist.Sqlite
 import Database.Persist.TH
 
 import ModelTypes
+import Types
 import Utils
 
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
@@ -39,23 +38,24 @@ Submit
   deriving Show
 |]
 
-findSubmit :: Lock -> Text -> [Filter Submit] -> IO (Maybe (Entity Submit))
-findSubmit lock db filt = runSqlWithLock lock db $ selectFirst filt []
+findSubmit :: [Filter Submit] -> DatabaseT (Maybe (Entity Submit))
+findSubmit filt = runSql $ selectFirst filt []
 
-updateSubmit :: Lock -> Text -> Submit -> IO ()
-updateSubmit lock db s = do
-  submit <- findSubmit lock db [SubmitSubmitTime ==. (submitSubmitTime s),
-                                SubmitUserId ==. (submitUserId s)]
+updateSubmit :: Submit -> DatabaseT ()
+updateSubmit s = do
+  submit <- findSubmit [SubmitSubmitTime ==. (submitSubmitTime s),
+                        SubmitUserId ==. (submitUserId s)]
   case liftM entityKey $ submit of
     Nothing -> return ()
-    Just submitId -> runSqlWithLock lock db $ replace submitId s
+    Just submitId -> runSql $ replace submitId s
 
-findContest :: Lock -> Text -> [Filter Contest] -> IO (Maybe (Entity Contest))
-findContest lock db filt = runSqlWithLock lock db $ selectFirst filt []
+findContest :: [Filter Contest] -> DatabaseT (Maybe (Entity Contest))
+findContest filt = runSql $ selectFirst filt []
 
-updateContest :: Lock -> Text -> Contest -> IO ()
-updateContest lock db c = do
-  contest <- findContest lock db [ContestName ==. (contestName c)]
+updateContest :: Contest -> DatabaseT ()
+updateContest c = do
+  contest <- findContest [ContestName ==. (contestName c)]
   case liftM entityKey $ contest of
     Nothing -> return ()
-    Just contestId -> runSqlWithLock lock db $ replace contestId c
+    Just contestId -> runSql $ replace contestId c
+
