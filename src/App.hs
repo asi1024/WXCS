@@ -279,14 +279,6 @@ app conf lock = do
           contestEnd = endTime,
           contestSetter = setter,
           contestProblems = lines problem }) (lock, conf)
-        -- liftIO $ updateContest lock dbFile $ contest {
-        --   contestName = cName,
-        --   contestJudgeType = contestType,
-        --   contestStart = startTime,
-        --   contestEnd = endTime,
-        --   contestSetter = setter,
-        --   contestProblems = (lines problem)
-        --   }
         redirect "../"
 
   get "/status" $ do
