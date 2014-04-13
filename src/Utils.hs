@@ -4,7 +4,6 @@ module Utils (
   toZonedTime,
   fromZonedTime,
   runSql,
-  runSqlWithLock,
   showTime,
   whenDef
   ) where
@@ -42,10 +41,6 @@ getLocalTime = getZonedTime >>= (return . showTime)
 
 whenDef :: (Monad m) => a -> Bool -> m a -> m a
 whenDef def p act = if p then act else return def
-
-runSqlWithLock :: Lock -> Text -> Sq.SqlPersistT (NoLoggingT (ResourceT IO)) a -> IO a
-runSqlWithLock lock dbFile action =
-  bracket_ (acquire lock) (release lock) (Sq.runSqlite dbFile action)
 
 runSql :: Sq.SqlPersistT (NoLoggingT (ResourceT IO)) a -> DatabaseT a
 runSql action = do
