@@ -3,7 +3,6 @@
 -- TODO: Split this module into public and private parts.
 module App where
 
-import Control.Concurrent.Lock (Lock())
 import Control.Monad.IO.Class
 import Control.Monad.Reader
 
@@ -12,6 +11,7 @@ import qualified Data.ByteString.Base64 as B
 import Data.Char (isSpace)
 import Data.Maybe (fromJust, isNothing)
 import Data.Text (Text())
+import qualified Data.Text as TS
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.Text.Lazy as TL
 import Data.Time
@@ -28,13 +28,13 @@ import Network.Wai.Parse (FileInfo(..))
 import Text.Blaze.Html.Renderer.Text (renderHtml)
 import Text.Hamlet
 
-import Web.Scotty hiding (source, status)
-import qualified Web.Scotty as WS
+import Web.Scotty.Trans hiding (source, status)
+import qualified Web.Scotty.Trans as WS
 
-import Config (Configuration, db)
 import Model
 import ModelTypes
 import OnlineJudge
+import Types
 import Utils
 
 cssClass :: JudgeStatus -> String
@@ -111,17 +111,21 @@ forwardedUserKey = "Authorization"
 statusPage :: TL.Text
 statusPage = "../status?contest=&name=&type=&problem=&number=50"
 
+instance ScottyError Text where
+  stringError = TS.pack
+  showError = TL.fromStrict
+
 -- Handler for exceptions.
-handleEx :: TL.Text -> ActionM ()
+handleEx :: Text -> ActionT Text DatabaseT ()
 handleEx "Unauthorized" = do
   WS.status status401
   html $ "<h1>You are not logined.</h1>"
 handleEx message = do
   WS.status status500
-  text message
+  text $ TL.fromStrict message
 
 -- Get remote user.
-getUser :: ActionM String
+getUser :: ActionT Text DatabaseT String
 getUser = do
   user' <- header forwardedUserKey
   return $ if (isNothing user') then "annonymous" else takeWhile (\x -> x /= ':') $ eitherToString $ B.decode $ B8.pack $ head $ tail $ words $ TL.unpack $ fromJust user'
@@ -130,9 +134,9 @@ eitherToString :: Either String B8.ByteString -> String
 eitherToString (Right x) = B8.unpack x
 eitherToString (Left x) = x
 
-app :: Configuration -> Lock -> ScottyM ()
-app conf lock = do
-  let dbFile = db conf
+app :: ScottyT Text DatabaseT ()
+app = do
+  (lock, conf) <- lift ask
   middleware logStdoutDev
   middleware $ staticPolicy $ addBase "static"
     >-> (contains "/js/" <|> contains "/css/" <|> contains "/image/")
@@ -142,23 +146,22 @@ app conf lock = do
     userId <- getUser
     currentTime <- liftIO getLocalTime
     contests <- liftIO $ runReaderT (runSql $ Sq.selectList [] []) (lock, conf)
-                :: ActionM [Sq.Entity Contest]
+                :: ActionT Text DatabaseT [Sq.Entity Contest]
     let contestList = reverse $ map entityToTuple contests
     html $ renderHtml $ $(hamletFile "./template/index.hamlet") undefined
 
   get "/contest/:contest_id" $ do
     userId <- getUser
-    contestId_ <- param "contest_id" :: ActionM String
+    contestId_ <- param "contest_id" :: ActionT Text DatabaseT String
     let contestId = read contestId_ :: Int
     currentTime <- liftIO getLocalTime
     currentTime_ <- liftIO getZonedTime
-    contest' <- liftIO $ runReaderT (runSql $ getByIntId contestId) (lock, conf)
-                :: ActionM (Maybe Contest)
+    contest' <- lift $ runSql $ getByIntId contestId :: ActionT Text DatabaseT (Maybe Contest)
     case contest' of
       Nothing -> redirect "/" -- contest not found!
       Just contest -> do
-        statusDb <- liftIO $ runReaderT (runSql $ Sq.selectList [] []) (lock, conf)
-                     :: ActionM [Sq.Entity Submit]
+        statusDb <- lift $ runSql $ Sq.selectList [] []
+                    :: ActionT Text DatabaseT [Sq.Entity Submit]
         let duration = diffTime (contestEnd contest) (contestStart contest)
         let contestType = contestJudgeType contest
         let problemList_ = contestProblems contest
@@ -180,16 +183,16 @@ app conf lock = do
 
   get "/standings/:contest_id" $ do
     userId <- getUser
-    contestId_ <- param "contest_id" :: ActionM String
+    contestId_ <- param "contest_id" :: ActionT Text DatabaseT String
     let contestId = read contestId_ :: Int
     currentTime <- liftIO getLocalTime
     currentTime_ <- liftIO getZonedTime
-    contest' <- liftIO (Sq.runSqlite dbFile (getByIntId contestId)) :: ActionM (Maybe Contest)
+    contest' <- lift $ runSql $ getByIntId contestId :: ActionT Text DatabaseT (Maybe Contest)
     case contest' of
       Nothing -> redirect "/" -- contest not found!
       Just contest -> do
-        statusDb <- liftIO $ runReaderT (runSql $ Sq.selectList [] []) (lock, conf)
-                     :: ActionM [Sq.Entity Submit]
+        statusDb <- lift $ runSql $ Sq.selectList [] []
+                    :: ActionT Text DatabaseT [Sq.Entity Submit]
         let duration = diffTime (contestEnd contest) (contestStart contest)
         let contestType = contestJudgeType contest
         let problemList_ = contestProblems contest
@@ -212,18 +215,17 @@ app conf lock = do
   post "/submit" $ do
     userId <- getUser
     currentTime <- liftIO getZonedTime
-    judgeType <- liftM read $ param "type" :: ActionM JudgeType
-    problemId <- liftM (filter $ not . isSpace) $ param "problem" :: ActionM String
-    lang <- param "language" :: ActionM String
-    contestId <- param "contest" :: ActionM Int
-    code' <- param "code" :: ActionM String
+    judgeType <- liftM read $ param "type" :: ActionT Text DatabaseT JudgeType
+    problemId <- liftM (filter $ not . isSpace) $ param "problem"
+                 :: ActionT Text DatabaseT String
+    lang <- param "language" :: ActionT Text DatabaseT String
+    contestId <- param "contest" :: ActionT Text DatabaseT Int
+    code' <- param "code" :: ActionT Text DatabaseT String
     codefiles <- files
     let code = foldl (\acc (_, f) -> acc ++ unpack (fileContent f)) code' codefiles
     let size = show $ length code
-    liftIO $ runReaderT (runSql $ Sq.insert_ $ Submit currentTime userId judgeType contestId problemId Pending "" "" size lang code) (lock, conf)
-    -- _ <- liftIO $ (flip runReaderT) (lock, conf) $ do
-    --   Sq.insert $ Submit currentTime userId judgeType contestId
-    --     problemId Pending "" "" size lang code
+    lift $ runSql $ Sq.insert_ $
+      Submit currentTime userId judgeType contestId problemId Pending "" "" size lang code
     redirect $ TL.drop 3 statusPage
 
   get "/setcontest" $ do
@@ -234,9 +236,9 @@ app conf lock = do
   get "/setcontest/:contestId" $ do
     userId <- getUser
     currentTime <- liftIO getLocalTime
-    contestId <- param "contestId" :: ActionM Int
-    contest' <- liftIO $ runReaderT (runSql $ getByIntId contestId) (lock, conf)
-                :: ActionM (Maybe Contest)
+    contestId <- param "contestId" :: ActionT Text DatabaseT Int
+    contest' <- lift $ runSql $ getByIntId contestId
+                :: ActionT Text DatabaseT (Maybe Contest)
     case contest' of
       Nothing -> redirect "../"
       Just contest -> do
@@ -246,54 +248,53 @@ app conf lock = do
 
   post "/setcontest" $ do
     setter <- getUser
-    cName <- param "name" :: ActionM String
-    cType <- liftM read $ param "type" :: ActionM JudgeType
-    startTime_ <- param "starttime" :: ActionM String
+    cName <- param "name" :: ActionT Text DatabaseT String
+    cType <- liftM read $ param "type" :: ActionT Text DatabaseT JudgeType
+    startTime_ <- param "starttime" :: ActionT Text DatabaseT String
     startTime <- liftIO $ toZonedTime startTime_
-    endTime_ <- param "endtime" :: ActionM String
+    endTime_ <- param "endtime" :: ActionT Text DatabaseT String
     endTime <- liftIO $ toZonedTime endTime_
-    problem <- param "problem" :: ActionM String
-    liftIO $ (flip runReaderT) (lock, conf) $ do
-      runSql $ Sq.insert_ $ Contest cName cType startTime endTime setter (lines problem)
+    problem <- param "problem" :: ActionT Text DatabaseT String
+    lift $ runSql $ Sq.insert_ $
+      Contest cName cType startTime endTime setter (lines problem)
     redirect "./"
 
   post "/setcontest/:contestId" $ do
     setter <- getUser
-    cName <- param "name" :: ActionM String
-    contestType <- liftM read $ param "type" :: ActionM JudgeType
-    startTime_ <- param "starttime" :: ActionM String
+    cName <- param "name" :: ActionT Text DatabaseT String
+    contestType <- liftM read $ param "type" :: ActionT Text DatabaseT JudgeType
+    startTime_ <- param "starttime" :: ActionT Text DatabaseT String
     startTime <- liftIO $ toZonedTime startTime_
-    endTime_ <- param "endtime" :: ActionM String
+    endTime_ <- param "endtime" :: ActionT Text DatabaseT String
     endTime <- liftIO $ toZonedTime endTime_
-    problem <- param "problem" :: ActionM String
-    contestId_ <- param "contestId" :: ActionM String
+    problem <- param "problem" :: ActionT Text DatabaseT String
+    contestId_ <- param "contestId" :: ActionT Text DatabaseT String
     let contestId = read contestId_ :: Int
-    contest' <- liftIO $ runReaderT (runSql $ getByIntId contestId) (lock, conf)
-                :: ActionM (Maybe Contest)
+    contest' <- lift $ runSql $ getByIntId contestId :: ActionT Text DatabaseT (Maybe Contest)
     case contest' of
       Nothing -> redirect statusPage
       Just contest -> do
-        liftIO $ runReaderT (updateContest $ contest {
+        lift $ updateContest $ contest {
           contestName = cName,
           contestJudgeType = contestType,
           contestStart = startTime,
           contestEnd = endTime,
           contestSetter = setter,
-          contestProblems = lines problem }) (lock, conf)
+          contestProblems = lines problem }
         redirect "../"
 
   get "/status" $ do
     userId <- getUser
     currentTime <- liftIO getLocalTime
-    statusDb <- liftIO $ runReaderT (runSql $ Sq.selectList [] []) (lock, conf)
-                :: ActionM [Sq.Entity Submit]
+    statusDb <- lift $ runSql $ Sq.selectList [] []
+                :: ActionT Text DatabaseT [Sq.Entity Submit]
     let statusL = map entityToTuple statusDb
-    contestId <- param "contest" :: ActionM String
-    user <- param "name" :: ActionM String
-    jtype_ <- param "type" :: ActionM String
-    jtype <- liftM read $ param "type" :: ActionM JudgeType
-    pid <- param "problem" :: ActionM String
-    num <- param "number" :: ActionM Int
+    contestId <- param "contest" :: ActionT Text DatabaseT String
+    user <- param "name" :: ActionT Text DatabaseT String
+    jtype_ <- param "type" :: ActionT Text DatabaseT String
+    jtype <- liftM read $ param "type" :: ActionT Text DatabaseT JudgeType
+    pid <- param "problem" :: ActionT Text DatabaseT String
+    num <- param "number" :: ActionT Text DatabaseT Int
     let statusL_ = if contestId == "" then statusL else filter (\(_,s) -> submitContestnumber s == read contestId) statusL
     let statusL__ = if user == "" then statusL_ else filter (\(_,s) -> submitUserId s == user) statusL_
     let statusL___ = if jtype_ == "" then statusL__ else filter (\(_,s) -> submitJudgeType s == jtype) statusL__
@@ -302,10 +303,9 @@ app conf lock = do
 
   get "/source/:source_id" $ do
     userId <- getUser
-    sourceId <- param "source_id" :: ActionM Int
+    sourceId <- param "source_id" :: ActionT Text DatabaseT Int
     currentTime <- liftIO getLocalTime
-    source' <- liftIO $ runReaderT (runSql $ getByIntId sourceId) (lock, conf)
-               :: ActionM (Maybe Submit)
+    source' <- lift $ runSql $ getByIntId sourceId :: ActionT Text DatabaseT (Maybe Submit)
     case source' of
       Nothing -> redirect statusPage -- source code not found!
       Just source -> do
@@ -314,10 +314,10 @@ app conf lock = do
         html $ renderHtml $ $(hamletFile "./template/source.hamlet") undefined
 
   get "/rejudge/:submit_id" $ do
-    submitId <- param "submit_id" :: ActionM Int
-    submit' <- liftIO $ runReaderT (runSql $ getByIntId submitId) (lock, conf)
+    submitId <- param "submit_id" :: ActionT Text DatabaseT Int
+    submit' <- lift $ runSql $ getByIntId submitId
     case submit' of
       Nothing -> redirect statusPage
       Just submit_ -> do
-        liftIO $ runReaderT (updateSubmit $ submit_ { submitJudge = Pending }) (lock, conf)
+        lift $ updateSubmit $ submit_ { submitJudge = Pending }
         redirect statusPage

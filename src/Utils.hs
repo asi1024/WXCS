@@ -9,13 +9,12 @@ module Utils (
   ) where
 
 import Control.Concurrent (forkIO)
-import Control.Concurrent.Lock (Lock(), acquire, release)
+import Control.Concurrent.Lock (acquire, release)
 import Control.Exception (bracket_)
 import Control.Monad.Logger (NoLoggingT())
 import Control.Monad.Reader
 
 import Data.Conduit (ResourceT())
-import Data.Text (Text())
 import Data.Time
 import qualified Database.Persist.Sqlite as Sq
 

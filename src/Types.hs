@@ -5,4 +5,4 @@ import Control.Monad.Reader (ReaderT())
 
 import Config
 
-type DatabaseT a = ReaderT (Lock, Configuration) IO a
+type DatabaseT = ReaderT (Lock, Configuration) IO

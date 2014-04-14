@@ -10,7 +10,7 @@ import Data.Maybe (fromJust, isNothing)
 
 import qualified Database.Persist.Sqlite as Sq
 
-import Web.Scotty (scotty)
+import Web.Scotty.Trans (scottyT)
 
 import App
 import Config (loadConfig, db, port)
@@ -29,4 +29,5 @@ main = do
   -- TODO: error handling?
   lock <- new
   forkIO_ $ runReaderT crawler (lock, config)
-  scotty (port config) $ app config lock
+  scottyT (port config) ((flip runReaderT) (lock, config))
+    ((flip runReaderT) (lock, config)) app
