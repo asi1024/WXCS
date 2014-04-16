@@ -11,13 +11,13 @@ submit :: Configuration
           -> String -- language
           -> String -- code
           -> IO Bool
-submit conf Aizu pid lang code = Aoj.submit (aoj conf) pid lang code
+submit conf Aizu = Aoj.submit (aoj conf)
 
 fetchByRunId :: Configuration
                 -> JudgeType -- judge type
                 -> Int -- run id
                 -> IO (Maybe (JudgeStatus, String, String))
-fetchByRunId conf Aizu rid = Aoj.fetchByRunId (aoj conf) rid
+fetchByRunId conf Aizu = Aoj.fetchByRunId (aoj conf)
 
 getLatestRunId :: Configuration
                   -> JudgeType -- judge type

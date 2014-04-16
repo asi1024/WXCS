@@ -3,20 +3,20 @@
 
 module Main where
 
-import Control.Concurrent (forkIO)
 import Control.Concurrent.Lock (new)
-import Control.Monad (when)
+import Control.Monad.Reader
 
 import Data.Maybe (fromJust, isNothing)
 
 import qualified Database.Persist.Sqlite as Sq
 
-import Web.Scotty (scotty)
+import Web.Scotty.Trans (scottyT)
 
 import App
 import Config (loadConfig, db, port)
 import Model (migrateAll)
 import Submit
+import Utils
 
 main :: IO ()
 main = do
@@ -28,5 +28,6 @@ main = do
   Sq.runSqlite db_file $ Sq.runMigration migrateAll
   -- TODO: error handling?
   lock <- new
-  _ <- forkIO $ crawler config lock
-  scotty (port config) $ app db_file lock
+  forkIO_ $ runReaderT crawler (lock, config)
+  scottyT (port config) ((flip runReaderT) (lock, config))
+    ((flip runReaderT) (lock, config)) app
