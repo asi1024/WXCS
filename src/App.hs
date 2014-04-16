@@ -61,7 +61,7 @@ diffTime a b = ceiling $ diffUTCTime (zonedTimeToUTC a) (zonedTimeToUTC b) / 60
 
 getACTime :: [Submit] -> ZonedTime -> String -> String -> Int
 getACTime statuses start user pid =
-  if length st == 0 then 0 else diffTime (submitSubmitTime $ head st) start
+  if null st then 0 else diffTime (submitSubmitTime $ head st) start
   where st = filter (\s -> eqUser s && eqProblem s && eqAC s) statuses
         eqUser s = submitUserId s == user
         eqProblem s = submitProblemId s == filter ('\r'/=) pid
@@ -79,7 +79,7 @@ getWA statuses user pid = length st
 userStatus :: [Submit] -> ZonedTime -> Int -> [String] -> String
                -> (String, [(Int, Int)], Int, Int)
 userStatus status start duration problemList user =
-  (user, zip wa ac, length ac', (sum (map (\(x,y) -> if x > 0 && x <= duration then x + y * 20 else 0) (zip ac wa))))
+  (user, zip wa ac, length ac', sum (map (\(x,y) -> if x > 0 && x <= duration then x + y * 20 else 0) (zip ac wa)))
   where ac = map (getACTime status start user) problemList
         wa = map (getWA status user) problemList
         ac' = filter (\x -> x > 0 && x <= duration) ac
@@ -119,7 +119,7 @@ instance ScottyError Text where
 handleEx :: Text -> Action ()
 handleEx "Unauthorized" = do
   WS.status status401
-  html $ "<h1>You are not logined.</h1>"
+  html "<h1>You are not logined.</h1>"
 handleEx message = do
   WS.status status500
   text $ TL.fromStrict message
@@ -128,7 +128,9 @@ handleEx message = do
 getUser :: Action String
 getUser = do
   user' <- header forwardedUserKey
-  return $ if (isNothing user') then "annonymous" else takeWhile (\x -> x /= ':') $ eitherToString $ B.decode $ B8.pack $ head $ tail $ words $ TL.unpack $ fromJust user'
+  return $ if isNothing user'
+           then "annonymous"
+           else takeWhile (/= ':') $ eitherToString $ B.decode $ B8.pack $ head $ tail $ words $ TL.unpack $ fromJust user'
 
 eitherToString :: Either String B8.ByteString -> String
 eitherToString (Right x) = B8.unpack x
@@ -236,7 +238,7 @@ app = do
     contest' <- lift $ runSql $ getByIntId contestId :: Action (Maybe Contest)
     case contest' of
       Nothing -> redirect "../"
-      Just contest -> do
+      Just contest ->
         if contestSetter contest /= userId
           then redirect "../"
           else html $ renderHtml $ $(hamletFile "./template/editcontest.hamlet") undefined

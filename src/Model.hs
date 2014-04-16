@@ -43,9 +43,9 @@ findSubmit filt = runSql $ selectFirst filt []
 
 updateSubmit :: Submit -> DatabaseT ()
 updateSubmit s = do
-  submit <- findSubmit [SubmitSubmitTime ==. (submitSubmitTime s),
-                        SubmitUserId ==. (submitUserId s)]
-  case liftM entityKey $ submit of
+  submit <- findSubmit [SubmitSubmitTime ==. submitSubmitTime s,
+                        SubmitUserId ==. submitUserId s]
+  case liftM entityKey submit of
     Nothing -> return ()
     Just submitId -> runSql $ replace submitId s
 
@@ -54,8 +54,8 @@ findContest filt = runSql $ selectFirst filt []
 
 updateContest :: Contest -> DatabaseT ()
 updateContest c = do
-  contest <- findContest [ContestName ==. (contestName c)]
-  case liftM entityKey $ contest of
+  contest <- findContest [ContestName ==. contestName c]
+  case liftM entityKey contest of
     Nothing -> return ()
     Just contestId -> runSql $ replace contestId c
 

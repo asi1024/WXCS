@@ -19,7 +19,7 @@ import Utils
 findPendingSubmit :: DatabaseT (Maybe Submit)
 findPendingSubmit = do
   submit' <- findSubmit [SubmitJudge ==. Pending]
-  return $ liftM Sq.entityVal $ submit'
+  return $ liftM Sq.entityVal submit'
 
 getAndUpdateWithRunId :: Submit -> Int -> DatabaseT ()
 getAndUpdateWithRunId submit rid = do
@@ -27,7 +27,7 @@ getAndUpdateWithRunId submit rid = do
   res <- liftIO $ OJ.fetchByRunId conf (submitJudgeType submit) rid
   case res of
     Nothing -> updateSubmit $ submit { submitJudge = SubmissionError }
-    Just (judge, time, mem) -> do
+    Just (judge, time, mem) ->
       updateSubmit $ submit { submitJudge = judge, submitTime = time, submitMemory = mem }
 
 getResultAndUpdate :: Submit -> Int -> DatabaseT ()

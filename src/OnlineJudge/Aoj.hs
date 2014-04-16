@@ -70,15 +70,15 @@ submit conf pid lang code = H.withManager $ \mgr -> do
   liftIO $ putStrLn "submit to AOJ"
   res <- submitAux (BC.pack (C.user conf)) (BC.pack (C.pass conf)) (BC.pack pid)
          (BC.pack lang) (BC.pack code) mgr
-  liftIO $ putStrLn (show (H.responseStatus res))
-  return (ok200 == (H.responseStatus res))
+  liftIO $ print $ H.responseStatus res
+  return (ok200 == H.responseStatus res)
 
 mkStatusQuery :: String -> Maybe String -> HT.SimpleQuery
 mkStatusQuery userId' problemId' =
   case problemId' of
     Just problemId'' ->
       [("user_id", BC.pack userId'),
-       ("problem_id", BC.pack $ problemId''),
+       ("problem_id", BC.pack problemId''),
        ("limit", "10")]
     Nothing -> [("user_id", BC.pack userId'), ("limit", "10")]
 
@@ -146,7 +146,7 @@ fetchByRunId conf rid = loop (0 :: Int)
         Nothing -> loop (n+1)
         Just xml -> do
           let st = filter (\st' -> runId st' == rid) $ getStatuses xml
-          if null st || ((judgeStatus $ head st) == Pending)
+          if null st || (judgeStatus (head st) == Pending)
             then loop (n+1)
             else return $ f (head st)
     f st = Just (judgeStatus st, show $ cpuTime st, show $ memory st)
