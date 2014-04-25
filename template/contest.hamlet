@@ -79,9 +79,9 @@ $doctype 5
                 $if wa > 0
                   $if t > duration
                     $if userName == userId
-                      <td class="myRV"> +#{wa} @#{t}
+                      <td class="myRV"> +#{wa} @
                     $else
-                      <td class="stRV"> +#{wa} @#{t}
+                      <td class="stRV"> +#{wa} @
                   $elseif t > 0
                     $if userName == userId
                       <td class="myAC"> +#{wa} @#{t}
@@ -95,9 +95,9 @@ $doctype 5
                 $else
                   $if t > duration
                     $if userName == userId
-                      <td class="myRV"> @#{t}
+                      <td class="myRV"> @
                     $else
-                      <td class="stRV"> @#{t}
+                      <td class="stRV"> @
                   $elseif t > 0
                     $if userName == userId
                       <td class="myAC"> @#{t}
