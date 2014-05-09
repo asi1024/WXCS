@@ -111,6 +111,17 @@ forwardedUserKey = "Authorization"
 statusPage :: TL.Text
 statusPage = "../status?contest=&name=&type=&problem=&number=50"
 
+getSolvedNum :: [SubmitGeneric backend] -> String -> Int
+getSolvedNum statusAC user =
+  length $ nub listAC
+  where userAC = filter (\s -> submitUserId s == user) statusAC
+        listAC = map (\s -> (submitJudgeType s, submitProblemId s)) userAC
+
+ranking :: [(String, Int)] -> [(Int, String, Int)]
+ranking l =
+  zip3 [1..] users solves
+  where (users, solves) = unzip $ sortBy (\(a,b) (c,d) -> mappend (compare d b) (compare a c)) l
+
 instance ScottyError Text where
   stringError = TS.pack
   showError = TL.fromStrict
@@ -210,6 +221,18 @@ app = do
         let contestStatus = rankStandings standings
 
         html $ renderHtml $ $(hamletFile "./template/standings.hamlet") undefined
+
+  get "/ranking" $ do
+    userId <- getUser
+    currentTime <- liftIO getLocalTime
+    currentTime_ <- liftIO getZonedTime
+    statusDb <- lift $ runSql $ Sq.selectList [] [] :: Action [Sq.Entity Submit]
+    let statusList_ = map Sq.entityVal statusDb
+    let statusList = filter (\s -> submitJudge s == Accepted) statusList_
+    let users = getUsers statusList_
+    let rankStatus_ = map (\user -> (user, getSolvedNum statusList user)) users
+    let rankStatus = ranking rankStatus_ :: [(Int, String, Int)]
+    html $ renderHtml $ $(hamletFile "./template/ranking.hamlet") undefined
 
   post "/submit" $ do
     userId <- getUser
