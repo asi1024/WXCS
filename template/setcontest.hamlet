@@ -32,9 +32,10 @@ $doctype 5
         <input type="hidden" name="setter" value="sss">
         Setter User: #{userId}<br>
         Contest Name:<input type="text" name="name" value=""><br>
-        <select name="type">
-          <option value="Aizu" >Aizu
-
+        Contest Host:
+          <select name="type">
+            <option value="Aizu" >Aizu
+        <br>
         Problem Sets:<br>
         <textarea rows="10" cols="90" name="problem">
         <br>
