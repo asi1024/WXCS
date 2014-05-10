@@ -32,6 +32,14 @@ td a:visited { color: #aaaaaa; }
 .stWA { color: #c00000; background-color: #000000; }
 .stUN { color: #ffffff; background-color: #000000; }
 
+.MC { color: #ff8888; background-color: #000000; }
+.RC { color: #ff0000; background-color: #000000; }
+.YC { color: #ffff00; background-color: #000000; }
+.PC { color: #ff00ff; background-color: #000000; }
+.BC { color: #0000ff; background-color: #000000; }
+.GC { color: #00ff00; background-color: #000000; }
+.HC { color: #888888; background-color: #000000; }
+
 .AC { color: #00ff00; background-color: #000000; }
 .WA { color: #ff0000; background-color: #000000; }
 .RE { color: #ff00ff; background-color: #000000; }

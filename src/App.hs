@@ -120,7 +120,13 @@ getSolvedNum statusAC user =
 ranking :: [(String, Int)] -> [(Int, String, Int)]
 ranking l =
   zip3 [1..] users solves
-  where (users, solves) = unzip $ sortBy (\(a,b) (c,d) -> mappend (compare d b) (compare a c)) l
+  where (users, solves) = unzip $ sortBy (\(a,b) (c,d) -> mappend (compare d b) (compare a c)) $ filter (\(_, a) -> a >= 5) l
+
+getRating :: Int -> Int -> Int
+getRating solved problemNum =
+  round $ (2500.0 * s) / p + 700.0
+  where s = sqrt $ fromIntegral solved :: Double
+        p = sqrt $ fromIntegral problemNum :: Double
 
 instance ScottyError Text where
   stringError = TS.pack
@@ -232,6 +238,8 @@ app = do
     let users = getUsers statusList_
     let rankStatus_ = map (\user -> (user, getSolvedNum statusList user)) users
     let rankStatus = ranking rankStatus_ :: [(Int, String, Int)]
+    let problemNum = length $ nub $ map (\s -> (submitJudgeType s, submitProblemId s)) statusList_
+    let ratingStatus = map (\(a,b,c)->(a,b,c,getRating c problemNum)) rankStatus
     html $ renderHtml $ $(hamletFile "./template/ranking.hamlet") undefined
 
   post "/submit" $ do
