@@ -8,7 +8,7 @@ import Control.Monad.Reader
 
 import Data.ByteString.Lazy.Char8 (unpack)
 import qualified Data.ByteString.Base64 as B
-import Data.Char (isSpace)
+import Data.Char (isSpace, toLower)
 import Data.Maybe (fromJust, isNothing)
 import Data.Text (Text())
 import qualified Data.Text as TS
@@ -147,7 +147,7 @@ getUser = do
   user' <- header forwardedUserKey
   return $ if isNothing user'
            then "annonymous"
-           else takeWhile (/= ':') $ eitherToString $ B.decode $ B8.pack $ head $ tail $ words $ TL.unpack $ fromJust user'
+           else map toLower $ takeWhile (/= ':') $ eitherToString $ B.decode $ B8.pack $ head $ tail $ words $ TL.unpack $ fromJust user'
 
 eitherToString :: Either String B8.ByteString -> String
 eitherToString (Right x) = B8.unpack x
