@@ -264,7 +264,7 @@ app = do
     let rankStatus = ranking rankStatus_ :: [(Int, String, Int)]
     let problemNum = length $ nub $ map (\s -> (submitJudgeType s, submitProblemId s)) statusList
     let ratingStatus = map (\(a,b,c)->(a,b,c,getRating c problemNum)) rankStatus
-    else html $ renderHtml $ $(hamletFile "./template/statistics.hamlet") undefined
+    html $ renderHtml $ $(hamletFile "./template/statistics.hamlet") undefined
 
   post "/submit" $ do
     userId <- getUser
