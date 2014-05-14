@@ -232,6 +232,23 @@ app = do
 
         html $ renderHtml $ $(hamletFile "./template/standings.hamlet") undefined
 
+  get "/user/:user" $ do
+    userId <- getUser
+    user_ <- param "user" :: Action String
+    currentTime <- liftIO getLocalTime
+    contests <- lift $ runSql $ Sq.selectList [] [] :: Action [Sq.Entity Contest]
+    statusDb <- lift $ runSql $ Sq.selectList [] [] :: Action [Sq.Entity Submit]
+    let statusList_ = map Sq.entityVal statusDb
+    let contestList = zip [1..] $ map Sq.entityVal contests
+    let statusList = if user_ == "ALL" then statusList_ else filter (\s -> submitUserId s == user_ && submitJudge s == Accepted) statusList_
+    let contestProbs = map (\(cid, c) ->
+          (cid, contestName c, map (\p ->
+            (getDescriptionURL (contestJudgeType c) p, length $ filter (\s ->
+              submitContestnumber s == cid && submitProblemId s == filter ('\r'/=) p)
+            statusList)) $ contestProblems c))
+          contestList :: [(Int, String, [(String, Int)])]
+    html $ renderHtml $ $(hamletFile "./template/user.hamlet") undefined
+
   get "/ranking" $ do
     userId <- getUser
     currentTime <- liftIO getLocalTime
