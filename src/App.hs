@@ -123,10 +123,14 @@ ranking l =
   where (users, solves) = unzip $ sortBy (\(a,b) (c,d) -> mappend (compare d b) (compare a c)) $ filter (\(_, a) -> a >= 5) l
 
 getRating :: Int -> Int -> Int
-getRating solved problemNum =
+getRating solved problemNum = 
   round $ (2500.0 * s) / p + 700.0
   where s = sqrt $ fromIntegral solved :: Double
         p = sqrt $ fromIntegral problemNum :: Double
+
+countJudge :: String -> [SubmitGeneric backend] -> Int
+countJudge user status =
+  length $ filter (\s -> submitUserId s == user) status
 
 instance ScottyError Text where
   stringError = TS.pack
@@ -241,6 +245,26 @@ app = do
     let problemNum = length $ nub $ map (\s -> (submitJudgeType s, submitProblemId s)) statusList_
     let ratingStatus = map (\(a,b,c)->(a,b,c,getRating c problemNum)) rankStatus
     html $ renderHtml $ $(hamletFile "./template/ranking.hamlet") undefined
+
+  get "/statistics" $ do
+    userId <- getUser
+    currentTime <- liftIO getLocalTime
+    currentTime_ <- liftIO getZonedTime
+    statusDb <- lift $ runSql $ Sq.selectList [] [] :: Action [Sq.Entity Submit]
+    let statusList = map Sq.entityVal statusDb
+    let statusListAC = filter (\s -> submitJudge s == Accepted) statusList
+    let statusListWA = filter (\s -> submitJudge s == WrongAnswer) statusList
+    let statusListTLE = filter (\s -> submitJudge s == TimeLimitExceeded) statusList
+    let statusListMLE = filter (\s -> submitJudge s == MemoryLimitExceeded) statusList
+    let statusListRE = filter (\s -> submitJudge s == RuntimeError) statusList
+    let statusListPE = filter (\s -> submitJudge s == PresentationError) statusList
+    let statusListCE = filter (\s -> submitJudge s == CompileError) statusList
+    let users = getUsers statusList
+    let rankStatus_ = map (\user -> (user, getSolvedNum statusListAC user)) users
+    let rankStatus = ranking rankStatus_ :: [(Int, String, Int)]
+    let problemNum = length $ nub $ map (\s -> (submitJudgeType s, submitProblemId s)) statusList
+    let ratingStatus = map (\(a,b,c)->(a,b,c,getRating c problemNum)) rankStatus
+    html $ renderHtml $ $(hamletFile "./template/statistics.hamlet") undefined
 
   post "/submit" $ do
     userId <- getUser
