@@ -70,9 +70,10 @@ getACTime statuses start user pid =
 getWA :: [Submit] -> String -> String -> Int
 getWA statuses user pid = length st
   where st = takeWhile (\x -> submitJudge x /= Accepted) $ filter isSt statuses
-        eqWA x = x == WrongAnswer || x == TimeLimitExceeded ||
-                 x == MemoryLimitExceeded || x == OutputLimitExceeded
-        isSt x = eqUser x && eqProblem x && eqWA (submitJudge x)
+        eqJudge x = x == WrongAnswer || x == TimeLimitExceeded ||
+                    x == MemoryLimitExceeded || x == OutputLimitExceeded ||
+                    x == Accepted
+        isSt x = eqUser x && eqProblem x && eqJudge (submitJudge x)
         eqUser s = submitUserId s == user
         eqProblem s = submitProblemId s == filter ('\r'/=) pid
 

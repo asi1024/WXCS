@@ -19,7 +19,8 @@ $doctype 5
         <a href="status?contest=&amp;name=&amp;type=&amp;problem=&amp;number=50">Status
         |
       <span class="ranking-link">
-        Ranking |
+        <a href="./ranking">Ranking
+        |
       <span class="current-time">Current Time:
         <strong>#{currentTime}
 
@@ -46,7 +47,7 @@ $doctype 5
               <tr>
                 <td class="stUN">#{rank}
                 <td class="stUN">
-                  <a href="status?contest=&amp;name=#{userName}&amp;type=&amp;problem=&amp;number=50">#{userName}
+                  <a href="./user/#{userName}">#{userName}
                 <td class="stUN">#{solved}
                 $if rating >= 3000
                   <td class="MC">#{getRating solved problemNum}

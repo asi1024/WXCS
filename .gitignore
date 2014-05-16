@@ -5,3 +5,4 @@ static/image
 cabal.sandbox.config
 .cabal-sandbox/
 wxcs.conf
+talls/

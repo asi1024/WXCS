@@ -12,7 +12,9 @@ $doctype 5
         <h1 id="logo">
           <a href="../">WX Contest System
         <span class="username">You are #{userId}. |
-        Top |
+        <span class="index-link">
+          <a href="../">Top
+          |
         <span class="status-link">
           <a href="../status?contest=&amp;name=&amp;type=&amp;problem=&amp;number=50">Status
           |
