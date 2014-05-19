@@ -70,7 +70,7 @@ $doctype 5
               <td class="problem">
                 <a href="status?contest=&amp;name=&amp;type=#{submitJudgeType s}&amp;problem=#{submitProblemId s}&amp;number=50">#{submitProblemId s}
               <td class="judge">#{submitJudge s}
-              <td class="time">#{submitTime s}
+              <td class="time">#{submitTime s}0
               <td class="memory">#{submitMemory s}
               <td class="size">#{submitSize s}
               <td class="language">#{submitLang s}

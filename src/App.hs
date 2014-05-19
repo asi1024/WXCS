@@ -72,7 +72,7 @@ getWA statuses user pid = length st
   where st = takeWhile (\x -> submitJudge x /= Accepted) $ filter isSt statuses
         eqJudge x = x == WrongAnswer || x == TimeLimitExceeded ||
                     x == MemoryLimitExceeded || x == OutputLimitExceeded ||
-                    x == Accepted
+                    x == RuntimeError || x == Accepted
         isSt x = eqUser x && eqProblem x && eqJudge (submitJudge x)
         eqUser s = submitUserId s == user
         eqProblem s = submitProblemId s == filter ('\r'/=) pid
