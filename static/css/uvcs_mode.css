@@ -1,24 +1,23 @@
 body { color: #ffffff; background-color: #222222; font-family: verdana, arial, helvetica, sans-serif; padding: 0em; margin: 0em; }
 .header { text-align: right; margin: 0em; padding: 1.5ex; }
 .header a:link, .problem-menu a:link { color: #aaaaff; }
-.header a:visited, .problem-menu a:visited { color: #ffaaaa; }
+.header a:visited, .problem-menu a:visited { color: #aaaaff; }
 .header a:hover, .problem-menu a:hover { background-color: #ffffff; text-decoration: none; }
-#logo { margin: 0.1em; color: #ffffff; }
+#logo { margin: 0.1em; color: #aaaaff; }
 
 .main { margin: 0em; color: #101010; background-color: #dddddd; border: 1em transparent solid; }
+.main a:link { color: #3333ff; }
+.main a:visited { color: #3333ff; }
+.main a:hover { color: #ff8833; }
 h1 { font-size: 32px; color: #7070e0; }
 h2 { font-size: 32px; color: #7070e0; }
-h3 { font-size: 24px; color: #7070e0; }
-h4 { font-size: 24px; color: #7070e0; }
-h5 { font-size: 24px; color: #7070e0; }
+h3 { font-size: 32px; color: #7070e0; }
+h4 { font-size: 32px; color: #7070e0; }
+h5 { font-size: 32px; color: #7070e0; }
 
 table { border-collapse: collapse; }
 th, td { border: solid 1px #555555; padding: 1ex; font-weight: bold; }
-th { background-color: #333333; color: #ffffff; }
-th a:link { color: #aaaaaa; }
-th a:visited { color: #aaaaaa; }
-td a:link { color: #0000ff; }
-td a:visited { color: #3300ff; }
+th { background-color: #bbbbbb; color: #000000; }
 
 .myAC { color: #000011; background-color: #02ff02; }
 .myRV { color: #000011; background-color: #ffffff; }
@@ -28,6 +27,14 @@ td a:visited { color: #3300ff; }
 .stRV { color: #000011; background-color: #ffffff; }
 .stWA { color: #ffeded; background-color: #df0202; }
 .stUN { color: #000000; background-color: #ffffff; }
+
+.MC { color: #00cccc; background-color: #ffffff; }
+.RC { color: #ff0000; background-color: #ffffff; }
+.YC { color: #bbbb00; background-color: #ffffff; }
+.PC { color: #ff00ff; background-color: #ffffff; }
+.BC { color: #0000ff; background-color: #ffffff; }
+.GC { color: #00cc00; background-color: #ffffff; }
+.HC { color: #555555; background-color: #ffffff; }
 
 .AC { color: #002200; background-color: #88ff88; }
 .WA { color: #330000; background-color: #ff9999; }

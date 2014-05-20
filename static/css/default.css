@@ -5,9 +5,10 @@ body { color: #ffffff; background-color: #222222; font-family: verdana, arial, h
 .header a:hover, .problem-menu a:hover { background-color: #888888; text-decoration: none; }
 #logo { margin: 0.1em; color: #00ffff; }
 
-.main { padding : 1em; margin: 0em; color: #ffffff; background-color: #000000; border: 1em transp
-arent solid; }
+.main { padding : 1em; margin: 0em; color: #ffffff; background-color: #000000; border: 1em transparent solid; }
+.main a:link { color: #aaaaaa; }
 .main a:visited { color: #aaaaaa; }
+.main a:hover { color: #3333ff; }
 
 h1 { font-size: 32px; color: #7070e0; }
 h2 { font-size: 32px; color: #7070e0; }
@@ -18,10 +19,6 @@ h5 { font-size: 24px; color: #7070e0; }
 table { border-collapse: border; }
 th, td { border: solid 1px #222222; padding: 1ex; font-weight: bold; }
 th { background-color: #222222; color: #ffffff; }
-th a:link { color: #aaaaaa; }
-th a:visited { color: #aaaaaa; }
-td a:link { color: #aaaaaa; }
-td a:visited { color: #aaaaaa; }
 
 .myAC { color: #02ff02; background-color: #002200; }
 .myRV { color: #00ffff; background-color: #002200; }
