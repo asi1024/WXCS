@@ -133,6 +133,20 @@ countJudge :: String -> [SubmitGeneric backend] -> Int
 countJudge user status =
   length $ filter (\s -> submitUserId s == user) status
 
+getProblemAcNum :: [Sq.Entity (SubmitGeneric backend)]
+                   -> String -> [(Int, String, Int, Bool)]
+getProblemAcNum statusDb userId =
+  sortBy (\(_,_,a,_) (_,_,b,_) -> compare b a) $ map (\(c, p) -> (c, p, length $ filter (\s -> submitProblemId s == p) acList, elem (c,p) myAcList)) problemList
+  where statusList = map Sq.entityVal statusDb
+        acList = filter (\s -> submitJudge s == Accepted) statusList
+        myAcList = map (\s -> (submitContestnumber s, submitProblemId s)) $ filter (\s -> submitUserId s == userId) acList :: [(Int, String)]
+        problemList = nub $ map (\s -> (submitContestnumber s, submitProblemId s)) statusList :: [(Int, String)]
+
+getPoint :: [Sq.Entity (SubmitGeneric backend)] -> String -> Int
+getPoint statusDb userId =
+  sum $ map (\(_,_,n,_) -> div 100 n) $ filter (\(_,_,_,f) -> f) problemAcNum
+  where problemAcNum = getProblemAcNum statusDb userId
+
 instance ScottyError Text where
   stringError = TS.pack
   showError = TL.fromStrict
@@ -283,6 +297,16 @@ app = do
     let problemNum = length $ nub $ map (\s -> (submitJudgeType s, submitProblemId s)) statusList
     let ratingStatus = map (\(a,b,c)->(a,b,c,getRating c problemNum)) rankStatus
     html $ renderHtml $ $(hamletFile "./template/statistics.hamlet") undefined
+
+  get "/problems/:user" $ do
+    userId <- getUser
+    user <- param "user" :: Action String
+    currentTime <- liftIO getLocalTime
+    currentTime_ <- liftIO getZonedTime
+    statusDb <- lift $ runSql $ Sq.selectList [] [] :: Action [Sq.Entity Submit]
+    let problemAcNum = getProblemAcNum statusDb user
+    let point = getPoint statusDb user
+    html $ renderHtml $ $(hamletFile "./template/problem.hamlet") undefined
 
   post "/submit" $ do
     userId <- getUser

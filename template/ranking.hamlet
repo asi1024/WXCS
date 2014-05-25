@@ -33,6 +33,7 @@ $doctype 5
               <th>User
               <th>Solved
               <th>Rating
+              <th>Point
             $forall (rank, userName, solved, rating) <- ratingStatus
               <tr>
                 <td class="stUN">#{rank}
@@ -53,5 +54,6 @@ $doctype 5
                   <td class="GC">#{getRating solved problemNum}
                 $else
                   <td class="HC">#{getRating solved problemNum}
+                <td class="stUN">#{getPoint statusDb userName}
 
     <address class="footer">contributed by asi1024,chir(2014)
