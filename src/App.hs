@@ -298,7 +298,7 @@ app = do
     let ratingStatus = map (\(a,b,c)->(a,b,c,getRating c problemNum)) rankStatus
     html $ renderHtml $ $(hamletFile "./template/statistics.hamlet") undefined
 
-  get "/problems/:user" $ do
+  get "/problem/:user" $ do
     userId <- getUser
     user <- param "user" :: Action String
     currentTime <- liftIO getLocalTime
