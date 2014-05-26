@@ -195,7 +195,7 @@ app = do
     currentTime_ <- liftIO getZonedTime
     contest' <- lift $ runSql $ getByIntId contestId :: Action (Maybe Contest)
     case contest' of
-      Nothing -> redirect "/" -- contest not found!
+      Nothing -> redirect "../" -- contest not found!
       Just contest -> do
         statusDb <- lift $ runSql $ Sq.selectList [] [] :: Action [Sq.Entity Submit]
         let duration = diffTime (contestEnd contest) (contestStart contest)
@@ -225,7 +225,7 @@ app = do
     currentTime_ <- liftIO getZonedTime
     contest' <- lift $ runSql $ getByIntId contestId :: Action (Maybe Contest)
     case contest' of
-      Nothing -> redirect "/" -- contest not found!
+      Nothing -> redirect "../" -- contest not found!
       Just contest -> do
         statusDb <- lift $ runSql $ Sq.selectList [] [] :: Action [Sq.Entity Submit]
         let duration = diffTime (contestEnd contest) (contestStart contest)
@@ -298,7 +298,7 @@ app = do
     let ratingStatus = map (\(a,b,c)->(a,b,c,getRating c problemNum)) rankStatus
     html $ renderHtml $ $(hamletFile "./template/statistics.hamlet") undefined
 
-  get "/problems/:user" $ do
+  get "/problem/:user" $ do
     userId <- getUser
     user <- param "user" :: Action String
     currentTime <- liftIO getLocalTime
@@ -416,8 +416,8 @@ app = do
         redirect statusPage
 
   get "/:str1" $ do
-    redirect "/"
+    redirect "./"
   get "/:str1/:str2" $ do
-    redirect "/"
+    redirect "../"
   get "/:str1/:str2/:str3" $ do
-    redirect "/"
+    redirect "../../"
