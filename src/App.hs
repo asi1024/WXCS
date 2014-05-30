@@ -121,7 +121,7 @@ getSolvedNum statusAC user =
 ranking :: [(String, Int)] -> [(Int, String, Int)]
 ranking l =
   zip3 [1..] users solves
-  where (users, solves) = unzip $ sortBy (\(a,b) (c,d) -> mappend (compare d b) (compare a c)) $ filter (\(_, a) -> a >= 5) l
+  where (users, solves) = unzip $ sortBy (\(a,b) (c,d) -> mappend (compare d b) (compare a c)) l
 
 getRating :: Int -> Int -> Int
 getRating solved problemNum = 
