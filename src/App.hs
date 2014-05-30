@@ -136,7 +136,7 @@ countJudge user status =
 getProblemAcNum :: [Sq.Entity (SubmitGeneric backend)]
                    -> String -> [(Int, String, Int, Bool)]
 getProblemAcNum statusDb userId =
-  sortBy (\(_,_,a,_) (_,_,b,_) -> compare b a) $ map (\(c, p) -> (c, p, length $ filter (\s -> submitProblemId s == p) acList, elem (c,p) myAcList)) problemList
+  sortBy (\(_,_,a,_) (_,_,b,_) -> compare b a) $ map (\(c, p) -> (c, p, length $ nub $ map submitUserId $ filter (\s -> submitProblemId s == p) acList, elem (c,p) myAcList)) problemList
   where statusList = map Sq.entityVal statusDb
         acList = filter (\s -> submitJudge s == Accepted) statusList
         myAcList = map (\s -> (submitContestnumber s, submitProblemId s)) $ filter (\s -> submitUserId s == userId) acList :: [(Int, String)]
