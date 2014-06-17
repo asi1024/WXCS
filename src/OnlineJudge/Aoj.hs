@@ -26,6 +26,9 @@ import Utils
 endpoint :: String
 endpoint = "http://judge.u-aizu.ac.jp/onlinejudge/servlet/Submit"
 
+endpointCourse :: String
+endpointCourse = "http://judge.u-aizu.ac.jp/onlinejudge/webservice/submit"
+
 mkRequest :: HT.Method
              -> String
              -> HT.SimpleQuery
@@ -42,6 +45,16 @@ mkQuery user pass pid lang src =
    ("password"  , pass),
    ("language"  , lang),
    ("problemNO" , pid),
+   ("sourceCode", src)]
+
+mkQueryCourse :: ByteString -> ByteString -> ByteString -> ByteString -> ByteString
+           -> [(ByteString, ByteString)]
+mkQueryCourse user pass pid lang src =
+  [("userID"    , user),
+   ("password"  , pass),
+   ("problemNO" , BC.drop ((BC.length pid) - 1) pid),
+   ("lessonID"  , BC.take ((BC.length pid) - 2) pid),
+   ("language"  , lang),
    ("sourceCode", src)]
 
 api :: (C.MonadBaseControl IO m, C.MonadResource m)
@@ -62,8 +75,9 @@ submitAux :: (C.MonadBaseControl IO m, C.MonadResource m)
           -> ByteString -- code
           -> H.Manager
           -> m (H.Response (C.ResumableSource m ByteString))
-submitAux user pass pid lang src =
-  api "POST" endpoint (mkQuery user pass pid lang src)
+submitAux user pass pid lang src = case BC.count '_' pid of
+  2 -> api "POST" endpointCourse (mkQueryCourse user pass pid lang src)
+  _ -> api "POST" endpoint (mkQuery user pass pid lang src)
 
 submit :: AojConf -> String -> String -> String -> IO Bool
 submit conf pid lang code = H.withManager $ \mgr -> do
@@ -73,22 +87,39 @@ submit conf pid lang code = H.withManager $ \mgr -> do
   liftIO $ print $ H.responseStatus res
   return (ok200 == H.responseStatus res)
 
-mkStatusQuery :: String -> Maybe String -> HT.SimpleQuery
-mkStatusQuery userId' problemId' =
-  case problemId' of
-    Just problemId'' ->
-      [("user_id", BC.pack userId'),
-       ("problem_id", BC.pack problemId''),
-       ("limit", "10")]
-    Nothing -> [("user_id", BC.pack userId'), ("limit", "10")]
+mkStatusQuery :: String -> String -> HT.SimpleQuery
+mkStatusQuery userId' pid =
+  [("user_id", BC.pack userId'),
+   ("problem_id", BC.pack pid),
+   ("limit", "10")]
+mkStatusQueryC :: String -> String -> HT.SimpleQuery
+mkStatusQueryC userId' pid =
+  [("user_id", BC.pack userId'),
+   ("lesson_id",  BC.pack $ take ((length pid) - 2) pid),
+   ("limit", "10")]
+mkStatusQueryN :: String -> HT.SimpleQuery
+mkStatusQueryN userId'=
+  [("user_id", BC.pack userId'),
+   ("limit", "10")]
 
 status :: (C.MonadBaseControl IO m, C.MonadResource m)
           => String -- User ID
           -> Maybe String -- Problem ID
           -> H.Manager
           -> m (H.Response (C.ResumableSource m ByteString))
-status userId' problemId' =
-  api "GET" "http://judge.u-aizu.ac.jp/onlinejudge/webservice/status_log" (mkStatusQuery userId' problemId')
+status userId' problemId' = case problemId' of
+  Just pid -> if (length $ filter (=='_') pid) == 2
+                then api "GET" lessonStatus (mkStatusQueryC userId' pid)
+                else api "GET" statusLog (mkStatusQuery userId' pid)
+  Nothing  -> api "GET" statusLog (mkStatusQueryN userId')
+  where statusLog = "http://judge.u-aizu.ac.jp/onlinejudge/webservice/status_log"
+        lessonStatus = "http://judge.u-aizu.ac.jp/onlinejudge/webservice/lesson_submission_log"
+
+fetchStatusXmlCourse :: String -> String -> IO ByteString
+fetchStatusXmlCourse userId' cName = H.withManager $ \mgr -> do
+  res <- status userId' (Just cName) mgr
+  xmls <- H.responseBody res C.$$+- CL.consume
+  return $ BC.concat xmls
 
 fetchStatusXml :: String -> IO ByteString
 fetchStatusXml userId' = H.withManager $ \mgr -> do
@@ -128,9 +159,22 @@ getStatuses xml = map f $ XML.findChildren (XML.unqual "status") xml
   where f st = AojStatus {
           runId = read $ getText st "run_id",
           userId = getText st "user_id",
-          problemId = getText st "problem_id",
+          problemId = if (length $ getText st "problem_id") == 1
+                        then (getText st "lesson_id") ++ "_" ++ (getText st "problem_id")
+                        else getText st "problem_id",
           submissionDate = read $ getText st "submission_date",
-          judgeStatus = read $ getText st "status",
+          judgeStatus = case length $ getText st "problem_id" of
+                          1 -> case getText st "status_code" of
+                                 "0" -> CompileError
+                                 "1" -> WrongAnswer
+                                 "2" -> TimeLimitExceeded
+                                 "3" -> MemoryLimitExceeded
+                                 "4" -> Accepted
+                                 "6" -> OutputLimitExceeded
+                                 "7" -> RuntimeError
+                                 "8" -> PresentationError
+                                 _   -> SubmissionError
+                          _ -> read $ getText st "status",
           language = getText st "language",
           cpuTime = read $ getText st "cputime",
           memory = read $ getText st "memory",
@@ -140,22 +184,33 @@ fetchByRunId :: AojConf -> Int -> IO (Maybe (JudgeStatus, String, String))
 fetchByRunId conf rid = loop (0 :: Int)
   where
     loop n = whenDef Nothing (n < 60) $ do
-      threadDelay (1000 * 1000) -- wait 1sec
+      threadDelay (1000 * 1000) -- wait 1se
       xml' <- liftM parseXML $ fetchStatusXml (C.user conf)
+      xmlc'' <- mapM (\a -> liftM parseXML $ fetchStatusXmlCourse (C.user conf) a) ["DSL_1_A"]
+      let xmlc' = sequence xmlc''
       case xml' of
         Nothing -> loop (n+1)
         Just xml -> do
-          let st = filter (\st' -> runId st' == rid) $ getStatuses xml
-          if null st || (judgeStatus (head st) == Pending)
-            then loop (n+1)
-            else return $ f (head st)
+          case xmlc' of
+            Nothing -> loop(n+1)
+            Just xmlc -> do
+              let st = filter (\st' -> runId st' == rid) $ getStatuses xml ++ (concat $ map getStatuses xmlc)
+              if null st || (judgeStatus (head st) == Pending)
+                then loop (n+1)
+                else return $ f (head st)
     f st = Just (judgeStatus st, show $ cpuTime st, show $ memory st)
 
 getLatestRunId :: AojConf -> IO Int
 getLatestRunId conf = do
   xml' <- liftM parseXML $ fetchStatusXml (C.user conf)
+  xmlc'' <- mapM (\a -> liftM parseXML $ fetchStatusXmlCourse (C.user conf) a) ["DSL_1_A"]
+  let xmlc' = sequence xmlc''
   case xml' of
     Nothing -> error "Failed to fetch statux log."
     Just xml -> do
-      let sts = reverse . sort $ getStatuses xml
-      return . runId $ head sts
+      case xmlc' of
+        Nothing -> error "Failed to fetch statux log."
+        Just xmlc -> do
+          let sts = reverse . sort $ getStatuses xml ++ (concat $ map getStatuses xmlc)
+          return . runId $ head sts
+
