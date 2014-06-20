@@ -23,6 +23,15 @@ import qualified Config as C
 import ModelTypes
 import Utils
 
+courseList :: [String]
+courseList = ["ITP1_1",  "ITP1_2",  "ITP1_3",  "ITP1_4",  "ITP1_5",  "ITP1_6",  "ITP1_7",  "ITP1_8",  "ITP1_9",  "ITP1_10",
+              "ALDS1_1", "ALDS1_2", "ALDS1_3", "ALDS1_4", "ALDS1_5", "ALDS1_6", "ALDS1_7", "ALDS1_8", "ALDS1_9", "ALDS1_10", "ALDS1_11", "ALDS1_12", 
+              "DSL_1",   "DSL_2",
+              "GRL_1",   "GRL_2",   "GRL_3",   "GRL_4",   "GRL_5",   "GRL_6",   "GRL_7",
+              "CGL_1",   "CGL_2",   "CGL_3",   "CGL_4",   "CGL_5",
+              "DPL_1",   "DPL_2",
+              "NTL_1"]
+
 endpoint :: String
 endpoint = "http://judge.u-aizu.ac.jp/onlinejudge/servlet/Submit"
 
@@ -95,7 +104,7 @@ mkStatusQuery userId' pid =
 mkStatusQueryC :: String -> String -> HT.SimpleQuery
 mkStatusQueryC userId' pid =
   [("user_id", BC.pack userId'),
-   ("lesson_id",  BC.pack $ take ((length pid) - 2) pid),
+   ("lesson_id", BC.pack pid),
    ("limit", "10")]
 mkStatusQueryN :: String -> HT.SimpleQuery
 mkStatusQueryN userId'=
@@ -108,7 +117,7 @@ status :: (C.MonadBaseControl IO m, C.MonadResource m)
           -> H.Manager
           -> m (H.Response (C.ResumableSource m ByteString))
 status userId' problemId' = case problemId' of
-  Just pid -> if (length $ filter (=='_') pid) == 2
+  Just pid -> if (length $ filter (=='_') pid) == 1
                 then api "GET" lessonStatus (mkStatusQueryC userId' pid)
                 else api "GET" statusLog (mkStatusQuery userId' pid)
   Nothing  -> api "GET" statusLog (mkStatusQueryN userId')
@@ -186,7 +195,7 @@ fetchByRunId conf rid = loop (0 :: Int)
     loop n = whenDef Nothing (n < 60) $ do
       threadDelay (1000 * 1000) -- wait 1se
       xml' <- liftM parseXML $ fetchStatusXml (C.user conf)
-      xmlc'' <- mapM (\a -> liftM parseXML $ fetchStatusXmlCourse (C.user conf) a) ["DSL_1_A"]
+      xmlc'' <- mapM (\a -> liftM parseXML $ fetchStatusXmlCourse (C.user conf) a) courseList
       let xmlc' = sequence xmlc''
       case xml' of
         Nothing -> loop (n+1)
@@ -203,7 +212,7 @@ fetchByRunId conf rid = loop (0 :: Int)
 getLatestRunId :: AojConf -> IO Int
 getLatestRunId conf = do
   xml' <- liftM parseXML $ fetchStatusXml (C.user conf)
-  xmlc'' <- mapM (\a -> liftM parseXML $ fetchStatusXmlCourse (C.user conf) a) ["DSL_1_A"]
+  xmlc'' <- mapM (\a -> liftM parseXML $ fetchStatusXmlCourse (C.user conf) a) courseList
   let xmlc' = sequence xmlc''
   case xml' of
     Nothing -> error "Failed to fetch statux log."
