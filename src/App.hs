@@ -147,6 +147,13 @@ getPoint statusDb userId =
   sum $ map (\(_,_,n,_) -> div 100 n) $ filter (\(_,_,_,f) -> f) problemAcNum
   where problemAcNum = getProblemAcNum statusDb userId
 
+-- team
+teamName :: String -> String
+teamName = id
+
+getTeam :: Submit -> Submit
+getTeam u = u { submitUserId = teamName $ submitUserId u }
+
 instance ScottyError Text where
   stringError = TS.pack
   showError = TL.fromStrict
@@ -234,8 +241,9 @@ app = do
         let problemList = map (\x -> if diffTime currentTime_ (contestStart contest) > 0 then x else "????") problemList_
 
         let statusList_ = map Sq.entityVal statusDb
+        let statusList__ = map getTeam statusList_
         let statusList = filter (\s -> submitContestnumber s == contestId
-                            && submitJudgeType s == contestType) statusList_
+                            && submitJudgeType s == contestType) statusList__
         let statusAc = map (getACTime statusList (contestStart contest) userId) problemList
         let statusWa = map (getWA statusList userId) problemList
         let problems = zip4 problemList (map (getDescriptionURL contestType)
