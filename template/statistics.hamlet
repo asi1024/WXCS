@@ -46,26 +46,13 @@ $doctype 5
               <th>PE
               <th>CE
               <th>ACRate
-            $forall (rank, userName, solved, rating) <- ratingStatus
+            $forall (rank, userName, solved, rating) <- rankStatus
               <tr>
                 <td class="stUN">#{rank}
                 <td class="stUN">
                   <a href="./user/#{userName}">#{userName}
                 <td class="stUN">#{solved}
-                $if rating >= 3000
-                  <td class="MC">#{getRating solved problemNum}
-                $elseif rating >= 2600
-                  <td class="RC">#{getRating solved problemNum}
-                $elseif rating >= 2200
-                  <td class="YC">#{getRating solved problemNum}
-                $elseif rating >= 1800
-                  <td class="PC">#{getRating solved problemNum}
-                $elseif rating >= 1400
-                  <td class="BC">#{getRating solved problemNum}
-                $elseif rating >= 1000
-                  <td class="GC">#{getRating solved problemNum}
-                $else
-                  <td class="HC">#{getRating solved problemNum}
+                <td class="#{ratingColor rank}">#{rating}
                 <td class="stUN">#{countJudge userName statusList}
                 <td class="stUN">#{countJudge userName statusListAC}
                 <td class="stUN">#{countJudge userName statusListWA}

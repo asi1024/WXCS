@@ -118,16 +118,20 @@ getSolvedNum statusAC user =
   where userAC = filter (\s -> submitUserId s == user) statusAC
         listAC = map (\s -> (submitJudgeType s, submitProblemId s)) userAC
 
-ranking :: [(String, Int)] -> [(Int, String, Int)]
-ranking l =
-  zip3 [1..] users solves
-  where (users, solves) = unzip $ sortBy (\(a,b) (c,d) -> mappend (compare d b) (compare a c)) l
+ratingColor :: Int -> String
+ratingColor x
+ | x <=  2 = "RC"
+ | x <=  5 = "YC"
+ | x <= 10 = "PC"
+ | x <= 15 = "BC"
+ | x <= 20 = "GC"
+ | otherwise = "HC"
 
-getRating :: Int -> Int -> Int
-getRating solved problemNum = 
-  round $ (2500.0 * s) / p + 700.0
-  where s = sqrt $ fromIntegral solved :: Double
-        p = sqrt $ fromIntegral problemNum :: Double
+ranking :: [(String, Int, Int)] -> [(Int, String, Int, Int)]
+ranking l =
+  zip4 [1..] users solves rating
+  where (users, solves, rating) = unzip3 $ sortBy (\(a,b,c) (d,e,f)
+          -> mconcat [compare f c, compare e b, compare a d]) l
 
 countJudge :: String -> [SubmitGeneric backend] -> Int
 countJudge user status =
@@ -282,10 +286,9 @@ app = do
     let statusList_ = map Sq.entityVal statusDb
     let statusList = filter (\s -> submitJudge s == Accepted) statusList_
     let users = getUsers statusList_
-    let rankStatus_ = map (\user -> (user, getSolvedNum statusList user)) users
-    let rankStatus = ranking rankStatus_ :: [(Int, String, Int)]
-    let problemNum = length $ nub $ map (\s -> (submitJudgeType s, submitProblemId s)) statusList_
-    let ratingStatus = map (\(a,b,c)->(a,b,c,getRating c problemNum)) rankStatus
+    let rankStatus_ = map (\user -> (user, getSolvedNum statusList user, getPoint statusDb user)) users
+--  let problemNum = length $ nub $ map (\s -> (submitJudgeType s, submitProblemId s)) statusList_
+    let rankStatus = ranking rankStatus_ :: [(Int, String, Int, Int)]
     html $ renderHtml $ $(hamletFile "./template/ranking.hamlet") undefined
 
   get "/statistics" $ do
@@ -302,10 +305,9 @@ app = do
     let statusListPE = filter (\s -> submitJudge s == PresentationError) statusList
     let statusListCE = filter (\s -> submitJudge s == CompileError) statusList
     let users = getUsers statusList
-    let rankStatus_ = map (\user -> (user, getSolvedNum statusListAC user)) users
-    let rankStatus = ranking rankStatus_ :: [(Int, String, Int)]
-    let problemNum = length $ nub $ map (\s -> (submitJudgeType s, submitProblemId s)) statusList
-    let ratingStatus = map (\(a,b,c)->(a,b,c,getRating c problemNum)) rankStatus
+    let rankStatus_ = map (\user -> (user, getSolvedNum statusList user, getPoint statusDb user)) users
+--  let problemNum = length $ nub $ map (\s -> (submitJudgeType s, submitProblemId s)) statusList_
+    let rankStatus = ranking rankStatus_ :: [(Int, String, Int, Int)]
     html $ renderHtml $ $(hamletFile "./template/statistics.hamlet") undefined
 
   get "/problem/:user" $ do
