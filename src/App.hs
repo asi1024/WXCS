@@ -287,7 +287,6 @@ app = do
     let statusList = filter (\s -> submitJudge s == Accepted) statusList_
     let users = getUsers statusList_
     let rankStatus_ = map (\user -> (user, getSolvedNum statusList user, getPoint statusDb user)) users
---  let problemNum = length $ nub $ map (\s -> (submitJudgeType s, submitProblemId s)) statusList_
     let rankStatus = ranking rankStatus_ :: [(Int, String, Int, Int)]
     html $ renderHtml $ $(hamletFile "./template/ranking.hamlet") undefined
 
@@ -306,7 +305,6 @@ app = do
     let statusListCE = filter (\s -> submitJudge s == CompileError) statusList
     let users = getUsers statusList
     let rankStatus_ = map (\user -> (user, getSolvedNum statusList user, getPoint statusDb user)) users
---  let problemNum = length $ nub $ map (\s -> (submitJudgeType s, submitProblemId s)) statusList_
     let rankStatus = ranking rankStatus_ :: [(Int, String, Int, Int)]
     html $ renderHtml $ $(hamletFile "./template/statistics.hamlet") undefined
 
