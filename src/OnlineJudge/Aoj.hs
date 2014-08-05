@@ -26,7 +26,7 @@ import Utils
 
 courseList :: [String]
 courseList = ["ITP1_1",  "ITP1_2",  "ITP1_3",  "ITP1_4",  "ITP1_5",  "ITP1_6",  "ITP1_7",  "ITP1_8",  "ITP1_9",  "ITP1_10",
-              "ALDS1_1", "ALDS1_2", "ALDS1_3", "ALDS1_4", "ALDS1_5", "ALDS1_6", "ALDS1_7", "ALDS1_8", "ALDS1_9", "ALDS1_10", "ALDS1_11", "ALDS1_12", 
+              "ALDS1_1", "ALDS1_2", "ALDS1_3", "ALDS1_4", "ALDS1_5", "ALDS1_6", "ALDS1_7", "ALDS1_8", "ALDS1_9", "ALDS1_10", "ALDS1_11", "ALDS1_12",
               "DSL_1",   "DSL_2",
               "GRL_1",   "GRL_2",   "GRL_3",   "GRL_4",   "GRL_5",   "GRL_6",   "GRL_7",
               "CGL_1",   "CGL_2",   "CGL_3",   "CGL_4",   "CGL_5",
@@ -196,15 +196,15 @@ fetchByRunId conf rid = loop (0 :: Int)
     loop n = whenDef Nothing (n < 60) $ do
       threadDelay (1000 * 1000) -- wait 1se
       xml' <- liftM parseXML $ fetchStatusXml (C.user conf)
-      xmlc'' <- mapM (\a -> liftM parseXML $ fetchStatusXmlCourse (C.user conf) a) courseList
+      xmlc'' <- mapM (liftM parseXML . fetchStatusXmlCourse (C.user conf)) courseList
       let xmlc' = sequence xmlc''
       case xml' of
         Nothing -> loop (n+1)
-        Just xml -> do
+        Just xml ->
           case xmlc' of
             Nothing -> loop(n+1)
             Just xmlc -> do
-              let st = filter (\st' -> runId st' == rid) $ getStatuses xml ++ (concat $ map getStatuses xmlc)
+              let st = filter (\st' -> runId st' == rid) $ getStatuses xml ++ concatMap getStatuses xmlc
               if null st || (judgeStatus (head st) == Pending)
                 then loop (n+1)
                 else return $ f (head st)
@@ -213,14 +213,14 @@ fetchByRunId conf rid = loop (0 :: Int)
 getLatestRunId :: AojConf -> IO Int
 getLatestRunId conf = do
   xml' <- liftM parseXML $ fetchStatusXml (C.user conf)
-  xmlc'' <- mapM (\a -> liftM parseXML $ fetchStatusXmlCourse (C.user conf) a) courseList
+  xmlc'' <- mapM (liftM parseXML . fetchStatusXmlCourse (C.user conf)) courseList
   let xmlc' = sequence xmlc''
   case xml' of
     Nothing -> error "Failed to fetch statux log."
-    Just xml -> do
+    Just xml ->
       case xmlc' of
         Nothing -> error "Failed to fetch statux log."
         Just xmlc -> do
-          let sts = reverse . sort $ getStatuses xml ++ (concat $ map getStatuses xmlc)
+          let sts = reverse . sort $ getStatuses xml ++ concatMap getStatuses xmlc
           return . runId $ head sts
 
