@@ -4,6 +4,7 @@ module OnlineJudge.Aoj where
 import Control.Concurrent
 import Control.Monad (liftM)
 import Control.Monad.IO.Class (liftIO)
+import Control.Monad.Trans.Resource (MonadResource())
 
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Char8 as BC
@@ -61,12 +62,12 @@ mkQueryCourse :: ByteString -> ByteString -> ByteString -> ByteString -> ByteStr
 mkQueryCourse user pass pid lang src =
   [("userID"    , user),
    ("password"  , pass),
-   ("problemNO" , BC.drop ((BC.length pid) - 1) pid),
-   ("lessonID"  , BC.take ((BC.length pid) - 2) pid),
+   ("problemNO" , BC.drop (BC.length pid - 1) pid),
+   ("lessonID"  , BC.take (BC.length pid - 2) pid),
    ("language"  , lang),
    ("sourceCode", src)]
 
-api :: (C.MonadBaseControl IO m, C.MonadResource m)
+api :: MonadResource m
        => HT.Method
        -> String
        -> HT.SimpleQuery
@@ -76,7 +77,7 @@ api m url query mgr = do
   req <- liftIO $ mkRequest m url query
   H.http req mgr
 
-submitAux :: (C.MonadBaseControl IO m, C.MonadResource m)
+submitAux :: MonadResource m
           => ByteString -- user id
           -> ByteString -- password
           -> ByteString -- problem id
@@ -111,13 +112,13 @@ mkStatusQueryN userId'=
   [("user_id", BC.pack userId'),
    ("limit", "10")]
 
-status :: (C.MonadBaseControl IO m, C.MonadResource m)
+status :: MonadResource m
           => String -- User ID
           -> Maybe String -- Problem ID
           -> H.Manager
           -> m (H.Response (C.ResumableSource m ByteString))
 status userId' problemId' = case problemId' of
-  Just pid -> if (length $ filter (=='_') pid) == 1
+  Just pid -> if length (filter (=='_') pid) == 1
                 then api "GET" lessonStatus (mkStatusQueryC userId' pid)
                 else api "GET" statusLog (mkStatusQuery userId' pid)
   Nothing  -> api "GET" statusLog (mkStatusQueryN userId')
@@ -168,8 +169,8 @@ getStatuses xml = map f $ XML.findChildren (XML.unqual "status") xml
   where f st = AojStatus {
           runId = read $ getText st "run_id",
           userId = getText st "user_id",
-          problemId = if (length $ getText st "problem_id") == 1
-                        then (getText st "lesson_id") ++ "_" ++ (getText st "problem_id")
+          problemId = if length (getText st "problem_id") == 1
+                        then getText st "lesson_id" ++ "_" ++ getText st "problem_id"
                         else getText st "problem_id",
           submissionDate = read $ getText st "submission_date",
           judgeStatus = case length $ getText st "problem_id" of
