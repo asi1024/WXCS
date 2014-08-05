@@ -4,6 +4,7 @@ module OnlineJudge.Aoj where
 import Control.Concurrent
 import Control.Monad (liftM)
 import Control.Monad.IO.Class (liftIO)
+import Control.Monad.Trans.Resource (MonadResource())
 
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Char8 as BC
@@ -25,7 +26,7 @@ import Utils
 
 courseList :: [String]
 courseList = ["ITP1_1",  "ITP1_2",  "ITP1_3",  "ITP1_4",  "ITP1_5",  "ITP1_6",  "ITP1_7",  "ITP1_8",  "ITP1_9",  "ITP1_10",
-              "ALDS1_1", "ALDS1_2", "ALDS1_3", "ALDS1_4", "ALDS1_5", "ALDS1_6", "ALDS1_7", "ALDS1_8", "ALDS1_9", "ALDS1_10", "ALDS1_11", "ALDS1_12", 
+              "ALDS1_1", "ALDS1_2", "ALDS1_3", "ALDS1_4", "ALDS1_5", "ALDS1_6", "ALDS1_7", "ALDS1_8", "ALDS1_9", "ALDS1_10", "ALDS1_11", "ALDS1_12",
               "DSL_1",   "DSL_2",
               "GRL_1",   "GRL_2",   "GRL_3",   "GRL_4",   "GRL_5",   "GRL_6",   "GRL_7",
               "CGL_1",   "CGL_2",   "CGL_3",   "CGL_4",   "CGL_5",
@@ -61,12 +62,12 @@ mkQueryCourse :: ByteString -> ByteString -> ByteString -> ByteString -> ByteStr
 mkQueryCourse user pass pid lang src =
   [("userID"    , user),
    ("password"  , pass),
-   ("problemNO" , BC.drop ((BC.length pid) - 1) pid),
-   ("lessonID"  , BC.take ((BC.length pid) - 2) pid),
+   ("problemNO" , BC.drop (BC.length pid - 1) pid),
+   ("lessonID"  , BC.take (BC.length pid - 2) pid),
    ("language"  , lang),
    ("sourceCode", src)]
 
-api :: (C.MonadBaseControl IO m, C.MonadResource m)
+api :: MonadResource m
        => HT.Method
        -> String
        -> HT.SimpleQuery
@@ -76,7 +77,7 @@ api m url query mgr = do
   req <- liftIO $ mkRequest m url query
   H.http req mgr
 
-submitAux :: (C.MonadBaseControl IO m, C.MonadResource m)
+submitAux :: MonadResource m
           => ByteString -- user id
           -> ByteString -- password
           -> ByteString -- problem id
@@ -111,13 +112,13 @@ mkStatusQueryN userId'=
   [("user_id", BC.pack userId'),
    ("limit", "10")]
 
-status :: (C.MonadBaseControl IO m, C.MonadResource m)
+status :: MonadResource m
           => String -- User ID
           -> Maybe String -- Problem ID
           -> H.Manager
           -> m (H.Response (C.ResumableSource m ByteString))
 status userId' problemId' = case problemId' of
-  Just pid -> if (length $ filter (=='_') pid) == 1
+  Just pid -> if length (filter (=='_') pid) == 1
                 then api "GET" lessonStatus (mkStatusQueryC userId' pid)
                 else api "GET" statusLog (mkStatusQuery userId' pid)
   Nothing  -> api "GET" statusLog (mkStatusQueryN userId')
@@ -168,8 +169,8 @@ getStatuses xml = map f $ XML.findChildren (XML.unqual "status") xml
   where f st = AojStatus {
           runId = read $ getText st "run_id",
           userId = getText st "user_id",
-          problemId = if (length $ getText st "problem_id") == 1
-                        then (getText st "lesson_id") ++ "_" ++ (getText st "problem_id")
+          problemId = if length (getText st "problem_id") == 1
+                        then getText st "lesson_id" ++ "_" ++ getText st "problem_id"
                         else getText st "problem_id",
           submissionDate = read $ getText st "submission_date",
           judgeStatus = case length $ getText st "problem_id" of
@@ -195,15 +196,15 @@ fetchByRunId conf rid = loop (0 :: Int)
     loop n = whenDef Nothing (n < 60) $ do
       threadDelay (1000 * 1000) -- wait 1se
       xml' <- liftM parseXML $ fetchStatusXml (C.user conf)
-      xmlc'' <- mapM (\a -> liftM parseXML $ fetchStatusXmlCourse (C.user conf) a) courseList
+      xmlc'' <- mapM (liftM parseXML . fetchStatusXmlCourse (C.user conf)) courseList
       let xmlc' = sequence xmlc''
       case xml' of
         Nothing -> loop (n+1)
-        Just xml -> do
+        Just xml ->
           case xmlc' of
             Nothing -> loop(n+1)
             Just xmlc -> do
-              let st = filter (\st' -> runId st' == rid) $ getStatuses xml ++ (concat $ map getStatuses xmlc)
+              let st = filter (\st' -> runId st' == rid) $ getStatuses xml ++ concatMap getStatuses xmlc
               if null st || (judgeStatus (head st) == Pending)
                 then loop (n+1)
                 else return $ f (head st)
@@ -212,14 +213,14 @@ fetchByRunId conf rid = loop (0 :: Int)
 getLatestRunId :: AojConf -> IO Int
 getLatestRunId conf = do
   xml' <- liftM parseXML $ fetchStatusXml (C.user conf)
-  xmlc'' <- mapM (\a -> liftM parseXML $ fetchStatusXmlCourse (C.user conf) a) courseList
+  xmlc'' <- mapM (liftM parseXML . fetchStatusXmlCourse (C.user conf)) courseList
   let xmlc' = sequence xmlc''
   case xml' of
     Nothing -> error "Failed to fetch statux log."
-    Just xml -> do
+    Just xml ->
       case xmlc' of
         Nothing -> error "Failed to fetch statux log."
         Just xmlc -> do
-          let sts = reverse . sort $ getStatuses xml ++ (concat $ map getStatuses xmlc)
+          let sts = reverse . sort $ getStatuses xml ++ concatMap getStatuses xmlc
           return . runId $ head sts
 

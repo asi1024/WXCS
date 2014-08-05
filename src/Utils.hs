@@ -11,11 +11,10 @@ module Utils (
 import Control.Concurrent (forkIO)
 import Control.Concurrent.Lock (acquire, release)
 import Control.Exception (bracket_)
-import Control.Monad (liftM, void)
 import Control.Monad.Logger (NoLoggingT())
 import Control.Monad.Reader
+import Control.Monad.Trans.Resource (ResourceT)
 
-import Data.Conduit (ResourceT())
 import Data.Time
 import qualified Database.Persist.Sqlite as Sq
 

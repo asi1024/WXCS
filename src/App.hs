@@ -425,9 +425,6 @@ app = do
         lift $ updateSubmit $ submit_ { submitJudge = Pending }
         redirect statusPage
 
-  get "/:str1" $ do
-    redirect "./"
-  get "/:str1/:str2" $ do
-    redirect "../"
-  get "/:str1/:str2/:str3" $ do
-    redirect "../../"
+  get "/:str1" $ redirect "./"
+  get "/:str1/:str2" $ redirect "../"
+  get "/:str1/:str2/:str3" $ redirect "../../"
