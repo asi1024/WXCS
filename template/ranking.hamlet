@@ -38,7 +38,7 @@ $doctype 5
               <th>Rating
               <th>Average
             $forall (rank, userName, solved, rating) <- rankStatus
-              $if solved >= 5
+              $if userName /= "annonymous"
                 <tr>
                   <td class="stUN">#{rank}
                   <td class="stUN">
