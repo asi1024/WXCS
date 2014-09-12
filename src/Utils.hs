@@ -3,6 +3,7 @@ module Utils (
   getLocalTime,
   toZonedTime,
   fromZonedTime,
+  diffTime,
   runSql,
   showTime,
   whenDef
@@ -34,6 +35,9 @@ fromZonedTime = formatTime defaultTimeLocale "%Y%m%d%H%M%S"
 
 showTime :: ZonedTime -> String
 showTime = formatTime defaultTimeLocale "%Y-%m-%d %H:%M:%S"
+
+diffTime :: ZonedTime -> ZonedTime -> Int
+diffTime a b = ceiling $ diffUTCTime (zonedTimeToUTC a) (zonedTimeToUTC b) / 60
 
 getLocalTime :: IO String
 getLocalTime = liftM showTime getZonedTime
