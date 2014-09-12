@@ -3,8 +3,10 @@
 -- TODO: Split this module into public and private parts.
 module App where
 
+import Control.Concurrent.STM.TQueue (writeTQueue)
 import Control.Monad.IO.Class
 import Control.Monad.Reader
+import Control.Monad.STM (atomically)
 
 import Data.ByteString.Lazy.Char8 (unpack)
 import qualified Data.ByteString.Base64 as B
@@ -33,6 +35,7 @@ import AppUtils
 import Model
 import ModelTypes
 import OnlineJudge
+import Submit (SubmitQueue)
 import Types
 import Utils
 
@@ -75,9 +78,8 @@ eitherToString :: Either String B8.ByteString -> String
 eitherToString (Right x) = B8.unpack x
 eitherToString (Left x) = x
 
-app :: ScottyT Text DatabaseT ()
-app = do
-  (lock, conf) <- lift ask
+app :: SubmitQueue -> ScottyT Text DatabaseT ()
+app squeue = do
   middleware logStdoutDev
   middleware $ staticPolicy $ addBase "static"
     >-> (contains "/js/" <|> contains "/css/" <|> contains "/image/")
@@ -185,8 +187,10 @@ app = do
     codefiles <- files
     let code = foldl (\acc (_, f) -> acc ++ unpack (fileContent f)) code' codefiles
     let size = show $ length code
-    lift $ runSql $ Sq.insert_ $
-      Submit currentTime userId judgeType contestId problemId Pending "" "" size lang code
+    let submit = Submit currentTime userId judgeType contestId problemId Pending "" ""
+                 size lang code
+    lift $ runSql $ Sq.insert_ submit
+    liftIO $ atomically $ writeTQueue squeue submit
     redirect "status"
 
   get "/setcontest" $ do
@@ -280,6 +284,7 @@ app = do
       Nothing -> redirect "../status"
       Just submit_ -> do
         lift $ updateSubmit $ submit_ { submitJudge = Pending }
+        liftIO $ atomically $ writeTQueue squeue submit_
         redirect "../status"
 
   get "/:str1" $ redirect "./"

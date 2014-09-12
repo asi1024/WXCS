@@ -1,14 +1,14 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Submit (
+  SubmitQueue,
   crawler
   ) where
 
 import Control.Concurrent
+import Control.Concurrent.STM.TQueue
 import Control.Monad.Reader
-
-import Database.Persist ((==.))
-import qualified Database.Persist.Sqlite as Sq
+import Control.Monad.STM (atomically)
 
 import Model
 import ModelTypes
@@ -16,10 +16,7 @@ import qualified OnlineJudge as OJ
 import Types
 import Utils
 
-findPendingSubmit :: DatabaseT (Maybe Submit)
-findPendingSubmit = do
-  submit' <- findSubmit [SubmitJudge ==. Pending]
-  return $ liftM Sq.entityVal submit'
+type SubmitQueue = TQueue Submit
 
 getAndUpdateWithRunId :: Submit -> Int -> DatabaseT ()
 getAndUpdateWithRunId submit rid = do
@@ -55,12 +52,8 @@ submitAndUpdate s = do
     then getResultAndUpdate s lastRunId
     else updateSubmit $ s { submitJudge = SubmissionError }
 
-crawler :: DatabaseT ()
-crawler = do
-  liftIO $ threadDelay (1000 * 1000) -- sleep 1sec
-  submit' <- findPendingSubmit
-  case submit' of
-    Nothing -> crawler
-    Just submit -> do
-      submitAndUpdate submit
-      crawler
+crawler :: SubmitQueue -> DatabaseT ()
+crawler queue = do
+  submit <- lift $ atomically $ readTQueue queue
+  submitAndUpdate submit
+  crawler queue
