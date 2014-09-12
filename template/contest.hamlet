@@ -30,7 +30,7 @@ $doctype 5
     <div class="main">
       <h2>Contest - #{contestName contest}
       <ul>
-        <li>Contest Host : #{contestType}
+        <li>Contest Host : #{contestJudgeType contest}
         <li>Contest Start : #{contestStart contest}
         <li>Contest Finish : #{contestEnd contest}
 
@@ -67,7 +67,7 @@ $doctype 5
             <th>User
             $forall (pid, _, _, _) <- problems
               <th>
-                <a href="../status?contest=&amp;name=&amp;type=#{contestType}&amp;problem=#{pid}&amp;number=50">#{pid}
+                <a href="../status?contest=&amp;name=&amp;type=#{contestJudgeType contest}&amp;problem=#{pid}&amp;number=50">#{pid}
             <th>Accepted
             <th>Penalty
 

@@ -147,7 +147,7 @@ app = do
   get "/" $ do
     userId <- getUser
     currentTime <- liftIO getLocalTime
-    contests <- lift $ runSql $ Sq.selectList [] [] :: Action [Sq.Entity Contest]
+    contests <- lift $ runSql $ Sq.selectList [] [] :: Entities Contest
     let contestList = reverse $ map entityToTuple contests
     html $ renderHtml $ $(hamletFile "./template/index.hamlet") undefined
 
@@ -157,22 +157,18 @@ app = do
     let contestId = read contestId_ :: Int
     currentTime <- liftIO getLocalTime
     currentTime_ <- liftIO getZonedTime
-    contest' <- lift $ runSql $ getByIntId contestId :: Action (Maybe Contest)
+    contest' <- lift $ runSql $ getByIntId contestId
     case contest' of
       Nothing -> redirect "../" -- contest not found!
       Just contest -> do
-        statusDb <- lift $ runSql $ Sq.selectList [] [] :: Action [Sq.Entity Submit]
+        statusDb <- lift $ runSql $ Sq.selectList [] [] :: Entities Submit
         let duration = diffTime (contestEnd contest) (contestStart contest)
-        let contestType = contestJudgeType contest
-        let problemList_ = contestProblems contest
-        let problemList = map (\x -> if diffTime currentTime_ (contestStart contest) > 0 then x else "????") problemList_
-
+        let problemList = getProblemList currentTime_ contest :: [String]
         let statusList_ = map Sq.entityVal statusDb
-        let statusList = filter (\s -> submitContestnumber s == contestId
-                                       && submitJudgeType s == contestType) statusList_
+        let statusList = filter (\s -> submitContestnumber s == contestId) statusList_
         let statusAc = map (getACTime statusList (contestStart contest) userId) problemList
         let statusWa = map (getWA statusList userId) problemList
-        let problems = zip4 problemList (map (getDescriptionURL contestType) problemList)
+        let problems = zip4 problemList (map (getDescriptionURL $ contestJudgeType contest) problemList)
                        statusAc statusWa
 
         let users = getUsers statusList

@@ -54,3 +54,7 @@ userStatus status start duration problemList user =
         ac = map (getACTime status start user) problemList
         wa = map (getWA status user) problemList
         ac' = filter (\x -> x > 0 && x <= duration) ac
+
+getProblemList :: ZonedTime -> Contest -> [String]
+getProblemList t c = map f $ contestProblems c
+  where f x = if diffTime t (contestStart c) > 0 then x else "????"
