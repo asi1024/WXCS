@@ -3,7 +3,6 @@ language: haskell
 ghc:
   - 7.8
   - 7.6
-  - 7.4
 
 install:
   - cabal install --only-dependencies --enable-tests --force-reinstalls
