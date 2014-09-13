@@ -16,7 +16,7 @@ $doctype 5
         <a href="../">Top
         |
       <span class="status-link">
-        <a href="../status?contest=#{contestId_}&amp;name=&amp;type=&amp;problem=&amp;number=50">Status
+        <a href="../status?contest=#{cid}&amp;name=&amp;type=&amp;problem=&amp;number=50">Status
         |
       <span class="problem-link">
         <a href="../problem/#{userId}">Problem
@@ -39,7 +39,7 @@ $doctype 5
 
         <tbody>
           <tr>
-            $forall (pid, _, ac, wa) <- problems
+            $forall (pid, (ac, wa)) <- zip problemList myStatus
               $if ac > duration
                 <td class="stRV">#{pid}
               $elseif ac > 0
@@ -49,9 +49,9 @@ $doctype 5
               $else
                 <td class="stWA">#{pid}
           <tr>
-            $forall (_, purl, ac, wa) <- problems
+            $forall (pid, (ac, wa)) <- zip problemList myStatus
               <td>
-                <a href="#{purl}" target="blank">
+                <a href="#{getDescriptionURL (contestJudgeType contest) pid}" target="blank">
                   $if ac > 0
                     <img src="../image/Accepted.png">
                   $elseif wa == 0
@@ -65,13 +65,13 @@ $doctype 5
           <tr>
             <th>Rank
             <th>User
-            $forall (pid, _, _, _) <- problems
+            $forall pid <- problemList
               <th>
                 <a href="../status?contest=&amp;name=&amp;type=#{contestJudgeType contest}&amp;problem=#{pid}&amp;number=50">#{pid}
             <th>Accepted
             <th>Penalty
 
-          $forall (rank, userName, userStatus, ac, penalty) <- contestStatus
+          $forall (rank, userName, userStatus, ac, penalty) <- standings
             <tr>
               $if userName == userId
                 <td class="myUN">#{rank}
@@ -123,7 +123,7 @@ $doctype 5
 
       <h5>Submit
       <form id="submit" action="../submit" method="post" enctype="multipart/form-data">
-        <input type="hidden" name="contest" value="#{contestId}">
+        <input type="hidden" name="contest" value="#{cid}">
           Host:
           <select name="type">
             <option value="Aizu" selected>Aizu

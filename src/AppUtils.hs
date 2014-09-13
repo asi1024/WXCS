@@ -46,9 +46,9 @@ getWA statuses user pid = length st
         eqUser s = submitUserId s == user
         eqProblem s = submitProblemId s == filter ('\r'/=) pid
 
-userStatus :: [Submit] -> ZonedTime -> Int -> [String] -> String
+getUserStatus :: [Submit] -> ZonedTime -> Int -> [String] -> String
                -> (String, [(Int, Int)], Int, Int)
-userStatus status start duration problemList user =
+getUserStatus status start duration problemList user =
   (user, zip wa ac, length ac', sum (map penalty (zip ac wa)))
   where penalty (x, y) = if x > 0 && x <= duration then x + y * 20 else 0
         ac = map (getACTime status start user) problemList
@@ -58,3 +58,7 @@ userStatus status start duration problemList user =
 getProblemList :: ZonedTime -> Contest -> [String]
 getProblemList t c = map f $ contestProblems c
   where f x = if diffTime t (contestStart c) > 0 then x else "????"
+
+getStatusList :: Int -> [Submit] -> [Submit]
+getStatusList cid = filter (\s -> submitContestnumber s == cid)
+

@@ -153,59 +153,39 @@ app = do
 
   get "/contest/:contest_id" $ do
     userId <- getUser
-    contestId_ <- param "contest_id" :: Action String
-    let contestId = read contestId_ :: Int
+    cid <- liftM read $ param "contest_id" :: Action Int
     currentTime <- liftIO getLocalTime
     currentTime_ <- liftIO getZonedTime
-    contest' <- lift $ runSql $ getByIntId contestId
+    contest' <- lift $ runSql $ getByIntId cid
     case contest' of
       Nothing -> redirect "../" -- contest not found!
       Just contest -> do
         statusDb <- lift $ runSql $ Sq.selectList [] [] :: Entities Submit
+        let statusList = getStatusList cid $ map Sq.entityVal statusDb
+        let start = contestStart contest
         let duration = diffTime (contestEnd contest) (contestStart contest)
         let problemList = getProblemList currentTime_ contest :: [String]
-        let statusList_ = map Sq.entityVal statusDb
-        let statusList = filter (\s -> submitContestnumber s == contestId) statusList_
-        let statusAc = map (getACTime statusList (contestStart contest) userId) problemList
-        let statusWa = map (getWA statusList userId) problemList
-        let problems = zip4 problemList (map (getDescriptionURL $ contestJudgeType contest) problemList)
-                       statusAc statusWa
-
-        let users = getUsers statusList
-        let standings = map (userStatus statusList (contestStart contest) duration problemList) users
-        let contestStatus = rankStandings standings
-
+        let userStatus = getUserStatus statusList start duration problemList
+        let (_, myStatus, _, _) = userStatus userId
+        let standings = rankStandings $ map userStatus $ getUsers statusList
         html $ renderHtml $ $(hamletFile "./template/contest.hamlet") undefined
 
   get "/standings/:contest_id" $ do
     userId <- getUser
-    contestId_ <- param "contest_id" :: Action String
-    let contestId = read contestId_ :: Int
+    cid <- liftM read $ param "contest_id" :: Action Int
     currentTime <- liftIO getLocalTime
     currentTime_ <- liftIO getZonedTime
-    contest' <- lift $ runSql $ getByIntId contestId :: Action (Maybe Contest)
+    contest' <- lift $ runSql $ getByIntId cid :: Action (Maybe Contest)
     case contest' of
       Nothing -> redirect "../" -- contest not found!
       Just contest -> do
-        statusDb <- lift $ runSql $ Sq.selectList [] [] :: Action [Sq.Entity Submit]
+        statusDb <- lift $ runSql $ Sq.selectList [] [] :: Entities Submit
+        let statusList = getStatusList cid $ map Sq.entityVal statusDb
+        let start = contestStart contest
         let duration = diffTime (contestEnd contest) (contestStart contest)
-        let contestType = contestJudgeType contest
-        let problemList_ = contestProblems contest
-        let problemList = map (\x -> if diffTime currentTime_ (contestStart contest) > 0 then x else "????") problemList_
-
-        let statusList_ = map Sq.entityVal statusDb
-        let statusList__ = map getTeam statusList_
-        let statusList = filter (\s -> submitContestnumber s == contestId
-                            && submitJudgeType s == contestType) statusList__
-        let statusAc = map (getACTime statusList (contestStart contest) userId) problemList
-        let statusWa = map (getWA statusList userId) problemList
-        let problems = zip4 problemList (map (getDescriptionURL contestType)
-                                         problemList) statusAc statusWa
-
-        let users = getUsers statusList
-        let standings = map (userStatus statusList (contestStart contest) duration problemList) users
-        let contestStatus = rankStandings standings
-
+        let problemList = getProblemList currentTime_ contest :: [String]
+        let userStatus = getUserStatus statusList start duration problemList
+        let standings = rankStandings $ map userStatus $ getUsers statusList
         html $ renderHtml $ $(hamletFile "./template/standings.hamlet") undefined
 
   get "/user/:user" $ do
