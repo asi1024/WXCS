@@ -15,8 +15,6 @@ import qualified Data.Text as TS
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.Text.Lazy as TL
 import Data.Time
-import Data.List
-import Data.Monoid
 
 import qualified Database.Persist.Sqlite as Sq
 
@@ -28,72 +26,15 @@ import Network.Wai.Parse (FileInfo(..))
 import Text.Blaze.Html.Renderer.Text (renderHtml)
 import Text.Hamlet
 
-import Web.Scotty.Trans hiding (source, status)
+import Web.Scotty.Trans hiding (status)
 import qualified Web.Scotty.Trans as WS
 
+import AppUtils
 import Model
 import ModelTypes
 import OnlineJudge
 import Types
 import Utils
-
-cssClass :: JudgeStatus -> String
-cssClass Accepted = "AC"
-cssClass WrongAnswer = "WA"
-cssClass RuntimeError = "RE"
-cssClass TimeLimitExceeded = "TLE"
-cssClass MemoryLimitExceeded = "MLE"
-cssClass OutputLimitExceeded = "OLE"
-cssClass PresentationError = "PE"
-cssClass CompileError = "CE"
-cssClass SubmissionError = "CE"
-cssClass Pending = "CE"
-cssClass Running = "CE"
-
-langs :: [String]
-langs = ["C","C++","C++11","C#","D","JAVA","Ruby","Python","Python3","PHP","JavaScript"]
-
-getUsers :: [Submit] -> [String]
-getUsers = nub . map submitUserId
-
-diffTime :: ZonedTime -> ZonedTime -> Int
-diffTime a b = ceiling $ diffUTCTime (zonedTimeToUTC a) (zonedTimeToUTC b) / 60
-
-getACTime :: [Submit] -> ZonedTime -> String -> String -> Int
-getACTime statuses start user pid =
-  if null st then 0 else diffTime (submitSubmitTime $ head st) start
-  where st = filter (\s -> eqUser s && eqProblem s && eqAC s) statuses
-        eqUser s = submitUserId s == user
-        eqProblem s = submitProblemId s == filter ('\r'/=) pid
-        eqAC s = submitJudge s == Accepted
-
-getWA :: [Submit] -> String -> String -> Int
-getWA statuses user pid = length st
-  where st = takeWhile (\x -> submitJudge x /= Accepted) $ filter isSt statuses
-        eqJudge x = x == WrongAnswer || x == TimeLimitExceeded ||
-                    x == MemoryLimitExceeded || x == OutputLimitExceeded ||
-                    x == RuntimeError || x == Accepted
-        isSt x = eqUser x && eqProblem x && eqJudge (submitJudge x)
-        eqUser s = submitUserId s == user
-        eqProblem s = submitProblemId s == filter ('\r'/=) pid
-
-userStatus :: [Submit] -> ZonedTime -> Int -> [String] -> String
-               -> (String, [(Int, Int)], Int, Int)
-userStatus status start duration problemList user =
-  (user, zip wa ac, length ac', sum (map (\(x,y) -> if x > 0 && x <= duration then x + y * 20 else 0) (zip ac wa)))
-  where ac = map (getACTime status start user) problemList
-        wa = map (getWA status user) problemList
-        ac' = filter (\x -> x > 0 && x <= duration) ac
-
-ordStanding :: (String, [(Int, Int)], Int, Int)
-               -> (String, [(Int, Int)], Int, Int) -> Ordering
-ordStanding (_,_,a,b) (_,_,c,d) = mappend (compare c a) (compare b d)
-
-rankStandings :: [(String, [(Int, Int)], Int, Int)]
-                  -> [(Int, String, [(Int, Int)], Int, Int)]
-rankStandings l =
-  zip5 [1..] name state ac wa
-  where (name, state, ac, wa) = unzip4 $ sortBy ordStanding l
 
 getByIntId :: (Integral i, Sq.PersistEntity val, Sq.PersistStore m,
                Sq.PersistEntityBackend val ~ Sq.PersistMonadBackend m)
@@ -108,55 +49,6 @@ entityToTuple ent = (getId ent, Sq.entityVal ent)
 
 forwardedUserKey :: TL.Text
 forwardedUserKey = "Authorization"
-
-statusPage :: TL.Text
-statusPage = "../status?contest=&name=&type=&problem=&number=50"
-
-getSolvedNum :: [SubmitGeneric backend] -> String -> Int
-getSolvedNum statusAC user =
-  length $ nub listAC
-  where userAC = filter (\s -> submitUserId s == user) statusAC
-        listAC = map (\s -> (submitJudgeType s, submitProblemId s)) userAC
-
-ratingColor :: Int -> String
-ratingColor x
- | x <=  2 = "RC"
- | x <=  5 = "YC"
- | x <= 10 = "PC"
- | x <= 15 = "BC"
- | x <= 20 = "GC"
- | otherwise = "HC"
-
-ranking :: [(String, Int, Int)] -> [(Int, String, Int, Int)]
-ranking l =
-  zip4 [1..] users solves rating
-  where (users, solves, rating) = unzip3 $ sortBy (\(a,b,c) (d,e,f)
-          -> mconcat [compare f c, compare e b, compare a d]) l
-
-countJudge :: String -> [SubmitGeneric backend] -> Int
-countJudge user status =
-  length $ filter (\s -> submitUserId s == user) status
-
-getProblemAcNum :: [Sq.Entity (SubmitGeneric backend)]
-                   -> String -> [(Int, String, Int, Bool)]
-getProblemAcNum statusDb userId =
-  sortBy (\(_,_,a,_) (_,_,b,_) -> compare b a) $ map (\(c, p) -> (c, p, length $ nub $ map submitUserId $ filter (\s -> submitProblemId s == p) acList, elem (c,p) myAcList)) problemList
-  where statusList = map Sq.entityVal statusDb
-        acList = filter (\s -> submitJudge s == Accepted) statusList
-        myAcList = map (\s -> (submitContestnumber s, submitProblemId s)) $ filter (\s -> submitUserId s == userId) acList :: [(Int, String)]
-        problemList = nub $ map (\s -> (submitContestnumber s, submitProblemId s)) statusList :: [(Int, String)]
-
-getPoint :: [Sq.Entity (SubmitGeneric backend)] -> String -> Int
-getPoint statusDb userId =
-  sum $ map (\(_,_,n,_) -> div 100 n) $ filter (\(_,_,_,f) -> f) problemAcNum
-  where problemAcNum = getProblemAcNum statusDb userId
-
--- team
-teamName :: String -> String
-teamName = id
-
-getTeam :: Submit -> Submit
-getTeam u = u { submitUserId = teamName $ submitUserId u }
 
 instance ScottyError Text where
   stringError = TS.pack
@@ -194,69 +86,45 @@ app = do
   get "/" $ do
     userId <- getUser
     currentTime <- liftIO getLocalTime
-    contests <- lift $ runSql $ Sq.selectList [] [] :: Action [Sq.Entity Contest]
+    contests <- lift $ runSql $ Sq.selectList [] [] :: Entities Contest
     let contestList = reverse $ map entityToTuple contests
     html $ renderHtml $ $(hamletFile "./template/index.hamlet") undefined
 
   get "/contest/:contest_id" $ do
     userId <- getUser
-    contestId_ <- param "contest_id" :: Action String
-    let contestId = read contestId_ :: Int
+    cid <- liftM read $ param "contest_id" :: Action Int
     currentTime <- liftIO getLocalTime
     currentTime_ <- liftIO getZonedTime
-    contest' <- lift $ runSql $ getByIntId contestId :: Action (Maybe Contest)
+    contest' <- lift $ runSql $ getByIntId cid
     case contest' of
       Nothing -> redirect "../" -- contest not found!
       Just contest -> do
-        statusDb <- lift $ runSql $ Sq.selectList [] [] :: Action [Sq.Entity Submit]
+        statusDb <- lift $ runSql $ Sq.selectList [] [] :: Entities Submit
+        let statusList = getStatusList cid $ map Sq.entityVal statusDb
+        let start = contestStart contest
         let duration = diffTime (contestEnd contest) (contestStart contest)
-        let contestType = contestJudgeType contest
-        let problemList_ = contestProblems contest
-        let problemList = map (\x -> if diffTime currentTime_ (contestStart contest) > 0 then x else "????") problemList_
-
-        let statusList_ = map Sq.entityVal statusDb
-        let statusList = filter (\s -> submitContestnumber s == contestId
-                                       && submitJudgeType s == contestType) statusList_
-        let statusAc = map (getACTime statusList (contestStart contest) userId) problemList
-        let statusWa = map (getWA statusList userId) problemList
-        let problems = zip4 problemList (map (getDescriptionURL contestType) problemList)
-                       statusAc statusWa
-
-        let users = getUsers statusList
-        let standings = map (userStatus statusList (contestStart contest) duration problemList) users
-        let contestStatus = rankStandings standings
-
+        let problemList = getProblemList currentTime_ contest :: [String]
+        let userStatus = getUserStatus statusList start duration problemList
+        let (_, myStatus, _, _) = userStatus userId
+        let standings = rankStandings $ map userStatus $ getUsers statusList
         html $ renderHtml $ $(hamletFile "./template/contest.hamlet") undefined
 
   get "/standings/:contest_id" $ do
     userId <- getUser
-    contestId_ <- param "contest_id" :: Action String
-    let contestId = read contestId_ :: Int
+    cid <- liftM read $ param "contest_id" :: Action Int
     currentTime <- liftIO getLocalTime
     currentTime_ <- liftIO getZonedTime
-    contest' <- lift $ runSql $ getByIntId contestId :: Action (Maybe Contest)
+    contest' <- lift $ runSql $ getByIntId cid :: Action (Maybe Contest)
     case contest' of
       Nothing -> redirect "../" -- contest not found!
       Just contest -> do
-        statusDb <- lift $ runSql $ Sq.selectList [] [] :: Action [Sq.Entity Submit]
+        statusDb <- lift $ runSql $ Sq.selectList [] [] :: Entities Submit
+        let statusList = getStatusList cid $ map Sq.entityVal statusDb
+        let start = contestStart contest
         let duration = diffTime (contestEnd contest) (contestStart contest)
-        let contestType = contestJudgeType contest
-        let problemList_ = contestProblems contest
-        let problemList = map (\x -> if diffTime currentTime_ (contestStart contest) > 0 then x else "????") problemList_
-
-        let statusList_ = map Sq.entityVal statusDb
-        let statusList__ = map getTeam statusList_
-        let statusList = filter (\s -> submitContestnumber s == contestId
-                            && submitJudgeType s == contestType) statusList__
-        let statusAc = map (getACTime statusList (contestStart contest) userId) problemList
-        let statusWa = map (getWA statusList userId) problemList
-        let problems = zip4 problemList (map (getDescriptionURL contestType)
-                                         problemList) statusAc statusWa
-
-        let users = getUsers statusList
-        let standings = map (userStatus statusList (contestStart contest) duration problemList) users
-        let contestStatus = rankStandings standings
-
+        let problemList = getProblemList currentTime_ contest :: [String]
+        let userStatus = getUserStatus statusList start duration problemList
+        let standings = rankStandings $ map userStatus $ getUsers statusList
         html $ renderHtml $ $(hamletFile "./template/standings.hamlet") undefined
 
   get "/user/:user" $ do
@@ -264,48 +132,33 @@ app = do
     user_ <- param "user" :: Action String
     currentTime <- liftIO getLocalTime
     currentTime_ <- liftIO getZonedTime
-    contests <- lift $ runSql $ Sq.selectList [] [] :: Action [Sq.Entity Contest]
-    statusDb <- lift $ runSql $ Sq.selectList [] [] :: Action [Sq.Entity Submit]
-    let statusList_ = map Sq.entityVal statusDb
-    let contestList = zip [1..] $ map Sq.entityVal contests
-    let statusList = if user_ == "ALL" then statusList_ else filter (\s -> submitUserId s == user_ && submitJudge s == Accepted) statusList_
-    let contestProbs = map (\(cid, c) ->
-          (cid, contestName c, map (\p ->
-            (getDescriptionURL (contestJudgeType c) p, length $ filter (\s ->
-              submitContestnumber s == cid && submitProblemId s == filter ('\r'/=) p)
-            statusList)) $ contestProblems c,
-          diffTime currentTime_ (contestStart c) > 0))
-          contestList :: [(Int, String, [(String, Int)], Bool)]
+    contests <- lift $ runSql $ Sq.selectList [] [] :: Entities Contest
+    statusDb <- lift $ runSql $ Sq.selectList [] [] :: Entities Submit
+    let contestList = zip [1..] $ map Sq.entityVal contests :: [(Int, Contest)]
+    let statusList = map Sq.entityVal statusDb :: [Submit]
     html $ renderHtml $ $(hamletFile "./template/user.hamlet") undefined
 
   get "/ranking" $ do
     userId <- getUser
     currentTime <- liftIO getLocalTime
     currentTime_ <- liftIO getZonedTime
-    statusDb <- lift $ runSql $ Sq.selectList [] [] :: Action [Sq.Entity Submit]
-    let statusList_ = map Sq.entityVal statusDb
-    let statusList = filter (\s -> submitJudge s == Accepted) statusList_
-    let users = getUsers statusList_
-    let rankStatus_ = map (\user -> (user, getSolvedNum statusList user, getPoint statusDb user)) users
-    let rankStatus = ranking rankStatus_ :: [(Int, String, Int, Int)]
+    statusDb1 <- lift $ runSql $ Sq.selectList [] [] :: Entities Contest
+    statusDb2 <- lift $ runSql $ Sq.selectList [] [] :: Entities Submit
+    let contestList = map Sq.entityVal statusDb1 :: [Contest]
+    let statusList = filter isAC $ map Sq.entityVal statusDb2 :: [Submit]
+    let ranking = getRanking currentTime_ contestList statusList
     html $ renderHtml $ $(hamletFile "./template/ranking.hamlet") undefined
 
   get "/statistics" $ do
     userId <- getUser
     currentTime <- liftIO getLocalTime
     currentTime_ <- liftIO getZonedTime
-    statusDb <- lift $ runSql $ Sq.selectList [] [] :: Action [Sq.Entity Submit]
-    let statusList = map Sq.entityVal statusDb
-    let statusListAC = filter (\s -> submitJudge s == Accepted) statusList
-    let statusListWA = filter (\s -> submitJudge s == WrongAnswer) statusList
-    let statusListTLE = filter (\s -> submitJudge s == TimeLimitExceeded) statusList
-    let statusListMLE = filter (\s -> submitJudge s == MemoryLimitExceeded) statusList
-    let statusListRE = filter (\s -> submitJudge s == RuntimeError) statusList
-    let statusListPE = filter (\s -> submitJudge s == PresentationError) statusList
-    let statusListCE = filter (\s -> submitJudge s == CompileError) statusList
-    let users = getUsers statusList
-    let rankStatus_ = map (\user -> (user, getSolvedNum statusList user, getPoint statusDb user)) users
-    let rankStatus = ranking rankStatus_ :: [(Int, String, Int, Int)]
+    statusDb1 <- lift $ runSql $ Sq.selectList [] [] :: Entities Contest
+    statusDb2 <- lift $ runSql $ Sq.selectList [] [] :: Entities Submit
+    let contestList = map Sq.entityVal statusDb1 :: [Contest]
+    let statusList = map Sq.entityVal statusDb2 :: [Submit]
+    let judgeList = [Accepted, WrongAnswer, TimeLimitExceeded, MemoryLimitExceeded, RuntimeError, PresentationError, CompileError]
+    let ranking = getRanking currentTime_ contestList statusList
     html $ renderHtml $ $(hamletFile "./template/statistics.hamlet") undefined
 
   get "/problem/:user" $ do
@@ -313,9 +166,12 @@ app = do
     user <- param "user" :: Action String
     currentTime <- liftIO getLocalTime
     currentTime_ <- liftIO getZonedTime
-    statusDb <- lift $ runSql $ Sq.selectList [] [] :: Action [Sq.Entity Submit]
-    let problemAcNum = getProblemAcNum statusDb user
-    let point = getPoint statusDb user
+    statusDb1 <- lift $ runSql $ Sq.selectList [] [] :: Entities Contest
+    statusDb2 <- lift $ runSql $ Sq.selectList [] [] :: Entities Submit
+    let contestList = map Sq.entityVal statusDb1 :: [Contest]
+    let statusList = map Sq.entityVal statusDb2 :: [Submit]
+    let problemAcNum = getProblemAcNum currentTime_ contestList statusList user
+    let point = getPoint currentTime_ contestList statusList user
     html $ renderHtml $ $(hamletFile "./template/problem.hamlet") undefined
 
   post "/submit" $ do
@@ -331,7 +187,7 @@ app = do
     let size = show $ length code
     lift $ runSql $ Sq.insert_ $
       Submit currentTime userId judgeType contestId problemId Pending "" "" size lang code
-    redirect $ TL.drop 3 statusPage
+    redirect "status"
 
   get "/setcontest" $ do
     userId <- getUser
@@ -376,7 +232,7 @@ app = do
     let contestId = read contestId_ :: Int
     contest' <- lift $ runSql $ getByIntId contestId :: Action (Maybe Contest)
     case contest' of
-      Nothing -> redirect statusPage
+      Nothing -> redirect "../status"
       Just contest -> do
         lift $ updateContest $ contest {
           contestName = cName,
@@ -391,17 +247,18 @@ app = do
     userId <- getUser
     currentTime <- liftIO getLocalTime
     statusDb <- lift $ runSql $ Sq.selectList [] [] :: Action [Sq.Entity Submit]
-    let statusL = map entityToTuple statusDb
-    contestId <- param "contest" :: Action String
-    user <- param "name" :: Action String
-    jtype_ <- param "type" :: Action String
-    jtype <- liftM read $ param "type" :: Action JudgeType
-    pid <- param "problem" :: Action String
-    num <- param "number" :: Action Int
-    let statusL_ = if contestId == "" then statusL else filter (\(_,s) -> submitContestnumber s == read contestId) statusL
-    let statusL__ = if user == "" then statusL_ else filter (\(_,s) -> submitUserId s == user) statusL_
-    let statusL___ = if jtype_ == "" then statusL__ else filter (\(_,s) -> submitJudgeType s == jtype) statusL__
-    let statusList = take num $ reverse $ if pid == "" then statusL___ else filter (\(_,s) -> submitProblemId s == pid) statusL___
+    contestId <- rescue (param "contest") (\_ -> return "") :: Action String
+    user <- rescue (param "name") (\_ -> return "") :: Action String
+    jtype <- rescue (param "type") (\_ -> return "") :: Action String
+    pid <- rescue (param "problem") (\_ -> return "") :: Action String
+    num <- rescue (param "number") (\_ -> return 50) :: Action Int
+    let eqStr = (\a b -> a == "" || b == "" || a == b) :: String -> String -> Bool
+    let s1 = map entityToTuple statusDb
+    let s2 = filter (\(_,s) -> eqStr contestId $ show $ submitContestnumber s) s1
+    let s3 = filter (\(_,s) -> eqStr user $ submitUserId s) s2
+    let s4 = filter (\(_,s) -> eqStr jtype $ show $ submitJudgeType s) s3
+    let s5 = filter (\(_,s) -> eqStr pid $ submitProblemId s) s4
+    let statusList = take num $ reverse s5
     html $ renderHtml $ $(hamletFile "./template/status.hamlet") undefined
 
   get "/source/:source_id" $ do
@@ -410,7 +267,7 @@ app = do
     currentTime <- liftIO getLocalTime
     source' <- lift $ runSql $ getByIntId sourceId :: Action (Maybe Submit)
     case source' of
-      Nothing -> redirect statusPage -- source code not found!
+      Nothing -> redirect "../status" -- source code not found!
       Just source -> do
         let problemId = submitProblemId source
         let submitUser = submitUserId source
@@ -420,10 +277,10 @@ app = do
     submitId <- param "submit_id" :: Action Int
     submit' <- lift $ runSql $ getByIntId submitId
     case submit' of
-      Nothing -> redirect statusPage
+      Nothing -> redirect "../status"
       Just submit_ -> do
         lift $ updateSubmit $ submit_ { submitJudge = Pending }
-        redirect statusPage
+        redirect "../status"
 
   get "/:str1" $ redirect "./"
   get "/:str1/:str2" $ redirect "../"
