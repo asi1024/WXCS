@@ -39,7 +39,7 @@ $doctype 5
 
         <tbody>
           <tr>
-            $forall (pid, (ac, wa)) <- zip problemList myStatus
+            $forall (pid, (wa, ac)) <- zip problemList myStatus
               $if ac > duration
                 <td class="stRV">#{pid}
               $elseif ac > 0
@@ -49,7 +49,7 @@ $doctype 5
               $else
                 <td class="stWA">#{pid}
           <tr>
-            $forall (pid, (ac, wa)) <- zip problemList myStatus
+            $forall (pid, (wa, ac)) <- zip problemList myStatus
               <td>
                 <a href="#{getDescriptionURL (contestJudgeType contest) pid}" target="blank">
                   $if ac > 0
