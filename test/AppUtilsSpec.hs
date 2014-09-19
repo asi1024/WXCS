@@ -1,9 +1,9 @@
 {-# LANGUAGE FlexibleInstances #-}
-module AppSpec where
+module AppUtilsSpec where
 
 import ModelTypes
 import Model
-import App
+import AppUtils
 import SpecHelper
 
 spec :: Spec
