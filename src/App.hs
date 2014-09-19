@@ -15,8 +15,6 @@ import qualified Data.Text as TS
 import qualified Data.ByteString.Char8 as B8
 import qualified Data.Text.Lazy as TL
 import Data.Time
-import Data.List
-import Data.Monoid
 
 import qualified Database.Persist.Sqlite as Sq
 
@@ -28,7 +26,7 @@ import Network.Wai.Parse (FileInfo(..))
 import Text.Blaze.Html.Renderer.Text (renderHtml)
 import Text.Hamlet
 
-import Web.Scotty.Trans hiding (source, status)
+import Web.Scotty.Trans hiding (status)
 import qualified Web.Scotty.Trans as WS
 
 import AppUtils
@@ -37,16 +35,6 @@ import ModelTypes
 import OnlineJudge
 import Types
 import Utils
-
-ordStanding :: (String, [(Int, Int)], Int, Int)
-               -> (String, [(Int, Int)], Int, Int) -> Ordering
-ordStanding (_,_,a,b) (_,_,c,d) = mappend (compare c a) (compare b d)
-
-rankStandings :: [(String, [(Int, Int)], Int, Int)]
-                  -> [(Int, String, [(Int, Int)], Int, Int)]
-rankStandings l =
-  zip5 [1..] name state ac wa
-  where (name, state, ac, wa) = unzip4 $ sortBy ordStanding l
 
 getByIntId :: (Integral i, Sq.PersistEntity val, Sq.PersistStore m,
                Sq.PersistEntityBackend val ~ Sq.PersistMonadBackend m)
@@ -61,52 +49,6 @@ entityToTuple ent = (getId ent, Sq.entityVal ent)
 
 forwardedUserKey :: TL.Text
 forwardedUserKey = "Authorization"
-
-getSolvedNum :: [SubmitGeneric backend] -> String -> Int
-getSolvedNum statusAC user =
-  length $ nub listAC
-  where userAC = filter (\s -> submitUserId s == user) statusAC
-        listAC = map (\s -> (submitJudgeType s, submitProblemId s)) userAC
-
-ratingColor :: Int -> String
-ratingColor x
- | x <=  2 = "RC"
- | x <=  5 = "YC"
- | x <= 10 = "PC"
- | x <= 15 = "BC"
- | x <= 20 = "GC"
- | otherwise = "HC"
-
-ranking :: [(String, Int, Int)] -> [(Int, String, Int, Int)]
-ranking l =
-  zip4 [1..] users solves rating
-  where (users, solves, rating) = unzip3 $ sortBy (\(a,b,c) (d,e,f)
-          -> mconcat [compare f c, compare e b, compare a d]) l
-
-countJudge :: String -> [SubmitGeneric backend] -> Int
-countJudge user status =
-  length $ filter (\s -> submitUserId s == user) status
-
-getProblemAcNum :: [Sq.Entity (SubmitGeneric backend)]
-                   -> String -> [(Int, String, Int, Bool)]
-getProblemAcNum statusDb userId =
-  sortBy (\(_,_,a,_) (_,_,b,_) -> compare b a) $ map (\(c, p) -> (c, p, length $ nub $ map submitUserId $ filter (\s -> submitProblemId s == p) acList, elem (c,p) myAcList)) problemList
-  where statusList = map Sq.entityVal statusDb
-        acList = filter (\s -> submitJudge s == Accepted) statusList
-        myAcList = map (\s -> (submitContestnumber s, submitProblemId s)) $ filter (\s -> submitUserId s == userId) acList :: [(Int, String)]
-        problemList = nub $ map (\s -> (submitContestnumber s, submitProblemId s)) statusList :: [(Int, String)]
-
-getPoint :: [Sq.Entity (SubmitGeneric backend)] -> String -> Int
-getPoint statusDb userId =
-  sum $ map (\(_,_,n,_) -> div 100 n) $ filter (\(_,_,_,f) -> f) problemAcNum
-  where problemAcNum = getProblemAcNum statusDb userId
-
--- team
-teamName :: String -> String
-teamName = id
-
-getTeam :: Submit -> Submit
-getTeam u = u { submitUserId = teamName $ submitUserId u }
 
 instance ScottyError Text where
   stringError = TS.pack
@@ -200,30 +142,23 @@ app = do
     userId <- getUser
     currentTime <- liftIO getLocalTime
     currentTime_ <- liftIO getZonedTime
-    statusDb <- lift $ runSql $ Sq.selectList [] [] :: Action [Sq.Entity Submit]
-    let statusList_ = map Sq.entityVal statusDb
-    let statusList = filter (\s -> submitJudge s == Accepted) statusList_
-    let users = getUsers statusList_
-    let rankStatus_ = map (\user -> (user, getSolvedNum statusList user, getPoint statusDb user)) users
-    let rankStatus = ranking rankStatus_ :: [(Int, String, Int, Int)]
+    statusDb1 <- lift $ runSql $ Sq.selectList [] [] :: Entities Contest
+    statusDb2 <- lift $ runSql $ Sq.selectList [] [] :: Entities Submit
+    let contestList = map Sq.entityVal statusDb1 :: [Contest]
+    let statusList = filter isAC $ map Sq.entityVal statusDb2 :: [Submit]
+    let ranking = getRanking currentTime_ contestList statusList
     html $ renderHtml $ $(hamletFile "./template/ranking.hamlet") undefined
 
   get "/statistics" $ do
     userId <- getUser
     currentTime <- liftIO getLocalTime
     currentTime_ <- liftIO getZonedTime
-    statusDb <- lift $ runSql $ Sq.selectList [] [] :: Action [Sq.Entity Submit]
-    let statusList = map Sq.entityVal statusDb
-    let statusListAC = filter (\s -> submitJudge s == Accepted) statusList
-    let statusListWA = filter (\s -> submitJudge s == WrongAnswer) statusList
-    let statusListTLE = filter (\s -> submitJudge s == TimeLimitExceeded) statusList
-    let statusListMLE = filter (\s -> submitJudge s == MemoryLimitExceeded) statusList
-    let statusListRE = filter (\s -> submitJudge s == RuntimeError) statusList
-    let statusListPE = filter (\s -> submitJudge s == PresentationError) statusList
-    let statusListCE = filter (\s -> submitJudge s == CompileError) statusList
-    let users = getUsers statusList
-    let rankStatus_ = map (\user -> (user, getSolvedNum statusList user, getPoint statusDb user)) users
-    let rankStatus = ranking rankStatus_ :: [(Int, String, Int, Int)]
+    statusDb1 <- lift $ runSql $ Sq.selectList [] [] :: Entities Contest
+    statusDb2 <- lift $ runSql $ Sq.selectList [] [] :: Entities Submit
+    let contestList = map Sq.entityVal statusDb1 :: [Contest]
+    let statusList = map Sq.entityVal statusDb2 :: [Submit]
+    let judgeList = [Accepted, WrongAnswer, TimeLimitExceeded, MemoryLimitExceeded, RuntimeError, PresentationError, CompileError]
+    let ranking = getRanking currentTime_ contestList statusList
     html $ renderHtml $ $(hamletFile "./template/statistics.hamlet") undefined
 
   get "/problem/:user" $ do
@@ -231,9 +166,12 @@ app = do
     user <- param "user" :: Action String
     currentTime <- liftIO getLocalTime
     currentTime_ <- liftIO getZonedTime
-    statusDb <- lift $ runSql $ Sq.selectList [] [] :: Action [Sq.Entity Submit]
-    let problemAcNum = getProblemAcNum statusDb user
-    let point = getPoint statusDb user
+    statusDb1 <- lift $ runSql $ Sq.selectList [] [] :: Entities Contest
+    statusDb2 <- lift $ runSql $ Sq.selectList [] [] :: Entities Submit
+    let contestList = map Sq.entityVal statusDb1 :: [Contest]
+    let statusList = map Sq.entityVal statusDb2 :: [Submit]
+    let problemAcNum = getProblemAcNum currentTime_ contestList statusList user
+    let point = getPoint currentTime_ contestList statusList user
     html $ renderHtml $ $(hamletFile "./template/problem.hamlet") undefined
 
   post "/submit" $ do

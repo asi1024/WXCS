@@ -38,29 +38,19 @@ $doctype 5
               <th>Solved
               <th>Rating
               <th>Submit
-              <th>AC
-              <th>WA
-              <th>TLE
-              <th>MLE
-              <th>RE
-              <th>PE
-              <th>CE
+              $forall judge <- judgeList
+                <th>#{cssClass judge}
               <th>ACRate
-            $forall (rank, userName, solved, rating) <- rankStatus
+            $forall (rank, (userName, solved, rating)) <- ranking
               <tr>
                 <td class="stUN">#{rank}
                 <td class="stUN">
                   <a href="./user/#{userName}">#{userName}
                 <td class="stUN">#{solved}
                 <td class="#{ratingColor rank}">#{rating}
-                <td class="stUN">#{countJudge userName statusList}
-                <td class="stUN">#{countJudge userName statusListAC}
-                <td class="stUN">#{countJudge userName statusListWA}
-                <td class="stUN">#{countJudge userName statusListTLE}
-                <td class="stUN">#{countJudge userName statusListMLE}
-                <td class="stUN">#{countJudge userName statusListRE}
-                <td class="stUN">#{countJudge userName statusListPE}
-                <td class="stUN">#{countJudge userName statusListCE}
-                <td class="stUN">#{div (solved * 100) (countJudge userName statusList)}
+                <td class="stUN">#{countSubmit statusList userName}
+                $forall judge <- judgeList
+                  <td class="stUN">#{countJudge statusList userName judge}
+                <td class="stUN">#{div ((countJudge statusList userName Accepted) * 100) (countSubmit statusList userName)}
 
     <address class="footer">contributed by asi1024,chir(2014)

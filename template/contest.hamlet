@@ -71,7 +71,7 @@ $doctype 5
             <th>Accepted
             <th>Penalty
 
-          $forall (rank, userName, userStatus, ac, penalty) <- standings
+          $forall (rank, (userName, userStatus, ac, penalty)) <- standings
             <tr>
               $if userName == userId
                 <td class="myUN">#{rank}

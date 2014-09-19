@@ -57,7 +57,7 @@ $doctype 5
               <th>Accepted
               <th>Penalty
 
-            $forall (rank, userName, userStatus, ac, penalty) <- standings
+            $forall (rank, (userName, userStatus, ac, penalty)) <- standings
               <tr>
                 <td class="stUN">#{rank}
                 <td class="stUN">
