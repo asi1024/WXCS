@@ -16,7 +16,7 @@ $doctype 5
         <a href="../">Top
         |
       <span class="status-link">
-        <a href="../status?contest=#{cid}&amp;name=&amp;type=&amp;problem=&amp;number=50">Status
+        <a href="../status?contest=#{cid}">Status
         |
       <span class="problem-link">
         <a href="../problem/#{userId}">Problem
@@ -53,7 +53,7 @@ $doctype 5
               <th>User
               $forall pid <- problemList
                 <th>
-                  <a href="../status?contest=&amp;name=&amp;type=#{contestJudgeType contest}&amp;problem=#{pid}&amp;number=50">#{pid}
+                  <a href="../status?contest=#{cid}&amp;type=#{contestJudgeType contest}&amp;problem=#{pid}">#{pid}
               <th>Accepted
               <th>Penalty
 
@@ -61,7 +61,7 @@ $doctype 5
               <tr>
                 <td class="stUN">#{rank}
                 <td class="stUN">
-                  <a href="../status?contest=&amp;name=#{userName}&amp;type=&amp;problem=&amp;number=50">#{userName}
+                  <a href="../status?contest=#{cid}&amp;name=#{userName}">#{userName}
                 $forall (wa, t) <- userStatus
                   $if wa > 0
                     $if t > duration

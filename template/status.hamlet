@@ -16,7 +16,7 @@ $doctype 5
         <a href="./">Top
         |
       <span class="status-link">
-        <a href="status?contest=&amp;name=&amp;type=&amp;problem=&amp;number=50">Status
+        <a href="status">Status
         |
       <span class="problem-link">
         <a href="problem/#{userId}">Problem
@@ -65,13 +65,13 @@ $doctype 5
               <td class="id">
                 <a href="source/#{id}">#{id}
               <td class="id">
-                <a href="status?contest=#{submitContestnumber s}&amp;name=&amp;type=&amp;problem=&amp;number=50">#{submitContestnumber s}
+                <a href="status?contest=#{submitContestnumber s}">#{submitContestnumber s}
               <td class="datetime">#{submitSubmitTime s}
               <td class="user">
-                <a href="status?contest=&amp;name=#{submitUserId s}&amp;type=&amp;problem=&amp;number=50">#{submitUserId s}
+                <a href="status?name=#{submitUserId s}">#{submitUserId s}
               <td class="problem">#{submitJudgeType s}
               <td class="problem">
-                <a href="status?contest=&amp;name=&amp;type=#{submitJudgeType s}&amp;problem=#{submitProblemId s}&amp;number=50">#{submitProblemId s}
+                <a href="status?type=#{submitJudgeType s}&amp;problem=#{submitProblemId s}">#{submitProblemId s}
               <td class="judge">#{submitJudge s}
               $if (submitTime s) == "0"
                 <td class="time">0

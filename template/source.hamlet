@@ -22,7 +22,7 @@ $doctype 5
         <a href="../">Top
         |
       <span class="status-link">
-        <a href="../status?contest=&amp;name=&amp;type=&amp;problem=&amp;number=50">Status
+        <a href="../status">Status
         |
       <span class="problem-link">
         <a href="../problem/#{userId}">Problem

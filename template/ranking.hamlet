@@ -16,7 +16,7 @@ $doctype 5
         <a href="./">Top
         |
       <span class="status-link">
-        <a href="status?contest=&amp;name=&amp;type=&amp;problem=&amp;number=50">Status
+        <a href="status">Status
         |
       <span class="problem-link">
         <a href="problem/#{userId}">Problem
@@ -42,7 +42,7 @@ $doctype 5
                 <tr>
                   <td class="stUN">#{rank}
                   <td class="stUN">
-                    <a href="status?contest=&amp;name=#{userName}&amp;type=&amp;problem=&amp;number=50">#{userName}
+                    <a href="status?name=#{userName}">#{userName}
                   <td class="stUN">#{solved}
                   <td class="#{ratingColor rank}">#{rating}
                   <td class="stUN">#{div rating solved}.#{mod (div (rating * 10) solved) 10}#{mod (div (rating * 100) solved) 10}

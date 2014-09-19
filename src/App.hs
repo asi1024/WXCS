@@ -62,9 +62,6 @@ entityToTuple ent = (getId ent, Sq.entityVal ent)
 forwardedUserKey :: TL.Text
 forwardedUserKey = "Authorization"
 
-statusPage :: TL.Text
-statusPage = "../status?contest=&name=&type=&problem=&number=50"
-
 getSolvedNum :: [SubmitGeneric backend] -> String -> Int
 getSolvedNum statusAC user =
   length $ nub listAC
@@ -252,7 +249,7 @@ app = do
     let size = show $ length code
     lift $ runSql $ Sq.insert_ $
       Submit currentTime userId judgeType contestId problemId Pending "" "" size lang code
-    redirect $ TL.drop 3 statusPage
+    redirect "status"
 
   get "/setcontest" $ do
     userId <- getUser
@@ -297,7 +294,7 @@ app = do
     let contestId = read contestId_ :: Int
     contest' <- lift $ runSql $ getByIntId contestId :: Action (Maybe Contest)
     case contest' of
-      Nothing -> redirect statusPage
+      Nothing -> redirect "../status"
       Just contest -> do
         lift $ updateContest $ contest {
           contestName = cName,
@@ -312,17 +309,18 @@ app = do
     userId <- getUser
     currentTime <- liftIO getLocalTime
     statusDb <- lift $ runSql $ Sq.selectList [] [] :: Action [Sq.Entity Submit]
-    let statusL = map entityToTuple statusDb
-    contestId <- param "contest" :: Action String
-    user <- param "name" :: Action String
-    jtype_ <- param "type" :: Action String
-    jtype <- liftM read $ param "type" :: Action JudgeType
-    pid <- param "problem" :: Action String
-    num <- param "number" :: Action Int
-    let statusL_ = if contestId == "" then statusL else filter (\(_,s) -> submitContestnumber s == read contestId) statusL
-    let statusL__ = if user == "" then statusL_ else filter (\(_,s) -> submitUserId s == user) statusL_
-    let statusL___ = if jtype_ == "" then statusL__ else filter (\(_,s) -> submitJudgeType s == jtype) statusL__
-    let statusList = take num $ reverse $ if pid == "" then statusL___ else filter (\(_,s) -> submitProblemId s == pid) statusL___
+    contestId <- rescue (param "contest") (\_ -> return "") :: Action String
+    user <- rescue (param "name") (\_ -> return "") :: Action String
+    jtype <- rescue (param "type") (\_ -> return "") :: Action String
+    pid <- rescue (param "problem") (\_ -> return "") :: Action String
+    num <- rescue (param "number") (\_ -> return 50) :: Action Int
+    let eqStr = (\a b -> a == "" || b == "" || a == b) :: String -> String -> Bool
+    let s1 = map entityToTuple statusDb
+    let s2 = filter (\(_,s) -> eqStr contestId $ show $ submitContestnumber s) s1
+    let s3 = filter (\(_,s) -> eqStr user $ submitUserId s) s2
+    let s4 = filter (\(_,s) -> eqStr jtype $ show $ submitJudgeType s) s3
+    let s5 = filter (\(_,s) -> eqStr pid $ submitProblemId s) s4
+    let statusList = take num $ reverse s5
     html $ renderHtml $ $(hamletFile "./template/status.hamlet") undefined
 
   get "/source/:source_id" $ do
@@ -331,7 +329,7 @@ app = do
     currentTime <- liftIO getLocalTime
     source' <- lift $ runSql $ getByIntId sourceId :: Action (Maybe Submit)
     case source' of
-      Nothing -> redirect statusPage -- source code not found!
+      Nothing -> redirect "../status" -- source code not found!
       Just source -> do
         let problemId = submitProblemId source
         let submitUser = submitUserId source
@@ -341,10 +339,10 @@ app = do
     submitId <- param "submit_id" :: Action Int
     submit' <- lift $ runSql $ getByIntId submitId
     case submit' of
-      Nothing -> redirect statusPage
+      Nothing -> redirect "../status"
       Just submit_ -> do
         lift $ updateSubmit $ submit_ { submitJudge = Pending }
-        redirect statusPage
+        redirect "../status"
 
   get "/:str1" $ redirect "./"
   get "/:str1/:str2" $ redirect "../"
