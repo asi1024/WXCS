@@ -40,24 +40,17 @@ $doctype 5
               <th>7
               <th>8
 
-          $forall (cid, cname, problems, flag) <- contestProbs
+          $forall (cid, c) <- contestList
             <tbody>
               <tr>
                 <td>
-                  <a href="../contest/#{cid}">#{cname}
-                $forall (purl, ac) <- problems
+                  <a href="../contest/#{cid}">#{contestName c}
+                $forall p <- getProblemList currentTime_ c
                   <td>
-                    $if flag
-                      <a href="#{purl}" target="blank">
-                        $if ac > 0
-                          <img src="../image/Accepted.png">
-                        $else
-                          <img src="../image/Unsolved.png">
-                    $else
-                      <target="blank">
-                        $if ac > 0
-                          <img src="../image/Accepted.png">
-                        $else
-                          <img src="../image/Unsolved.png">
+                    <a href="#{getDescriptionURL (contestJudgeType c) p}" target="blank">
+                      $if isAccepted (getStatusList cid statusList) user_ p
+                        <img src="../image/Accepted.png">
+                      $else
+                        <img src="../image/Unsolved.png">
 
       <address class="footer">contributed by asi1024,chir(2014)

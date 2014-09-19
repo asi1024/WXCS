@@ -57,8 +57,14 @@ getUserStatus status start duration problemList user =
 
 getProblemList :: ZonedTime -> Contest -> [String]
 getProblemList t c = map f $ contestProblems c
-  where f x = if diffTime t (contestStart c) > 0 then x else "????"
+  where f x = if diffTime t (contestStart c) > 0 then filter ('\r'/=) x else "????"
 
 getStatusList :: Int -> [Submit] -> [Submit]
 getStatusList cid = filter (\s -> submitContestnumber s == cid)
 
+getAcList :: [Submit] -> [Submit]
+getAcList statusList = filter isAC statusList
+
+isAccepted :: [Submit] -> String -> String -> Bool
+isAccepted statusList user pid = any f $ getAcList statusList
+  where f s = submitUserId s == user && submitProblemId s == pid

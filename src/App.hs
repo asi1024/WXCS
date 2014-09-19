@@ -193,18 +193,10 @@ app = do
     user_ <- param "user" :: Action String
     currentTime <- liftIO getLocalTime
     currentTime_ <- liftIO getZonedTime
-    contests <- lift $ runSql $ Sq.selectList [] [] :: Action [Sq.Entity Contest]
-    statusDb <- lift $ runSql $ Sq.selectList [] [] :: Action [Sq.Entity Submit]
-    let statusList_ = map Sq.entityVal statusDb
-    let contestList = zip [1..] $ map Sq.entityVal contests
-    let statusList = if user_ == "ALL" then statusList_ else filter (\s -> submitUserId s == user_ && submitJudge s == Accepted) statusList_
-    let contestProbs = map (\(cid, c) ->
-          (cid, contestName c, map (\p ->
-            (getDescriptionURL (contestJudgeType c) p, length $ filter (\s ->
-              submitContestnumber s == cid && submitProblemId s == filter ('\r'/=) p)
-            statusList)) $ contestProblems c,
-          diffTime currentTime_ (contestStart c) > 0))
-          contestList :: [(Int, String, [(String, Int)], Bool)]
+    contests <- lift $ runSql $ Sq.selectList [] [] :: Entities Contest
+    statusDb <- lift $ runSql $ Sq.selectList [] [] :: Entities Submit
+    let contestList = zip [1..] $ map Sq.entityVal contests :: [(Int, Contest)]
+    let statusList = map Sq.entityVal statusDb :: [Submit]
     html $ renderHtml $ $(hamletFile "./template/user.hamlet") undefined
 
   get "/ranking" $ do
