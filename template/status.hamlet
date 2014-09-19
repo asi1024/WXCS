@@ -42,6 +42,8 @@ $doctype 5
 
         $if contestId /= ""
           <a href="./contest/#{contestId}">Go to Contest Page
+        $if (jtype /= "") && (pid /= "")
+          <a href="#{getDescriptionURL (read jtype) pid}" target="blank">Go to Problem Page
 
       <table summary="status table">
         <thead>
