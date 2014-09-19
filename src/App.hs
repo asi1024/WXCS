@@ -51,7 +51,7 @@ cssClass Pending = "CE"
 cssClass Running = "CE"
 
 langs :: [String]
-langs = ["C","C++","C++11","C#","D","JAVA","Ruby","Python","PHP","JavaScript"]
+langs = ["C","C++","C++11","C#","D","JAVA","Ruby","Python","Python3","PHP","JavaScript"]
 
 getUsers :: [Submit] -> [String]
 getUsers = nub . map submitUserId
