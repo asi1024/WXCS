@@ -38,9 +38,9 @@ $doctype 5
       <ul>
         <li>Submission ID: #{sourceId}
         <li>Problem:
-          <a href="../statistics?type=Aizu&amp;problem=#{problemId}">#{problemId}
+          #{problemId}
         <li>User:
-          <a href="../user?name=#{submitUser}">#{submitUser}
+          #{submitUser}
         <li>
           <strong>Judge: #{submitJudge source}
           (Time: #{submitTime source}, Memory: #{submitMemory source})
