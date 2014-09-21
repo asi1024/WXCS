@@ -6,7 +6,7 @@ import Control.Monad (liftM)
 
 import Data.Time
 
-import Database.Persist.Sqlite
+import Database.Persist.Sql
 import Database.Persist.TH
 
 import ModelTypes

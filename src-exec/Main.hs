@@ -3,7 +3,6 @@
 
 module Main where
 
-import Control.Concurrent.Lock (new)
 import Control.Concurrent.STM.TQueue (newTQueue)
 import Control.Monad.Reader
 import Control.Monad.STM (atomically)
@@ -20,6 +19,9 @@ import Model (migrateAll)
 import Submit
 import Utils
 
+openConnectionCount :: Int
+openConnectionCount = 10
+
 main :: IO ()
 main = do
   config' <- loadConfig "wxcs.conf"
@@ -29,8 +31,7 @@ main = do
   submitQueue <- atomically newTQueue
 
   Sq.runSqlite dbFile $ Sq.runMigration migrateAll
-  -- TODO: error handling?
-  lock <- new
-  forkIO_ $ runReaderT (crawler submitQueue) (lock, config)
-  scottyT (port config) (`runReaderT` (lock, config))
-    (`runReaderT` (lock, config)) (app submitQueue)
+  Sq.withSqlitePool dbFile openConnectionCount $ \pool -> do
+    forkIO_ $ runReaderT (crawler submitQueue) (pool, config)
+    scottyT (port config) (`runReaderT` (pool, config))
+      (`runReaderT` (pool, config)) (app submitQueue)
