@@ -91,10 +91,8 @@ submitAux user pass pid lang src = case BC.count '_' pid of
 
 submit :: AojConf -> String -> String -> String -> IO Bool
 submit conf pid lang code = H.withManager $ \mgr -> do
-  liftIO $ putStrLn "submit to AOJ"
   res <- submitAux (BC.pack (C.user conf)) (BC.pack (C.pass conf)) (BC.pack pid)
          (BC.pack lang) (BC.pack code) mgr
-  liftIO $ print $ H.responseStatus res
   return (ok200 == H.responseStatus res)
 
 mkStatusQuery :: String -> String -> HT.SimpleQuery

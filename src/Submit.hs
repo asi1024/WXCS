@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 module Submit (
   SubmitQueue,
@@ -8,6 +9,7 @@ module Submit (
 
 import Control.Concurrent
 import Control.Concurrent.STM.TQueue
+import Control.Monad.Logger (logDebug, runStderrLoggingT)
 import Control.Monad.Reader
 import Control.Monad.STM (atomically)
 
@@ -36,7 +38,8 @@ getAndUpdateWithRunId submit rid = do
   res <- liftIO $ OJ.fetchByRunId conf (submitJudgeType submit) rid
   case res of
     Nothing -> updateSubmit $ submit { submitJudge = SubmissionError }
-    Just (judge, time, mem) ->
+    Just (judge, time, mem) -> do
+      runStderrLoggingT $ $(logDebug) "Get the result."
       updateSubmit $ submit { submitJudge = judge, submitTime = time, submitMemory = mem }
 
 getResultAndUpdate :: Submit -> Int -> DatabaseT ()
@@ -48,8 +51,10 @@ getResultAndUpdate submit latestRunId = loop (0 :: Int)
         (pool, conf) <- ask
         runId <- liftIO $ OJ.getLatestRunId conf (submitJudgeType submit)
         if runId /= latestRunId
-          then liftIO $ forkIO_ $ (`runReaderT` (pool, conf))
-               $ getAndUpdateWithRunId submit runId
+          then do
+          runStderrLoggingT $ $(logDebug) "Get the run-id."
+          liftIO $ forkIO_ $ (`runReaderT` (pool, conf))
+            $ getAndUpdateWithRunId submit runId
           else liftIO (threadDelay (1000 * 1000)) >> loop (n + 1)
       else
         updateSubmit $ submit { submitJudge = SubmissionError }
@@ -62,11 +67,14 @@ submitAndUpdate s = do
   success <- liftIO $ OJ.submit conf (submitJudgeType s) (submitProblemId s)
              (submitLang s) (submitCode s)
   if success
-    then getResultAndUpdate s lastRunId
+    then do
+    runStderrLoggingT $ $(logDebug) "Submit code to onlinejudge."
+    getResultAndUpdate s lastRunId
     else updateSubmit $ s { submitJudge = SubmissionError }
 
 crawler :: SubmitQueue -> DatabaseT ()
 crawler queue = do
   submit <- lift $ atomically $ readTQueue queue
+  runStderrLoggingT $ $(logDebug) "Take a submission from queue."
   submitAndUpdate submit
   crawler queue
