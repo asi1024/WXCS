@@ -5,7 +5,7 @@ import Control.Monad.Reader (ReaderT())
 import Data.Text (Text())
 
 import Database.Persist.Sql (ConnectionPool)
-import qualified Database.Persist.Sqlite as Sq
+import qualified Database.Persist.Sql as Sq
 
 import Web.Scotty.Trans (ActionT)
 

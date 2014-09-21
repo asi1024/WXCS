@@ -18,7 +18,7 @@ import qualified Data.ByteString.Char8 as B8
 import qualified Data.Text.Lazy as TL
 import Data.Time
 
-import qualified Database.Persist.Sqlite as Sq
+import qualified Database.Persist.Sql as Sq
 
 import Network.HTTP.Types.Status (status401, status500)
 import Network.Wai.Middleware.RequestLogger

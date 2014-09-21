@@ -15,8 +15,7 @@ import Control.Monad.Reader
 import Control.Monad.Trans.Resource (runResourceT)
 
 import Data.Time
-import Database.Persist.Sql (runSqlPool)
-import Database.Persist.Sqlite (SqlPersistM)
+import Database.Persist.Sql (SqlPersistM, runSqlPool)
 
 import System.Locale (defaultTimeLocale)
 
