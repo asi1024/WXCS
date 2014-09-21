@@ -32,6 +32,8 @@ main = do
 
   Sq.runSqlite dbFile $ Sq.runMigration migrateAll
   Sq.withSqlitePool dbFile openConnectionCount $ \pool -> do
-    forkIO_ $ runReaderT (crawler submitQueue) (pool, config)
+    let run = flip runReaderT (pool, config)
+    run $ initializeSubmitQueue submitQueue
+    forkIO_ $ run $ crawler submitQueue
     scottyT (port config) (`runReaderT` (pool, config))
       (`runReaderT` (pool, config)) (app submitQueue)
