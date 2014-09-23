@@ -41,6 +41,9 @@ Submit
 findSubmit :: [Filter Submit] -> DatabaseT (Maybe (Entity Submit))
 findSubmit filt = runSql $ selectFirst filt []
 
+findAllSubmits :: [Filter Submit] -> DatabaseT [Entity Submit]
+findAllSubmits filt = runSql $ selectList filt []
+
 updateSubmit :: Submit -> DatabaseT ()
 updateSubmit s = do
   submit <- findSubmit [SubmitSubmitTime ==. submitSubmitTime s,

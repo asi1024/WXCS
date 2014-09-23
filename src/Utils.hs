@@ -10,12 +10,12 @@ module Utils (
   ) where
 
 import Control.Concurrent (forkIO)
-import Control.Monad.Logger (runNoLoggingT)
+import Control.Monad.Logger (runStderrLoggingT, LoggingT)
 import Control.Monad.Reader
-import Control.Monad.Trans.Resource (runResourceT)
+import Control.Monad.Trans.Resource (runResourceT, ResourceT)
 
 import Data.Time
-import Database.Persist.Sql (SqlPersistM, runSqlPool)
+import Database.Persist.Sql (SqlPersistT, runSqlPool)
 
 import System.Locale (defaultTimeLocale)
 
@@ -42,10 +42,12 @@ getLocalTime = liftM showTime getZonedTime
 whenDef :: (Monad m) => a -> Bool -> m a -> m a
 whenDef def p act = if p then act else return def
 
+type SqlPersistM = SqlPersistT (LoggingT (ResourceT IO))
+
 runSql :: SqlPersistM a -> DatabaseT a
 runSql action = do
   (pool, _) <- ask
-  liftIO $ runResourceT $ runNoLoggingT $ runSqlPool action pool
+  liftIO $ runResourceT $ runStderrLoggingT $ runSqlPool action pool
 
 forkIO_ :: IO () -> IO ()
 forkIO_ a = void $ forkIO a
