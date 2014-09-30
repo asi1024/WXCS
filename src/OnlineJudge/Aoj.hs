@@ -10,7 +10,7 @@ import Data.ByteString (ByteString)
 import qualified Data.ByteString.Char8 as BC
 import qualified Data.Conduit as C
 import qualified Data.Conduit.List as CL
-import Data.List (sort)
+import Data.List (sortBy)
 
 import qualified Network.HTTP.Conduit as H
 import qualified Network.HTTP.Types as HT
@@ -60,12 +60,9 @@ mkQuery user pass pid lang src =
 mkQueryCourse :: ByteString -> ByteString -> ByteString -> ByteString -> ByteString
            -> [(ByteString, ByteString)]
 mkQueryCourse user pass pid lang src =
-  [("userID"    , user),
-   ("password"  , pass),
-   ("problemNO" , BC.drop (BC.length pid - 1) pid),
-   ("lessonID"  , BC.take (BC.length pid - 2) pid),
-   ("language"  , lang),
-   ("sourceCode", src)]
+  ("lessonID", lessonId) : mkQuery user pass pid' lang src
+  where pid' = BC.drop (BC.length pid - 1) pid
+        lessonId = BC.take (BC.length pid - 2) pid
 
 api :: MonadResource m
        => HT.Method
@@ -97,14 +94,10 @@ submit conf pid lang code = H.withManager $ \mgr -> do
 
 mkStatusQuery :: String -> String -> HT.SimpleQuery
 mkStatusQuery userId' pid =
-  [("user_id", BC.pack userId'),
-   ("problem_id", BC.pack pid),
-   ("limit", "10")]
+  ("problem_id", BC.pack pid) : mkStatusQueryN userId'
 mkStatusQueryC :: String -> String -> HT.SimpleQuery
 mkStatusQueryC userId' pid =
-  [("user_id", BC.pack userId'),
-   ("lesson_id", BC.pack pid),
-   ("limit", "10")]
+  ("lesson_id", BC.pack pid) : mkStatusQueryN userId'
 mkStatusQueryN :: String -> HT.SimpleQuery
 mkStatusQueryN userId'=
   [("user_id", BC.pack userId'),
@@ -162,6 +155,18 @@ instance Ord AojStatus where
 parseXML :: ByteString -> Maybe XML.Element
 parseXML = XML.parseXMLDoc . filter (/= '\n') . BC.unpack
 
+statusCodeToJudgeStatus :: String -> JudgeStatus
+statusCodeToJudgeStatus code = case code of
+  "0" -> CompileError
+  "1" -> WrongAnswer
+  "2" -> TimeLimitExceeded
+  "3" -> MemoryLimitExceeded
+  "4" -> Accepted
+  "6" -> OutputLimitExceeded
+  "7" -> RuntimeError
+  "8" -> PresentationError
+  _ -> SubmissionError
+
 getStatuses :: XML.Element -> [AojStatus]
 getStatuses xml = map f $ XML.findChildren (XML.unqual "status") xml
   where f st = AojStatus {
@@ -172,16 +177,7 @@ getStatuses xml = map f $ XML.findChildren (XML.unqual "status") xml
                         else getText st "problem_id",
           submissionDate = read $ getText st "submission_date",
           judgeStatus = case length $ getText st "problem_id" of
-                          1 -> case getText st "status_code" of
-                                 "0" -> CompileError
-                                 "1" -> WrongAnswer
-                                 "2" -> TimeLimitExceeded
-                                 "3" -> MemoryLimitExceeded
-                                 "4" -> Accepted
-                                 "6" -> OutputLimitExceeded
-                                 "7" -> RuntimeError
-                                 "8" -> PresentationError
-                                 _   -> SubmissionError
+                          1 -> statusCodeToJudgeStatus $ getText st "status_code"
                           _ -> read $ getText st "status",
           language = getText st "language",
           cpuTime = read $ getText st "cputime",
@@ -192,20 +188,18 @@ fetchByRunId :: AojConf -> Int -> IO (Maybe (JudgeStatus, String, String))
 fetchByRunId conf rid = loop (0 :: Int)
   where
     loop n = whenDef Nothing (n < 60) $ do
-      threadDelay (1000 * 1000) -- wait 1se
+      threadDelay (1000 * 1000) -- wait 1sec
       xml' <- liftM parseXML $ fetchStatusXml (C.user conf)
       xmlc'' <- mapM (liftM parseXML . fetchStatusXmlCourse (C.user conf)) courseList
       let xmlc' = sequence xmlc''
-      case xml' of
-        Nothing -> loop (n+1)
-        Just xml ->
-          case xmlc' of
-            Nothing -> loop(n+1)
-            Just xmlc -> do
-              let st = filter (\st' -> runId st' == rid) $ getStatuses xml ++ concatMap getStatuses xmlc
-              if null st || (judgeStatus (head st) == Pending)
-                then loop (n+1)
-                else return $ f (head st)
+      case (xml', xmlc') of
+        (Nothing, _) -> loop (n+1)
+        (_, Nothing) -> loop (n+1)
+        (Just xml, Just xmlc) -> do
+          let st = filter (\st' -> runId st' == rid) $ concatMap getStatuses (xml:xmlc)
+          if null st || (judgeStatus (head st) == Pending)
+            then loop (n+1)
+            else return $ f (head st)
     f st = Just (judgeStatus st, show $ cpuTime st, show $ memory st)
 
 getLatestRunId :: AojConf -> IO Int
@@ -213,12 +207,9 @@ getLatestRunId conf = do
   xml' <- liftM parseXML $ fetchStatusXml (C.user conf)
   xmlc'' <- mapM (liftM parseXML . fetchStatusXmlCourse (C.user conf)) courseList
   let xmlc' = sequence xmlc''
-  case xml' of
-    Nothing -> error "Failed to fetch statux log."
-    Just xml ->
-      case xmlc' of
-        Nothing -> error "Failed to fetch statux log."
-        Just xmlc -> do
-          let sts = reverse . sort $ getStatuses xml ++ concatMap getStatuses xmlc
-          return . runId $ head sts
-
+  case (xml', xmlc') of
+   (Nothing, _) -> error "Failed to fetch status log."
+   (_, Nothing) -> error "Failed to fetch status log."
+   (Just xml, Just xmlc) -> do
+     let sts = sortBy (flip compare) $ concatMap getStatuses (xml:xmlc)
+     return . runId $ head sts
