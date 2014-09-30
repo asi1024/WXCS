@@ -71,7 +71,7 @@ getUser :: Action String
 getUser = do
   user' <- header forwardedUserKey
   return $ if isNothing user'
-           then "annonymous"
+           then "anonymous"
            else map toLower $ takeWhile (/= ':') $ eitherToString $ B.decode $ B8.pack $ head $ tail $ words $ TL.unpack $ fromJust user'
 
 eitherToString :: Either String B8.ByteString -> String

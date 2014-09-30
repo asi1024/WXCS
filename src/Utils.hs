@@ -5,8 +5,7 @@ module Utils (
   fromZonedTime,
   diffTime,
   runSql,
-  showTime,
-  whenDef
+  showTime
   ) where
 
 import Control.Concurrent (forkIO)
@@ -38,9 +37,6 @@ diffTime a b = ceiling $ diffUTCTime (zonedTimeToUTC a) (zonedTimeToUTC b) / 60
 
 getLocalTime :: IO String
 getLocalTime = liftM showTime getZonedTime
-
-whenDef :: (Monad m) => a -> Bool -> m a -> m a
-whenDef def p act = if p then act else return def
 
 type SqlPersistM = SqlPersistT (LoggingT (ResourceT IO))
 
