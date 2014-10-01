@@ -1,5 +1,4 @@
-{-# LANGUAGE QuasiQuotes, TemplateHaskell, OverloadedStrings #-}
-{-# LANGUAGE GADTs #-}
+{-# LANGUAGE GADTs, OverloadedStrings #-}
 
 module Main where
 
