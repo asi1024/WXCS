@@ -1,56 +1,25 @@
-$doctype 5
-<html lang="ja">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <meta http-equiv="Content-Style-Type" content="text/css">
-    <link rel="stylesheet" href="css/default.css" type="text/css">
-    <link rel="stylesheet" href="../~#{userId}/wxcs.css" type="text/css">
+<div align="center">
+  <h4>Ranking
+  <table summary="ranking">
+    <thead>
+      <tr>
+        <th>Rank
+        <th>User
+        <th>Solved
+        <th>Rating
+        <th>Submit
+        $forall judge <- judgeList
+          <th>#{cssClass judge}
+        <th>ACRate
+      $forall (rank, (userName, solved, rating)) <- ranking
+        <tr>
+          <td class="stUN">#{rank}
+          <td class="stUN">
+            <a href="./user/#{userName}">#{userName}
+          <td class="stUN">#{solved}
+          <td class="#{ratingColor rank}">#{rating}
+          <td class="stUN">#{countSubmit statusList userName}
+          $forall judge <- judgeList
+            <td class="stUN">#{countJudge statusList userName judge}
+          <td class="stUN">#{div ((countJudge statusList userName Accepted) * 100) (countSubmit statusList userName)}
 
-    <title>WX Contest System
-  <body>
-    <div class="header">
-      <h1 id="logo">
-        <a href="./">WX Contest System
-      <span class="username">You are #{userId}. |
-      <span class="index-link">
-        <a href="./">Top
-        |
-      <span class="status-link">
-        <a href="status">Status
-        |
-      <span class="problem-link">
-        <a href="problem/#{userId}">Problem
-        |
-      <span class="ranking-link">
-        <a href="ranking">Ranking
-        |
-      <span class="current-time">Current Time:
-        <strong>#{currentTime}
-
-    <div class="main">
-      <Div Align="center">
-        <h4>Ranking
-        <table summary="ranking">
-          <thead>
-            <tr>
-              <th>Rank
-              <th>User
-              <th>Solved
-              <th>Rating
-              <th>Submit
-              $forall judge <- judgeList
-                <th>#{cssClass judge}
-              <th>ACRate
-            $forall (rank, (userName, solved, rating)) <- ranking
-              <tr>
-                <td class="stUN">#{rank}
-                <td class="stUN">
-                  <a href="./user/#{userName}">#{userName}
-                <td class="stUN">#{solved}
-                <td class="#{ratingColor rank}">#{rating}
-                <td class="stUN">#{countSubmit statusList userName}
-                $forall judge <- judgeList
-                  <td class="stUN">#{countJudge statusList userName judge}
-                <td class="stUN">#{div ((countJudge statusList userName Accepted) * 100) (countSubmit statusList userName)}
-
-    <address class="footer">contributed by asi1024,chir(2014)

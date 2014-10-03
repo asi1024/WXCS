@@ -94,7 +94,8 @@ app squeue = do
     userId <- getUser
     currentTime <- liftIO getLocalTime
     contestList <- lift $ reverse . map entityToTuple <$> allContests
-    html $ renderHtml $ $(hamletFile "./template/index.hamlet") undefined
+    let contents = $(hamletFile "./template/index.hamlet")
+    html $ renderHtml $ $(hamletFile "./template/layout.hamlet") undefined
 
   get "/contest/:contest_id" $ do
     userId <- getUser
@@ -149,7 +150,8 @@ app squeue = do
     contestList <- lift $ map Sq.entityVal <$> allContests
     statusList <- lift $ map Sq.entityVal <$> allSubmits
     let ranking = getRanking currentTime_ contestList statusList
-    html $ renderHtml $ $(hamletFile "./template/ranking.hamlet") undefined
+    let contents = $(hamletFile "./template/ranking.hamlet")
+    html $ renderHtml $ $(hamletFile "./template/layout.hamlet") undefined
 
   get "/statistics" $ do
     userId <- getUser
@@ -160,7 +162,8 @@ app squeue = do
     let judgeList = [Accepted, WrongAnswer, TimeLimitExceeded,
                      MemoryLimitExceeded, RuntimeError, PresentationError, CompileError]
     let ranking = getRanking currentTime_ contestList statusList
-    html $ renderHtml $ $(hamletFile "./template/statistics.hamlet") undefined
+    let contents = $(hamletFile "./template/statistics.hamlet")
+    html $ renderHtml $ $(hamletFile "./template/layout.hamlet") undefined
 
   get "/problem/:user" $ do
     userId <- getUser
@@ -193,7 +196,8 @@ app squeue = do
   get "/setcontest" $ do
     userId <- getUser
     currentTime <- liftIO getLocalTime
-    html $ renderHtml $ $(hamletFile "./template/setcontest.hamlet") undefined
+    let contents = $(hamletFile "./template/setcontest.hamlet")
+    html $ renderHtml $ $(hamletFile "./template/layout.hamlet") undefined
 
   get "/setcontest/:contestId" $ do
     userId <- getUser
@@ -252,7 +256,8 @@ app squeue = do
     let s4 = filter (\(_,s) -> eqStr jtype $ show $ submitJudgeType s) s3
     let s5 = filter (\(_,s) -> eqStr pid $ submitProblemId s) s4
     let statusList = take num $ reverse s5
-    html $ renderHtml $ $(hamletFile "./template/status.hamlet") undefined
+    let contents = $(hamletFile "./template/status.hamlet")
+    html $ renderHtml $ $(hamletFile "./template/layout.hamlet") undefined
 
   get "/source/:source_id" $ do
     userId <- getUser

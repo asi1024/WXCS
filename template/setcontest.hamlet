@@ -1,50 +1,19 @@
-$doctype 5
-<html lang="ja">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <meta http-equiv="Content-Style-Type" content="text/css">
-    <link rel="stylesheet" href="css/default.css" type="text/css">
-    <link rel="stylesheet" href="../~#{userId}/wxcs.css" type="text/css">
+<h3>Set Contest
 
-    <title>WX Contest System
-  <body>
-    <div class="header">
-      <h1 id="logo">
-        <a href="./">WX Contest System
-      <span class="username">You are #{userId}. |
-      <span class="index-link">
-        <a href="./">Top
-        |
-      <span class="status-link">
-        <a href="status">Status
-        |
-      <span class="problem-link">
-        <a href="problem/#{userId}">Problem
-        |
-      <span class="ranking-link">
-        <a href="ranking">Ranking
-        |
-      <span class="current-time">Current Time:
-        <strong>#{currentTime}
+<form action="setcontest" method="post">
+  <input type="hidden" name="id" value="">
+  <input type="hidden" name="setter" value="sss">
+  Setter User: #{userId}<br>
+  Contest Name:<input type="text" name="name" value=""><br>
+  Contest Host:
+    <select name="type">
+      <option value="Aizu" >Aizu
+  <br>
+  Problem Sets:<br>
+  <textarea rows="10" cols="90" name="problem">
+  <br>
+  Start Datetime:<input type="text" name="starttime" value=""><br>
+  End Datetime:<input type="text" name="endtime" value=""><br>
 
-    <div class="main">
-      <h3>Set Contest
+  <p><input type="submit" name="submit" value="Submit">
 
-      <form action="setcontest" method="post">
-        <input type="hidden" name="id" value="">
-        <input type="hidden" name="setter" value="sss">
-        Setter User: #{userId}<br>
-        Contest Name:<input type="text" name="name" value=""><br>
-        Contest Host:
-          <select name="type">
-            <option value="Aizu" >Aizu
-        <br>
-        Problem Sets:<br>
-        <textarea rows="10" cols="90" name="problem">
-        <br>
-        Start Datetime:<input type="text" name="starttime" value=""><br>
-        End Datetime:<input type="text" name="endtime" value=""><br>
-
-        <p><input type="submit" name="submit" value="Submit">
-
-    <address class="footer">contributed by asi1024,chir(2014)

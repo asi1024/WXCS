@@ -1,88 +1,57 @@
-$doctype 5
-<html lang="ja">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <meta http-equiv="Content-Style-Type" content="text/css">
-    <link rel="stylesheet" href="css/default.css" type="text/css">
-    <link rel="stylesheet" href="../~#{userId}/wxcs.css" type="text/css">
+<h3>Judge Status
 
-    <title>WX Contest System
-  <body>
-    <div class="header">
-      <h1 id="logo">
-        <a href="./">WX Contest System
-      <span class="username">You are #{userId}. |
-      <span class="index-link">
-        <a href="./">Top
-        |
-      <span class="status-link">
-        <a href="status">Status
-        |
-      <span class="problem-link">
-        <a href="problem/#{userId}">Problem
-        |
-      <span class="ranking-link">
-        <a href="ranking">Ranking
-        |
-      <span class="current-time">Current Time:
-        <strong>#{currentTime}
+<form action="status" method="get">
+  Contest:<input type="text" size="10" name="contest" value="#{contestId}">
+  User:<input type="text" size="10" name="name" value="#{user}">
+  Type:
+    <select name="type">
+      <option value="Aizu"> Aizu
+  Problem Sets:<input type="text" size="10" name="problem" value="#{pid}">
+  Number:<input type="text" size="10" name="number" value="#{num}">
+  <input type="submit" name="search" value="search">
 
-    <div class="main">
-      <h3>Judge Status
+  $if contestId /= ""
+    <a href="./contest/#{contestId}">Go to Contest Page
+  $if (jtype /= "") && (pid /= "")
+    <a href="#{getDescriptionURL (read jtype) pid}" target="blank">Go to Problem Page
 
-      <form action="status" method="get">
-        Contest:<input type="text" size="10" name="contest" value="#{contestId}">
-        User:<input type="text" size="10" name="name" value="#{user}">
-        Type:
-          <select name="type">
-            <option value="Aizu"> Aizu
-        Problem Sets:<input type="text" size="10" name="problem" value="#{pid}">
-        Number:<input type="text" size="10" name="number" value="#{num}">
-        <input type="submit" name="search" value="search">
+<table summary="status table">
+  <thead>
+    <tr>
+      <th>ID
+      <th>CID
+      <th>Datetime
+      <th>User
+      <th>Type
+      <th>Problem
+      <th>Judge
+      <th>Time
+      <th>Memory
+      <th>Size
+      <th>Lang
+      <th>
 
-        $if contestId /= ""
-          <a href="./contest/#{contestId}">Go to Contest Page
-        $if (jtype /= "") && (pid /= "")
-          <a href="#{getDescriptionURL (read jtype) pid}" target="blank">Go to Problem Page
+  $forall (id, s) <- statusList
+    <tbody>
+      <tr class="#{cssClass (submitJudge s)}">
+        <td class="id">
+          <a href="source/#{id}">#{id}
+        <td class="id">
+          <a href="status?contest=#{submitContestnumber s}">#{submitContestnumber s}
+        <td class="datetime">#{submitSubmitTime s}
+        <td class="user">
+          <a href="status?name=#{submitUserId s}">#{submitUserId s}
+        <td class="problem">#{submitJudgeType s}
+        <td class="problem">
+          <a href="status?type=#{submitJudgeType s}&amp;problem=#{submitProblemId s}">#{submitProblemId s}
+        <td class="judge">#{submitJudge s}
+        $if (submitTime s) == "0"
+          <td class="time">0
+        $else
+          <td class="time">#{submitTime s}0
+        <td class="memory">#{submitMemory s}
+        <td class="size">#{submitSize s}
+        <td class="language">#{submitLang s}
+        <td class="rejudge">
+          <a href="rejudge/#{id}">rejudge
 
-      <table summary="status table">
-        <thead>
-          <tr>
-            <th>ID
-            <th>CID
-            <th>Datetime
-            <th>User
-            <th>Type
-            <th>Problem
-            <th>Judge
-            <th>Time
-            <th>Memory
-            <th>Size
-            <th>Lang
-            <th>
-
-        $forall (id, s) <- statusList
-          <tbody>
-            <tr class="#{cssClass (submitJudge s)}">
-              <td class="id">
-                <a href="source/#{id}">#{id}
-              <td class="id">
-                <a href="status?contest=#{submitContestnumber s}">#{submitContestnumber s}
-              <td class="datetime">#{submitSubmitTime s}
-              <td class="user">
-                <a href="status?name=#{submitUserId s}">#{submitUserId s}
-              <td class="problem">#{submitJudgeType s}
-              <td class="problem">
-                <a href="status?type=#{submitJudgeType s}&amp;problem=#{submitProblemId s}">#{submitProblemId s}
-              <td class="judge">#{submitJudge s}
-              $if (submitTime s) == "0"
-                <td class="time">0
-              $else
-                <td class="time">#{submitTime s}0
-              <td class="memory">#{submitMemory s}
-              <td class="size">#{submitSize s}
-              <td class="language">#{submitLang s}
-              <td class="rejudge">
-                <a href="rejudge/#{id}">rejudge
-
-    <address class="footer">contributed by asi1024,chir(2014)

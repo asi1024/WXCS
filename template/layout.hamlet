@@ -1,0 +1,31 @@
+$doctype 5
+<html lang="ja">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta http-equiv="Content-Style-Type" content="text/css">
+    <link rel="stylesheet" href="css/default.css" type="text/css">
+    <link rel="stylesheet" href="../~#{userId}/wxcs.css" type="text/css">
+
+    <title>WX Contest System
+  <body>
+    <div class="header">
+      <h1 id="logo">WX Contest System
+      <span class="username">You are #{userId}. |
+      <span class="index-link">
+        <a href="./">Top
+        |
+      <span class="status-link">
+        <a href="status">Status
+        |
+      <span class="problem-link">
+        <a href="problem/#{userId}">Problem
+        |
+      <span class="ranking-link">
+        <a href="ranking">Ranking
+        |
+      <span class="current-time">Current Time:
+        <strong>#{currentTime}
+
+    <div class="main">
+      ^{contents}
+    <address class="footer">contributed by asi1024,chir(2014)

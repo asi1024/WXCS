@@ -1,50 +1,20 @@
-$doctype 5
-<html lang="ja">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <meta http-equiv="Content-Style-Type" content="text/css">
-    <link rel="stylesheet" href="css/default.css" type="text/css">
-    <link rel="stylesheet" href="../~#{userId}/wxcs.css" type="text/css">
+<div Align="center">
+  <h4>Ranking
+  <table summary="ranking">
+    <thead>
+      <tr>
+        <th>Rank
+        <th>User
+        <th>Solved
+        <th>Rating
+        <th>Average
+      $forall (rank, (userName, solved, rating)) <- ranking
+        $if userName /= "annonymous"
+          <tr>
+            <td class="stUN">#{rank}
+            <td class="stUN">
+              <a href="status?name=#{userName}">#{userName}
+            <td class="stUN">#{solved}
+            <td class="#{ratingColor rank}">#{rating}
+            <td class="stUN">#{div rating solved}.#{mod (div (rating * 10) solved) 10}#{mod (div (rating * 100) solved) 10}
 
-    <title>WX Contest System
-  <body>
-    <div class="header">
-      <h1 id="logo">
-        <a href="./">WX Contest System
-      <span class="username">You are #{userId}. |
-      <span class="index-link">
-        <a href="./">Top
-        |
-      <span class="status-link">
-        <a href="status">Status
-        |
-      <span class="problem-link">
-        <a href="problem/#{userId}">Problem
-        |
-      <span class="ranking-link">
-        Ranking |
-      <span class="current-time">Current Time:
-        <strong>#{currentTime}
-
-    <div class="main">
-      <Div Align="center">
-        <h4>Ranking
-        <table summary="ranking">
-          <thead>
-            <tr>
-              <th>Rank
-              <th>User
-              <th>Solved
-              <th>Rating
-              <th>Average
-            $forall (rank, (userName, solved, rating)) <- ranking
-              $if userName /= "annonymous"
-                <tr>
-                  <td class="stUN">#{rank}
-                  <td class="stUN">
-                    <a href="status?name=#{userName}">#{userName}
-                  <td class="stUN">#{solved}
-                  <td class="#{ratingColor rank}">#{rating}
-                  <td class="stUN">#{div rating solved}.#{mod (div (rating * 10) solved) 10}#{mod (div (rating * 100) solved) 10}
-
-    <address class="footer">contributed by asi1024,chir(2014)

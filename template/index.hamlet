@@ -1,57 +1,29 @@
-$doctype 5
-  <html lang="ja">
-    <head>
-      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-      <meta http-equiv="Content-Style-Type" content="text/css">
-      <link rel="stylesheet" href="./css/default.css" type="text/css">
-      <link rel="stylesheet" href="../~#{userId}/wxcs.css" type="text/css">
+<h3>Contest
+<table summary="contest table">
+  <thead>
+    <tr>
+      <th>Contest Name
+      <th>Type
+      <th>Start time
+      <th>End time
+      <th>Duration
+      <th>Coordinator
+      <th>Edit
 
-      <title>WX Contest System
-    <body>
-      <div class="header">
-        <h1 id="logo">WX Contest System
-        <span class="username">You are #{userId}. |
-        Top |
-        <span class="status-link">
-          <a href="status">Status
-          |
-        <span class="problem-link">
-          <a href="problem/#{userId}">Problem
-          |
-        <span class="ranking-link">
-          <a href="ranking">Ranking
-          |
-        <span class="current-time">Current Time:
-          <strong>#{currentTime}
+  $forall (id, c) <- contestList
+    <tbody>
+      <tr>
+        <td>
+          <a href="contest/#{id}">#{contestName c}
+        <td>#{contestJudgeType c}
+        <td>#{contestStart c}
+        <td>#{contestEnd c}
+        <td>#{diffTime (contestEnd c) (contestStart c)}
+        <td>#{contestSetter c}
+        <td>
+          <a href="setcontest/#{id}">Edit
 
-      <div class="main">
-        <h3>Contest
-        <table summary="contest table">
-          <thead>
-            <tr>
-              <th>Contest Name
-              <th>Type
-              <th>Start time
-              <th>End time
-              <th>Duration
-              <th>Coordinator
-              <th>Edit
-
-          $forall (id, c) <- contestList
-            <tbody>
-              <tr>
-                <td>
-                  <a href="contest/#{id}">#{contestName c}
-                <td>#{contestJudgeType c}
-                <td>#{contestStart c}
-                <td>#{contestEnd c}
-                <td>#{diffTime (contestEnd c) (contestStart c)}
-                <td>#{contestSetter c}
-                <td>
-                  <a href="setcontest/#{id}">Edit
-
-        <h4>Setting
-        <ul>
-          <li>
-            <a href="setcontest">Set Contest
-      <address class="footer">contributed by asi1024,chir(2014)
+<h4>Setting
+<ul>
+  <li>
+    <a href="setcontest">Set Contest
