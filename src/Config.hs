@@ -19,14 +19,16 @@ data AojConf = AojConf {
 data Configuration = Configuration {
   port :: Int,
   aoj :: AojConf,
-  db :: Text
+  db :: Text,
+  pass_prefix :: Text
   } deriving (Eq, Show)
 
 instance Default Configuration where
   def = Configuration {
     port = 16384,
     aoj = AojConf "" "",
-    db = "db.sqlite"
+    db = "db.sqlite",
+    pass_prefix = "/"
     }
 
 instance AE.ToJSON AojConf where
@@ -34,8 +36,9 @@ instance AE.ToJSON AojConf where
     AE.object ["user" AE..= user', "pass" AE..= pass']
 
 instance AE.ToJSON Configuration where
-  toJSON (Configuration port' aoj' db') =
-    AE.object ["port" AE..= port', "aoj" AE..= aoj', "db" AE..= db']
+  toJSON (Configuration port' aoj' db' prefix') =
+    AE.object ["port" AE..= port', "aoj" AE..= aoj', "db" AE..= db',
+               "prefix" AE..= prefix']
 
 instance AE.FromJSON AojConf where
   parseJSON (AE.Object v) = AojConf <$>
@@ -47,7 +50,8 @@ instance AE.FromJSON Configuration where
   parseJSON (AE.Object v) = Configuration <$>
                             v AE..: "port" <*>
                             v AE..: "aoj" <*>
-                            v AE..: "db"
+                            v AE..: "db" <*>
+                            v AE..: "prefix"
   parseJSON _ = empty
 
 loadConfig :: FilePath -> IO (Maybe Configuration)
