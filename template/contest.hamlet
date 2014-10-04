@@ -3,26 +3,25 @@ $doctype 5
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta http-equiv="Content-Style-Type" content="text/css">
-    <link rel="stylesheet" href="../css/default.css" type="text/css">
-    <link rel="stylesheet" href="../../~#{userId}/wxcs.css" type="text/css">
+    <link rel="stylesheet" href="@{CssR "default.css"}" type="text/css">
+    <link rel="stylesheet" href="@{TopR}../~#{userId}/wxcs.css" type="text/css">
 
     <title>WX Contest System
   <body>
     <div class="header">
-      <h1 id="logo">
-        <a href="../">WX Contest System
+      <h1 id="logo">WX Contest System
       <span class="username">You are #{userId}. |
       <span class="index-link">
-        <a href="../">Top
+        <a href="@{TopR}">Top
         |
       <span class="status-link">
-        <a href="../status?contest=#{cid}">Status
+        <a href="@{StatusR}?contest=#{cid}">Status
         |
       <span class="problem-link">
-        <a href="../problem/#{userId}">Problem
+        <a href="@{ProblemR userId}">Problem
         |
       <span class="ranking-link">
-        <a href="../ranking">Ranking
+        <a href="@{RankingR}">Ranking
         |
       <span class="current-time">Current Time:
         <strong>#{currentTime}
@@ -67,7 +66,7 @@ $doctype 5
             <th>User
             $forall pid <- problemList
               <th>
-                <a href="../status?type=#{contestJudgeType contest}&amp;problem=#{pid}">#{pid}
+                <a href="@{StatusR}?type=#{contestJudgeType contest}&amp;problem=#{pid}">#{pid}
             <th>Accepted
             <th>Penalty
 
@@ -76,11 +75,11 @@ $doctype 5
               $if userName == userId
                 <td class="myUN">#{rank}
                 <td class="myUN">
-                  <a href="../status?contest=#{cid}&amp;name=#{userName}">#{userName}
+                  <a href="@{StatusR}?contest=#{cid}&amp;name=#{userName}">#{userName}
               $else
                 <td class="stUN">#{rank}
                 <td class="stUN">
-                  <a href="../status?contest=#{cid}&amp;name=#{userName}">#{userName}
+                  <a href="@{StatusR}?contest=#{cid}&amp;name=#{userName}">#{userName}
               $forall (wa, t) <- userStatus
                 $if wa > 0
                   $if t > duration
@@ -122,7 +121,7 @@ $doctype 5
                 <td class="stUN">#{penalty}
 
       <h5>Submit
-      <form id="submit" action="../submit" method="post" enctype="multipart/form-data">
+      <form id="submit" action="@{SubmitR}" method="post" enctype="multipart/form-data">
         <input type="hidden" name="contest" value="#{cid}">
           Host:
           <select name="type">

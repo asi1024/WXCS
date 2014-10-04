@@ -1,6 +1,6 @@
 <h3>Set Contest
 
-<form action="setcontest" method="post">
+<form action="@{SetContestR}" method="post">
   <input type="hidden" name="id" value="">
   <input type="hidden" name="setter" value="sss">
   Setter User: #{userId}<br>

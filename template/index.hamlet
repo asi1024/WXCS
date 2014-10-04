@@ -14,16 +14,16 @@
     <tbody>
       <tr>
         <td>
-          <a href="contest/#{id}">#{contestName c}
+          <a href="@{ContestR id}">#{contestName c}
         <td>#{contestJudgeType c}
         <td>#{contestStart c}
         <td>#{contestEnd c}
         <td>#{diffTime (contestEnd c) (contestStart c)}
         <td>#{contestSetter c}
         <td>
-          <a href="setcontest/#{id}">Edit
+          <a href="@{EditContestR id}">Edit
 
 <h4>Setting
 <ul>
   <li>
-    <a href="setcontest">Set Contest
+    <a href="@{SetContestR}">Set Contest

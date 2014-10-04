@@ -10,25 +10,25 @@ $doctype 5
   <body>
     <div class="header">
       <h1 id="logo">
-        <a href="../">WX Contest System
+        <a href="@{TopR}">WX Contest System
       <span class="username">You are #{userId}. |
       <span class="index-link">
-        <a href="../">Top
+        <a href="@{TopR}">Top
         |
       <span class="status-link">
-        <a href="../status?contest=#{cid}">Status
+        <a href="@{StatusR}?contest=#{cid}">Status
         |
       <span class="problem-link">
-        <a href="../problem/#{userId}">Problem
+        <a href="@{ProblemR userId}">Problem
         |
       <span class="ranking-link">
-        <a href="../ranking">Ranking
+        <a href="@{RankingR}">Ranking
         |
       <span class="current-time">Current Time:
         <strong>#{currentTime}
 
     <div class="main">
-      <Div Align="center">
+      <div align="center">
         <h2>Contest - #{contestName contest}
         <ul>
           Contest Host : #{contestJudgeType contest}
@@ -53,7 +53,7 @@ $doctype 5
               <th>User
               $forall pid <- problemList
                 <th>
-                  <a href="../status?contest=#{cid}&amp;type=#{contestJudgeType contest}&amp;problem=#{pid}">#{pid}
+                  <a href="@{StatusR}?contest=#{cid}&amp;type=#{contestJudgeType contest}&amp;problem=#{pid}">#{pid}
               <th>Accepted
               <th>Penalty
 
@@ -61,7 +61,7 @@ $doctype 5
               <tr>
                 <td class="stUN">#{rank}
                 <td class="stUN">
-                  <a href="../status?contest=#{cid}&amp;name=#{userName}">#{userName}
+                  <a href="@{StatusR}?contest=#{cid}&amp;name=#{userName}">#{userName}
                 $forall (wa, t) <- userStatus
                   $if wa > 0
                     $if t > duration

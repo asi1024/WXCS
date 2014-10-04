@@ -1,56 +1,25 @@
-$doctype 5
-  <html lang="ja">
-    <head>
-      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-      <meta http-equiv="Content-Style-Type" content="text/css">
-      <link rel="stylesheet" href="../css/default.css" type="text/css">
-      <link rel="stylesheet" href="../../~#{userId}/wxcs.css" type="text/css">
+<table summary="contest table">
+  <thead>
+    <tr>
+      <th>Contest Name
+      <th>1
+      <th>2
+      <th>3
+      <th>4
+      <th>5
+      <th>7
+      <th>8
 
-      <title>WX Contest System
-    <body>
-      <div class="header">
-        <h1 id="logo">
-          <a href="../">WX Contest System
-        <span class="username">You are #{userId}. |
-        <span class="index-link">
-          <a href="../">Top
-          |
-        <span class="status-link">
-          <a href="../status">Status
-          |
-        <span class="problem-link">
-          <a href="../problem/#{userId}">Problem
-          |
-        <span class="ranking-link">
-          <a href="../ranking">Ranking
-          |
-        <span class="current-time">Current Time:
-          <strong>#{currentTime}
+  $forall (cid, c) <- contestList
+    <tbody>
+      <tr>
+        <td>
+          <a href="@{ContestR $ TS.pack $ show cid}">#{contestName c}
+        $forall p <- getProblemList currentTime_ c
+          <td>
+            <a href="#{getDescriptionURL (contestJudgeType c) p}" target="blank">
+              $if isAccepted (getStatusList cid statusList) user_ p
+                <img src="../image/Accepted.png">
+              $else
+                <img src="../image/Unsolved.png">
 
-      <div class="main">
-        <table summary="contest table">
-          <thead>
-            <tr>
-              <th>Contest Name
-              <th>1
-              <th>2
-              <th>3
-              <th>4
-              <th>5
-              <th>7
-              <th>8
-
-          $forall (cid, c) <- contestList
-            <tbody>
-              <tr>
-                <td>
-                  <a href="../contest/#{cid}">#{contestName c}
-                $forall p <- getProblemList currentTime_ c
-                  <td>
-                    <a href="#{getDescriptionURL (contestJudgeType c) p}" target="blank">
-                      $if isAccepted (getStatusList cid statusList) user_ p
-                        <img src="../image/Accepted.png">
-                      $else
-                        <img src="../image/Unsolved.png">
-
-      <address class="footer">contributed by asi1024,chir(2014)

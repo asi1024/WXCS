@@ -1,52 +1,21 @@
-$doctype 5
-<html lang="ja">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <meta http-equiv="Content-Style-Type" content="text/css">
-    <link rel="stylesheet" href="../css/default.css" type="text/css">
-    <link rel="stylesheet" href="../../~#{userId}/wxcs.css" type="text/css">
-
-    <title>WX Contest System
-  <body>
-    <div class="header">
-      <h1 id="logo">
-        <a href="../">WX Contest System
-      <span class="username">You are #{userId}. |
-      <span class="index-link">
-        <a href="../">Top
-        |
-      <span class="status-link">
-        <a href="../status">Status
-        |
-      <span class="problem-link">
-        Problem |
-      <span class="ranking-link">
-        <a href="../ranking">Ranking
-        |
-      <span class="current-time">Current Time:
-        <strong>#{currentTime}
-
-    <div class="main">
-      <Div Align="center">
-        <h4>Problems
-        Point : #{point}
-        <table summary="problem">
-          <thead>
-            <tr>
-              <th>CID
-              <th>Problem
-              <th>Solved
-            $forall (c,p,n,f) <- problemAcNum
-              <tr>
-                $if f
-                  <td class="stAC">
-                    <a href="../contest/#{c}">#{c}
-                  <td class="stAC">#{p}
-                  <td class="stAC">#{n}
-                $else
-                  <td class="stUN">
-                    <a href="../contest/#{c}">#{c}
-                  <td class="stUN">#{p}
-                  <td class="stUN">#{n}
-
-    <address class="footer">contributed by asi1024,chir(2014)
+<div align="center">
+  <h4>Problems
+  Point : #{point}
+  <table summary="problem">
+    <thead>
+      <tr>
+        <th>CID
+        <th>Problem
+        <th>Solved
+      $forall (c,p,n,f) <- problemAcNum
+        <tr>
+          $if f
+            <td class="stAC">
+              <a href="@{ContestR $ TS.pack $ show c}">#{c}
+            <td class="stAC">#{p}
+            <td class="stAC">#{n}
+          $else
+            <td class="stUN">
+              <a href="@{ContestR $ TS.pack $ show c}">#{c}
+            <td class="stUN">#{p}
+            <td class="stUN">#{n}

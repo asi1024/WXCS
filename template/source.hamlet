@@ -9,26 +9,26 @@ $doctype 5
     <script type="text/javascript">
       hljs.configure({tabReplace: '  '});
       hljs.initHighlightingOnLoad();
-    <link rel="stylesheet" href="../css/default.css" type="text/css">
-    <link rel="stylesheet" href="../../~#{userId}/wxcs.css" type="text/css">
+    <link rel="stylesheet" href="@{CssR "default.css"}" type="text/css">
+    <link rel="stylesheet" href="@{TopR}../~#{userId}/wxcs.css" type="text/css">
 
     <title>WX Contest System
   <body>
     <div class="header">
       <h1 id="logo">
-        <a href="../">WX Contest System
+        <a href="@{TopR}">WX Contest System
       <span class="username">You are #{userId}. |
       <span class="index-link">
-        <a href="../">Top
+        <a href="@{TopR}">Top
         |
       <span class="status-link">
-        <a href="../status">Status
+        <a href="@{StatusR}">Status
         |
       <span class="problem-link">
-        <a href="../problem/#{userId}">Problem
+        <a href="@{ProblemR userId}">Problem
         |
       <span class="ranking-link">
-        <a href="../ranking">Ranking
+        <a href="@{RankingR}">Ranking
         |
       <span class="current-time">Current Time:
         <strong>#{currentTime}

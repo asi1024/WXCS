@@ -35,6 +35,7 @@ import AppUtils
 import Model
 import ModelTypes
 import OnlineJudge
+import Route
 import Submit (SubmitQueue)
 import Types
 import Utils
@@ -85,6 +86,8 @@ getStartAndEndTime = do
 
 app :: SubmitQueue -> ScottyT Text DatabaseT ()
 app squeue = do
+  (_, conf) <- lift ask
+  let render = renderUrl conf
   middleware logStdoutDev
   middleware $ staticPolicy $ addBase "static"
     >-> (contains "/js/" <|> contains "/css/" <|> contains "/image/")
@@ -95,7 +98,7 @@ app squeue = do
     currentTime <- liftIO getLocalTime
     contestList <- lift $ reverse . map entityToTuple <$> allContests
     let contents = $(hamletFile "./template/index.hamlet")
-    html $ renderHtml $ $(hamletFile "./template/layout.hamlet") undefined
+    html $ renderHtml $ $(hamletFile "./template/layout.hamlet") render
 
   get "/contest/:contest_id" $ do
     userId <- getUser
@@ -114,7 +117,7 @@ app squeue = do
         let userStatus = getUserStatus statusList start duration problemList
         let (_, myStatus, _, _) = userStatus userId
         let standings = rankStandings $ map userStatus $ getUsers statusList
-        html $ renderHtml $ $(hamletFile "./template/contest.hamlet") undefined
+        html $ renderHtml $ $(hamletFile "./template/contest.hamlet") render
 
   get "/standings/:contest_id" $ do
     userId <- getUser
@@ -132,7 +135,7 @@ app squeue = do
         let problemList = getProblemList currentTime_ contest :: [String]
         let userStatus = getUserStatus statusList start duration problemList
         let standings = rankStandings $ map userStatus $ getUsers statusList
-        html $ renderHtml $ $(hamletFile "./template/standings.hamlet") undefined
+        html $ renderHtml $ $(hamletFile "./template/standings.hamlet") render
 
   get "/user/:user" $ do
     userId <- getUser
@@ -141,7 +144,8 @@ app squeue = do
     currentTime_ <- liftIO getZonedTime
     contestList <- lift $ zip [1..] <$> map Sq.entityVal <$> allContests
     statusList <- lift $ map Sq.entityVal <$> allSubmits
-    html $ renderHtml $ $(hamletFile "./template/user.hamlet") undefined
+    let contents = $(hamletFile "./template/user.hamlet")
+    html $ renderHtml $ $(hamletFile "./template/layout.hamlet") render
 
   get "/ranking" $ do
     userId <- getUser
@@ -151,7 +155,7 @@ app squeue = do
     statusList <- lift $ map Sq.entityVal <$> allSubmits
     let ranking = getRanking currentTime_ contestList statusList
     let contents = $(hamletFile "./template/ranking.hamlet")
-    html $ renderHtml $ $(hamletFile "./template/layout.hamlet") undefined
+    html $ renderHtml $ $(hamletFile "./template/layout.hamlet") render
 
   get "/statistics" $ do
     userId <- getUser
@@ -163,7 +167,7 @@ app squeue = do
                      MemoryLimitExceeded, RuntimeError, PresentationError, CompileError]
     let ranking = getRanking currentTime_ contestList statusList
     let contents = $(hamletFile "./template/statistics.hamlet")
-    html $ renderHtml $ $(hamletFile "./template/layout.hamlet") undefined
+    html $ renderHtml $ $(hamletFile "./template/layout.hamlet") render
 
   get "/problem/:user" $ do
     userId <- getUser
@@ -174,7 +178,8 @@ app squeue = do
     statusList <- lift $ map Sq.entityVal <$> allSubmits
     let problemAcNum = getProblemAcNum currentTime_ contestList statusList user
     let point = getPoint currentTime_ contestList statusList user
-    html $ renderHtml $ $(hamletFile "./template/problem.hamlet") undefined
+    let contents = $(hamletFile "./template/problem.hamlet")
+    html $ renderHtml $ $(hamletFile "./template/layout.hamlet") render
 
   post "/submit" $ do
     userId <- getUser
@@ -197,7 +202,7 @@ app squeue = do
     userId <- getUser
     currentTime <- liftIO getLocalTime
     let contents = $(hamletFile "./template/setcontest.hamlet")
-    html $ renderHtml $ $(hamletFile "./template/layout.hamlet") undefined
+    html $ renderHtml $ $(hamletFile "./template/layout.hamlet") render
 
   get "/setcontest/:contestId" $ do
     userId <- getUser
@@ -209,7 +214,9 @@ app squeue = do
       Just contest ->
         if contestSetter contest /= userId
           then redirect "../"
-          else html $ renderHtml $ $(hamletFile "./template/editcontest.hamlet") undefined
+          else do
+          let contents = $(hamletFile "./template/editcontest.hamlet")
+          html $ renderHtml $ $(hamletFile "./template/layout.hamlet") render
 
   post "/setcontest" $ do
     setter <- getUser
@@ -257,7 +264,7 @@ app squeue = do
     let s5 = filter (\(_,s) -> eqStr pid $ submitProblemId s) s4
     let statusList = take num $ reverse s5
     let contents = $(hamletFile "./template/status.hamlet")
-    html $ renderHtml $ $(hamletFile "./template/layout.hamlet") undefined
+    html $ renderHtml $ $(hamletFile "./template/layout.hamlet") render
 
   get "/source/:source_id" $ do
     userId <- getUser
@@ -269,7 +276,7 @@ app squeue = do
       Just source -> do
         let problemId = submitProblemId source
         let submitUser = submitUserId source
-        html $ renderHtml $ $(hamletFile "./template/source.hamlet") undefined
+        html $ renderHtml $ $(hamletFile "./template/source.hamlet") render
 
   get "/rejudge/:submit_id" $ do
     submitId <- param "submit_id" :: Action Int

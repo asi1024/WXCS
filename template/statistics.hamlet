@@ -15,7 +15,7 @@
         <tr>
           <td class="stUN">#{rank}
           <td class="stUN">
-            <a href="./user/#{userName}">#{userName}
+            <a href="@{UserR userName}">#{userName}
           <td class="stUN">#{solved}
           <td class="#{ratingColor rank}">#{rating}
           <td class="stUN">#{countSubmit statusList userName}

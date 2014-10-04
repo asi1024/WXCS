@@ -49,6 +49,9 @@ library
       Types
       Utils
 
+    other-modules:
+      Route
+
     ghc-options: -Wall -threaded -fno-warn-orphans
 
 executable main

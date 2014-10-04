@@ -1,6 +1,6 @@
 <h3>Judge Status
 
-<form action="status" method="get">
+<form action="@{StatusR}" method="get">
   Contest:<input type="text" size="10" name="contest" value="#{contestId}">
   User:<input type="text" size="10" name="name" value="#{user}">
   Type:
@@ -11,7 +11,7 @@
   <input type="submit" name="search" value="search">
 
   $if contestId /= ""
-    <a href="./contest/#{contestId}">Go to Contest Page
+    <a href="@{ContestR $ TS.pack contestId}">Go to Contest Page
   $if (jtype /= "") && (pid /= "")
     <a href="#{getDescriptionURL (read jtype) pid}" target="blank">Go to Problem Page
 
@@ -35,15 +35,15 @@
     <tbody>
       <tr class="#{cssClass (submitJudge s)}">
         <td class="id">
-          <a href="source/#{id}">#{id}
+          <a href="@{SourceR id}">#{id}
         <td class="id">
-          <a href="status?contest=#{submitContestnumber s}">#{submitContestnumber s}
+          <a href="@{StatusR}?contest=#{submitContestnumber s}">#{submitContestnumber s}
         <td class="datetime">#{submitSubmitTime s}
         <td class="user">
-          <a href="status?name=#{submitUserId s}">#{submitUserId s}
+          <a href="@{StatusR}?name=#{submitUserId s}">#{submitUserId s}
         <td class="problem">#{submitJudgeType s}
         <td class="problem">
-          <a href="status?type=#{submitJudgeType s}&amp;problem=#{submitProblemId s}">#{submitProblemId s}
+          <a href="@{StatusR}?type=#{submitJudgeType s}&amp;problem=#{submitProblemId s}">#{submitProblemId s}
         <td class="judge">#{submitJudge s}
         $if (submitTime s) == "0"
           <td class="time">0
@@ -53,5 +53,5 @@
         <td class="size">#{submitSize s}
         <td class="language">#{submitLang s}
         <td class="rejudge">
-          <a href="rejudge/#{id}">rejudge
+          <a href="@{RejudgeR id}">rejudge
 
