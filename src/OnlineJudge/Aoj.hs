@@ -39,14 +39,23 @@ endpoint = "http://judge.u-aizu.ac.jp/onlinejudge/servlet/Submit"
 endpointCourse :: String
 endpointCourse = "http://judge.u-aizu.ac.jp/onlinejudge/webservice/submit"
 
+addQuery :: HT.Method
+         -> HT.SimpleQuery
+         -> H.Request
+         -> H.Request
+addQuery m query req =
+  if m == HT.methodPost
+    then H.urlEncodedBody query req
+    else req { H.method = m
+             , H.queryString = HT.renderSimpleQuery False query }
+
 mkRequest :: HT.Method
              -> String
              -> HT.SimpleQuery
              -> IO H.Request
 mkRequest m url query = do
   req <- H.parseUrl url
-  return $ req { H.method = m
-               , H.queryString = HT.renderSimpleQuery False query }
+  return $ addQuery m query req
 
 mkQuery :: ByteString -> ByteString -> ByteString -> ByteString -> ByteString
            -> [(ByteString, ByteString)]
