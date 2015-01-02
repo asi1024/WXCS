@@ -95,11 +95,19 @@ submitAux user pass pid lang src = case BC.count '_' pid of
   2 -> api "POST" endpointCourse (mkQueryCourse user pass pid lang src)
   _ -> api "POST" endpoint (mkQuery user pass pid lang src)
 
+succeedToSubmit :: MonadResource m
+                  => H.Response (C.ResumableSource m ByteString)
+                  -> m Bool
+succeedToSubmit res = do
+  let st = H.responseStatus res
+  body <- H.responseBody res C.$$+- CL.consume
+  return (ok200 == st && not (BC.isInfixOf "Unacceptable" (BC.unlines body)))
+
 submit :: AojConf -> String -> String -> String -> IO Bool
 submit conf pid lang code = H.withManager $ \mgr -> do
   res <- submitAux (BC.pack (C.user conf)) (BC.pack (C.pass conf)) (BC.pack pid)
          (BC.pack lang) (BC.pack code) mgr
-  return (ok200 == H.responseStatus res)
+  succeedToSubmit res
 
 mkStatusQuery :: String -> String -> HT.SimpleQuery
 mkStatusQuery userId' pid =
