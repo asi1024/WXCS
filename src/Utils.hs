@@ -16,12 +16,14 @@ import Control.Monad.Trans.Resource (runResourceT, ResourceT)
 import Data.Time
 import Database.Persist.Sql (SqlPersistT, runSqlPool)
 
+import System.Locale (defaultTimeLocale)
+
 import Types
 
 toZonedTime :: String -> IO ZonedTime
 toZonedTime s = do
   timezone <- getCurrentTimeZone
-  return $ parseTimeOrError True defaultTimeLocale "%Y%m%d%H%M%S %Z"
+  return $ readTime defaultTimeLocale "%Y%m%d%H%M%S %Z"
     (s ++ " " ++ show timezone)
 
 fromZonedTime :: ZonedTime -> String
