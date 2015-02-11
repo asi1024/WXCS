@@ -37,7 +37,8 @@ $doctype 5
         Contest Name:<input type="text" name="name" value=""><br>
         Contest Host:
           <select name="type">
-            <option value="Aizu" >Aizu
+            $forall jtype <- contestHost
+              <option value="#{show jtype}" >#{show jtype}
         <br>
         Problem Sets:<br>
         <textarea rows="10" cols="90" name="problem">

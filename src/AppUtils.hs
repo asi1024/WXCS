@@ -23,8 +23,16 @@ cssClass SubmissionError = "CE"
 cssClass Pending = "CE"
 cssClass Running = "CE"
 
-langs :: [String]
-langs = ["C","C++","C++11","C#","D","JAVA","Ruby","Python","Python3","PHP","JavaScript"]
+contestHost :: [JudgeType]
+contestHost = [Aizu, Codeforces]
+
+langs :: JudgeType -> [String]
+langs Aizu = ["C", "C++", "C++11", "C#", "D", "JAVA", "Ruby", "Python",
+              "Python3", "PHP", "JavaScript"]
+langs Codeforces = ["C", "C++", "C++11", "VC++", "C#(Mono)", "C#(MS)", "D",
+                    "Go", "Haskell", "Java 6", "Java 7", "Java 8", "OCaml",
+                    "Delphi", "Pascal", "Perl", "PHP", "Python2", "Python3",
+                    "Ruby", "Scala", "JavaScript"]
 
 ratingColor :: Int -> String
 ratingColor x

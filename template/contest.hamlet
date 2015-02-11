@@ -51,7 +51,7 @@ $doctype 5
           <tr>
             $forall (pid, (wa, ac)) <- zip problemList myStatus
               <td>
-                <a href="#{getDescriptionURL (contestJudgeType contest) pid}" target="blank">
+                <a href="#{getDescriptionURL jtype pid}" target="blank">
                   $if ac > 0
                     <img src="../image/Accepted.png">
                   $elseif wa == 0
@@ -126,7 +126,7 @@ $doctype 5
         <input type="hidden" name="contest" value="#{cid}">
           Host:
           <select name="type">
-            <option value="Aizu" selected>Aizu
+            <option value="#{jtype}" selected>#{jtype}
 
           Problem ID:
             <select name="problem" size="1">
@@ -135,8 +135,8 @@ $doctype 5
 
           Language:
             <select name="language" size="1">
-              $forall lang <- langs
-                <option value="#{lang}" label="#{lang}">#{lang}
+              $forall lang <- langs jtype
+                <option value="#[lang}" label="#{lang}">#{lang}
 
           <br>
           Source Code:

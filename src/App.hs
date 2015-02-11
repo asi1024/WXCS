@@ -107,6 +107,7 @@ app squeue = do
       Just contest -> do
         statusList <- lift $ map Sq.entityVal
                       <$> findAllSubmits [SubmitContestnumber Sq.==. cid]
+        let jtype = contestJudgeType contest
         let start = contestStart contest
         let duration = diffTime (contestEnd contest) (contestStart contest)
         let problemList = getProblemList currentTime_ contest :: [String]

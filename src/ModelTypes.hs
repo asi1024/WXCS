@@ -51,7 +51,7 @@ instance ToMarkup JudgeStatus where
 
 derivePersistField "JudgeStatus"
 
-data JudgeType = Aizu
+data JudgeType = Aizu | Codeforces
   deriving (Eq, Ord, Enum, Bounded, Show, Read)
 
 instance ToMarkup JudgeType where
