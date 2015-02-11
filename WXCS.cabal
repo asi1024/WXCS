@@ -45,6 +45,7 @@ library
       ModelTypes
       OnlineJudge
       OnlineJudge.Aoj
+      OnlineJudge.Codeforces
       Submit
       Types
       Utils

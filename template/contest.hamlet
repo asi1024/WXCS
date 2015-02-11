@@ -136,7 +136,7 @@ $doctype 5
           Language:
             <select name="language" size="1">
               $forall lang <- langs jtype
-                <option value="#[lang}" label="#{lang}">#{lang}
+                <option value="#{lang}" label="#{lang}">#{lang}
 
           <br>
           Source Code:
