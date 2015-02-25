@@ -66,26 +66,29 @@ endpoint s = "http://codeforces.com/contest/" ++ cid ++ "/problem/" ++ pid
 
 addQuery :: HT.Method
          -> HT.SimpleQuery
-         -> String
+         -> ByteString
+         -> ByteString
          -> H.Request
          -> H.Request
-addQuery m query x_user req =
+addQuery m query x_user csrf req =
   if m == HT.methodPost
     then H.urlEncodedBody query req
     else req { H.method = m
              , H.queryString = HT.renderSimpleQuery False query
+             , H.requestHeaders = [("csrf_token", csrf)]
              , H.cookieJar = Just $ H.createCookieJar [cookie]}
   where cookie = H.Cookie { H.cookie_name = "X-User"
-                          , H.cookie_value = BC.pack x_user }
+                          , H.cookie_value = x_user }
 
 mkRequest :: HT.Method
              -> String
-             -> String
+             -> ByteString
+             -> ByteString
              -> HT.SimpleQuery
              -> IO H.Request
-mkRequest m url x_user query = do
+mkRequest m url x_user csrf query = do
   req <- H.parseUrl url
-  return $ addQuery m query x_user req
+  return $ addQuery m query x_user csrf req
 
 mkQuery :: ByteString -> String -> ByteString -> ByteString
            -> [(ByteString, ByteString)]
@@ -102,25 +105,26 @@ mkQuery csrf pid lang src =
 api :: MonadResource m
        => HT.Method
        -> String
-       -> String
+       -> ByteString
+       -> ByteString
        -> HT.SimpleQuery
        -> H.Manager
        -> m (H.Response (C.ResumableSource m ByteString))
-api m url x_user query mgr = do
-  req <- liftIO $ mkRequest m url x_user query
+api m url x_user csrf query mgr = do
+  req <- liftIO $ mkRequest m url x_user csrf query
   liftIO $ print req
   H.http req mgr
 
 submitAux :: MonadResource m
-          => String     -- x_user
+          => ByteString -- x_user
           -> ByteString -- password
           -> String     -- problem id
           -> ByteString -- language
           -> ByteString -- code
           -> H.Manager
           -> m (H.Response (C.ResumableSource m ByteString))
-submitAux user pass pid lang src =
-  api "POST" (endpoint pid) user (mkQuery pass pid lang src)
+submitAux user csrf pid lang src =
+  api "POST" (endpoint pid) user csrf (mkQuery csrf pid lang src)
 
 succeedToSubmit :: MonadResource m
                   => H.Response (C.ResumableSource m ByteString)
@@ -135,7 +139,7 @@ submit :: CodeforcesConf -> String -> String -> String -> IO Bool
 submit conf pid lang code = H.withManager $ \mgr -> do
   res <- submitAux x_user' csrf pid (BC.pack lang) (BC.pack code) mgr
   succeedToSubmit res
-  where x_user' = C.x_user conf
+  where x_user' = BC.pack (C.x_user conf)
         csrf = BC.pack (C.csrf_token conf)
 
 {--
