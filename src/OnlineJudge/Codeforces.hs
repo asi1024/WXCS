@@ -1,4 +1,4 @@
-{-# LANGUAGE FlexibleContexts, OverloadedStrings #-}
+{-# LANGUAGE FlexibleContexts, OverloadedStrings, TemplateHaskell #-}
 module OnlineJudge.Codeforces where
 
 import Control.Applicative ((<$>))
@@ -13,7 +13,10 @@ import qualified Data.Conduit as C
 import qualified Data.Conduit.List as CL
 import Data.List
 import Data.Maybe (fromJust)
+import Data.Time.Calendar
+import Data.Time.Clock
 
+import qualified Network.HTTP.Client.MultipartFormData as MFD
 import qualified Network.HTTP.Conduit as H
 import qualified Network.HTTP.Types as HT
 import Network.HTTP.Types.Status (ok200)
@@ -64,42 +67,56 @@ endpoint :: String -> String
 endpoint s = "http://codeforces.com/contest/" ++ cid ++ "/problem/" ++ pid
   where (cid, pid) = parsePid s
 
+past :: UTCTime
+past = UTCTime (ModifiedJulianDay 56200) (secondsToDiffTime 0)
+
+future :: UTCTime
+future = UTCTime (ModifiedJulianDay 562000) (secondsToDiffTime 0)
+
 addQuery :: HT.Method
-         -> HT.SimpleQuery
          -> ByteString
          -> ByteString
          -> H.Request
          -> H.Request
-addQuery m query x_user csrf req =
+addQuery m x_user csrf req =
+  -- set cookie
+  let req' = req { H.cookieJar = Just $ H.createCookieJar [cookie] } in
   if m == HT.methodPost
-    then H.urlEncodedBody query req
-    else req { H.method = m
-             , H.queryString = HT.renderSimpleQuery False query
-             , H.requestHeaders = [("csrf_token", csrf)]
-             , H.cookieJar = Just $ H.createCookieJar [cookie]}
+  then req' { H.queryString = HT.renderSimpleQuery False [("csrf", csrf)] }
+  else req' { H.method = m
+            , H.requestHeaders = [("csrf_token", csrf)] }
   where cookie = H.Cookie { H.cookie_name = "X-User"
-                          , H.cookie_value = x_user }
+                          , H.cookie_value = x_user,
+                            H.cookie_expiry_time = future,
+                            H.cookie_domain = "codeforces.com",
+                            H.cookie_path = "/",
+                            H.cookie_creation_time = past,
+                            H.cookie_last_access_time = past,
+                            H.cookie_persistent = False,
+                            H.cookie_host_only = False,
+                            H.cookie_secure_only = False,
+                            H.cookie_http_only = False }
 
 mkRequest :: HT.Method
              -> String
              -> ByteString
              -> ByteString
-             -> HT.SimpleQuery
+             -> [MFD.Part]
              -> IO H.Request
 mkRequest m url x_user csrf query = do
   req <- H.parseUrl url
-  return $ addQuery m query x_user csrf req
+  let req' = addQuery m x_user csrf req
+  MFD.formDataBody query req'
 
 mkQuery :: ByteString -> String -> ByteString -> ByteString
-           -> [(ByteString, ByteString)]
+           -> [MFD.Part]
 mkQuery csrf pid lang src =
-  [("csrf_token"           , csrf),
-   ("action"               , "submitSolutionFormSubmitted"),
-   ("submittedProblemIndex", BC.pack pid'),
-   ("source"               , src),
-   ("programTypeId"        , BC.pack $ show $ extId lang),
-   ("sourceFile"           , ""),
-   ("_tta"                 , "222")]
+  [MFD.partBS "csrf_token" csrf,
+   MFD.partBS "action" "submitSolutionFormSubmitted",
+   MFD.partBS "submittedProblemIndex" $ BC.pack pid',
+   MFD.partBS "source" src,
+   MFD.partBS "programTypeId" $ BC.pack (show $ extId lang),
+   MFD.partBS "_tta" "222"]
    where (_, pid') = parsePid pid
 
 api :: MonadResource m
@@ -107,7 +124,7 @@ api :: MonadResource m
        -> String
        -> ByteString
        -> ByteString
-       -> HT.SimpleQuery
+       -> [MFD.Part]
        -> H.Manager
        -> m (H.Response (C.ResumableSource m ByteString))
 api m url x_user csrf query mgr = do
