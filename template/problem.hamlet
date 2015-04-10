@@ -29,7 +29,11 @@ $doctype 5
     <div class="main">
       <Div Align="center">
         <h4>Problems
-        Point : #{point}
+        Point : #{point}   
+        $if filterFlag == "true"
+          <a href="problem?filter=false">ALL
+        $else
+          <a href="problem?filter=true">unsolved
         <table summary="problem">
           <thead>
             <tr>

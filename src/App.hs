@@ -165,11 +165,14 @@ app squeue = do
   get "/problem/:user" $ do
     userId <- getUser
     user <- param "user" :: Action String
+    filterFlag <- rescue (param "filter") (\_ -> return "") :: Action String
     currentTime <- liftIO getLocalTime
     currentTime_ <- liftIO getZonedTime
     contestList <- lift $ map Sq.entityVal <$> allContests
     statusList <- lift $ map Sq.entityVal <$> allSubmits
-    let problemAcNum = getProblemAcNum currentTime_ contestList statusList user
+    let problemAcNum_ = getProblemAcNum currentTime_ contestList statusList user
+    let filterFun = (\(_, _, _, f) -> not f || filterFlag /= "true")
+    let problemAcNum = filter filterFun problemAcNum_
     let point = getPoint currentTime_ contestList statusList user
     html $ renderHtml $ $(hamletFile "./template/problem.hamlet") undefined
 
