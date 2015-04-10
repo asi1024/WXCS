@@ -31,9 +31,9 @@ $doctype 5
         <h4>Problems
         Point : #{point}   
         $if filterFlag == "true"
-          <a href="problem?filter=false">ALL
+          <a href="#{user}?filter=false">ALL
         $else
-          <a href="problem?filter=true">unsolved
+          <a href="#{user}?filter=true">unsolved
         <table summary="problem">
           <thead>
             <tr>
