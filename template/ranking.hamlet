@@ -45,6 +45,9 @@ $doctype 5
                     <a href="status?name=#{userName}">#{userName}
                   <td class="stUN">#{solved}
                   <td class="#{ratingColor rank}">#{rating}
-                  <td class="stUN">#{div rating solved}.#{mod (div (rating * 10) solved) 10}#{mod (div (rating * 100) solved) 10}
+                  $if solved == 0
+                    <td class="stUN">
+                  $else
+                    <td class="stUN">#{div rating solved}.#{mod (div (rating * 10) solved) 10}#{mod (div (rating * 100) solved) 10}
 
     <address class="footer">contributed by asi1024,chir(2014)
