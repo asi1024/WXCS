@@ -15,6 +15,8 @@ import Control.Monad.STM (atomically)
 
 import Database.Persist.Sql ((==.), (||.), entityVal)
 
+import System.Process
+
 import Model
 import ModelTypes
 import qualified OnlineJudge as OJ
@@ -40,6 +42,9 @@ getAndUpdateWithRunId submit rid = do
     Nothing -> updateSubmit $ submit { submitJudge = SubmissionError }
     Just (judge, time, mem) -> do
       runStderrLoggingT $ $(logDebug) "Get the result."
+      if judge == Accepted
+         then liftIO $ callCommand "./hue.sh"
+         else return () :: DatabaseT ()
       updateSubmit $ submit { submitJudge = judge, submitTime = time, submitMemory = mem }
 
 getResultAndUpdate :: Submit -> Int -> DatabaseT ()
