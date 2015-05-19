@@ -42,9 +42,7 @@ getAndUpdateWithRunId submit rid = do
     Nothing -> updateSubmit $ submit { submitJudge = SubmissionError }
     Just (judge, time, mem) -> do
       runStderrLoggingT $ $(logDebug) "Get the result."
-      if judge == Accepted
-         then liftIO $ callCommand "./hue.sh"
-         else return () :: DatabaseT ()
+      liftIO $ callCommand (if judge == Accepted then "./hue.sh 1" else "./hue.sh 0")
       updateSubmit $ submit { submitJudge = judge, submitTime = time, submitMemory = mem }
 
 getResultAndUpdate :: Submit -> Int -> DatabaseT ()
