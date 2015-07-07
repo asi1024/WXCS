@@ -124,7 +124,7 @@ app squeue = do
     case contest' of
       Nothing -> redirect "../" -- contest not found!
       Just contest -> do
-        statusList <- lift $ map Sq.entityVal
+        statusList <- liftM (map getTeam) $ lift $ map Sq.entityVal
                       <$> findAllSubmits [SubmitContestnumber Sq.==. cid]
         let start = contestStart contest
         let duration = diffTime (contestEnd contest) (contestStart contest)
@@ -187,10 +187,10 @@ app squeue = do
     codefiles <- files
     let code = foldl (\acc (_, f) -> acc ++ unpack (fileContent f)) code' codefiles
     let size = show $ length code
-    let submit = Submit currentTime userId judgeType contestId problemId Pending "" ""
+    let sub = Submit currentTime userId judgeType contestId problemId Pending "" ""
                  size lang code
-    lift $ runSql $ Sq.insert_ submit
-    liftIO $ atomically $ writeTQueue squeue submit
+    lift $ runSql $ Sq.insert_ sub
+    liftIO $ atomically $ writeTQueue squeue sub
     redirect "status"
 
   get "/setcontest" $ do
@@ -276,6 +276,16 @@ app squeue = do
       Nothing -> redirect "../status"
       Just submit_ -> do
         lift $ updateSubmit $ submit_ { submitJudge = Pending }
+        liftIO $ atomically $ writeTQueue squeue submit_
+        redirect "../status"
+
+  get "/cancel/:submit_id" $ do
+    submitId <- param "submit_id" :: Action Int
+    submit' <- lift $ runSql $ getByIntId submitId
+    case submit' of
+      Nothing -> redirect "../status"
+      Just submit_ -> do
+        lift $ updateSubmit $ submit_ { submitJudge = SubmissionError }
         liftIO $ atomically $ writeTQueue squeue submit_
         redirect "../status"
 
