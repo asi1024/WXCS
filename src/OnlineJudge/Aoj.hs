@@ -34,7 +34,7 @@ courseList = ["ITP1_1",  "ITP1_2",  "ITP1_3",  "ITP1_4",  "ITP1_5",  "ITP1_6",  
               "NTL_1"]
 
 endpoint :: String
-endpoint = "http://judge.u-aizu.ac.jp/onlinejudge/servlet/Submit"
+endpoint = "http://judge.u-aizu.ac.jp/onlinejudge/webservice/submit"
 
 endpointCourse :: String
 endpointCourse = "http://judge.u-aizu.ac.jp/onlinejudge/webservice/submit"
