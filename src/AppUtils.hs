@@ -24,7 +24,10 @@ cssClass Pending = "CE"
 cssClass Running = "CE"
 
 langs :: [String]
-langs = ["C", "C++", "C++11", "C#", "D", "JAVA", "Ruby", "Python", "Python3", "PHP", "JavaScript", "Scala", "Haskell"]
+langs =
+  ["C", "C++", "C++11", "C#", "D", "JAVA",
+   "Ruby", "Python", "Python3", "PHP", "JavaScript",
+   "Scala", "Haskell", "OCaml"]
 
 ratingColor :: Int -> String
 ratingColor x
