@@ -22,6 +22,7 @@ import ModelTypes
 import qualified OnlineJudge as OJ
 import Types
 import Utils
+import HashColor
 
 type SubmitQueue = TQueue Submit
 
@@ -42,8 +43,10 @@ getAndUpdateWithRunId submit rid = do
     Nothing -> updateSubmit $ submit { submitJudge = SubmissionError }
     Just (judge, time, mem) -> do
       runStderrLoggingT $ $(logDebug) "Get the result."
-      liftIO $ callCommand (if judge == Accepted then "./hue.sh 1" else "./hue.sh 0")
+      liftIO $ callCommand ((if judge == Accepted then "./hue.sh 1 " else "./hue.sh 0 ") ++ color)
       updateSubmit $ submit { submitJudge = judge, submitTime = time, submitMemory = mem }
+        where
+          color = show $ hueColor $ submitUserId submit
 
 getResultAndUpdate :: Submit -> Int -> DatabaseT ()
 getResultAndUpdate submit latestRunId = loop (0 :: Int)

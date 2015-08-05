@@ -10,8 +10,9 @@ $doctype 5
     <body>
       <div class="header">
         <h1 id="logo">WX Contest System
-        <span class="username">You are #{userId}. |
-        Top |
+        <span class="username">
+          You are <span style="color: #{cssColor userId}">#{userId}</span>. |
+          Top |
         <span class="status-link">
           <a href="status">Status
           |
