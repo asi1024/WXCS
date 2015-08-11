@@ -12,8 +12,9 @@ $doctype 5
       <h1 id="logo">
         <a href="../">WX Contest System
       <span class="username">
-        You are <span style="color: #{cssColor userId}">#{userId}</span>.
-        |
+        You are
+        <span style="color: #{cssColor userId}">#{userId}
+        .|
       <span class="index-link">
         <a href="../">Top
         |
@@ -78,10 +79,12 @@ $doctype 5
               $if userName == userId
                 <td class="myUN">#{rank}
                 <td class="myUN">
+                  <span style="color: #{cssColor userName}">@
                   <a href="../status?contest=#{cid}&amp;name=#{userName}">#{userName}
               $else
                 <td class="stUN">#{rank}
                 <td class="stUN">
+                  <span style="color: #{cssColor userName}">@
                   <a href="../status?contest=#{cid}&amp;name=#{userName}">#{userName}
               $forall (wa, t) <- userStatus
                 $if wa > 0
