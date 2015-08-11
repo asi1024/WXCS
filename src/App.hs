@@ -32,6 +32,7 @@ import Web.Scotty.Trans hiding (status)
 import qualified Web.Scotty.Trans as WS
 
 import AppUtils
+import HashColor
 import Model
 import ModelTypes
 import OnlineJudge

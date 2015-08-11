@@ -17,7 +17,9 @@ $doctype 5
     <div class="header">
       <h1 id="logo">
         <a href="../">WX Contest System
-      <span class="username">You are #{userId}. |
+      <span class="username">
+        You are <span style="color: #{cssColor userId}">#{userId}</span>.
+        |
       <span class="index-link">
         <a href="../">Top
         |
