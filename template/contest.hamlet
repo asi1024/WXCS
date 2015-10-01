@@ -42,6 +42,9 @@ $doctype 5
 
         <tbody>
           <tr>
+            $forall p <- problemName
+              <td class="color#{p}">#{p}
+          <tr>
             $forall (pid, (wa, ac)) <- zip problemList myStatus
               $if ac > duration
                 <td class="stRV">#{pid}

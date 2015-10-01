@@ -114,6 +114,7 @@ app squeue = do
         let userStatus = getUserStatus statusList start duration problemList
         let (_, myStatus, _, _) = userStatus userId
         let standings = rankStandings $ map userStatus $ getUsers statusList
+        let problemName = take (length problemList) $ ['A'..]
         html $ renderHtml $ $(hamletFile "./template/contest.hamlet") undefined
 
   get "/standings/:contest_id" $ do
@@ -132,6 +133,7 @@ app squeue = do
         let problemList = getProblemList currentTime_ contest :: [String]
         let userStatus = getUserStatus statusList start duration problemList
         let standings = rankStandings $ map userStatus $ getUsers statusList
+        let problemName = take (length problemList) $ ['A'..]
         html $ renderHtml $ $(hamletFile "./template/standings.hamlet") undefined
 
   get "/user/:user" $ do

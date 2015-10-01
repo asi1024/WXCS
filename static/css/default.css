@@ -49,6 +49,33 @@ th { background-color: #222222; color: #ffffff; }
 .SF { color: #333333; background-color: #bbbbbb; }
 .RUN { color: #000000; background-color: #ffffff; }
 
+.colorA { color: #ffffff; background-color: #aa0000; }
+.colorB { color: #ffffff; background-color: #0000aa; }
+.colorC { color: #ffffff; background-color: #bbbb00; }
+.colorD { color: #ffffff; background-color: #00aa00; }
+.colorE { color: #ffffff; background-color: #aa66aa; }
+.colorF { color: #ffffff; background-color: #888888; }
+.colorG { color: #ffffff; background-color: #ee7722; }
+.colorH { color: #ffffff; background-color: #884488; }
+.colorI { color: #ffffff; background-color: #8888bb; }
+.colorJ { color: #ffffff; background-color: #66bb66; }
+.colorK { color: #ffffff; background-color: #333333; }
+.colorL { color: #ffffff; background-color: #808000; }
+.colorM { color: #ffffff; background-color: #cc00cc; }
+.colorN { color: #ffffff; background-color: #000080; }
+.colorO { color: #ffffff; background-color: #999999; }
+.colorP { color: #ffffff; background-color: #cc90cc; }
+.colorQ { color: #ffffff; background-color: #000000; }
+.colorR { color: #ffffff; background-color: #000000; }
+.colorS { color: #ffffff; background-color: #000000; }
+.colorT { color: #ffffff; background-color: #000000; }
+.colorU { color: #ffffff; background-color: #000000; }
+.colorV { color: #ffffff; background-color: #000000; }
+.colorW { color: #ffffff; background-color: #000000; }
+.colorX { color: #ffffff; background-color: #000000; }
+.colorY { color: #ffffff; background-color: #000000; }
+.colorZ { color: #ffffff; background-color: #000000; }
+
 td.user, td.problem, td.judge, td.language { text-align: center; }
 td.id, td.time, td.memory, td.size { text-align: right; }
 pre.source { font-family: DejaVu Sans Mono, monospace; background-color: #f8f8f8; color: #000000; border: solid 1px #555555; padding: 1em; }

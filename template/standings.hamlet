@@ -54,9 +54,8 @@ $doctype 5
             <tr>
               <th>Rank
               <th>User
-              $forall pid <- problemList
-                <th>
-                  <a href="../status?contest=#{cid}&amp;type=#{contestJudgeType contest}&amp;problem=#{pid}">#{pid}
+              $forall p <- problemName
+                <th class="color#{p}">#{p}
               <th>Accepted
               <th>Penalty
 
